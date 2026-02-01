@@ -18,7 +18,9 @@ import type {
 } from './types.js';
 import type { CreateImpressionEventParams, CreateClickEventParams } from './utils.js';
 
-const DEFAULT_BASE_URL = 'https://api.attentionmarket.ai';
+// Default configuration (points to AttentionMarket production API)
+// Developers can override with their own backend if self-hosting
+const DEFAULT_BASE_URL = 'https://api.attentionmarket.ai/v1';
 const DEFAULT_TIMEOUT_MS = 4000;
 const DEFAULT_MAX_RETRIES = 2;
 
@@ -29,12 +31,25 @@ export class AttentionMarketClient {
     // Validate configuration
     this.validateConfig(config);
 
-    this.http = new HTTPClient({
+    const httpConfig: {
+      apiKey?: string;
+      supabaseAnonKey?: string;
+      baseUrl: string;
+      timeoutMs: number;
+      maxRetries: number;
+    } = {
       apiKey: config.apiKey,
       baseUrl: config.baseUrl ?? DEFAULT_BASE_URL,
       timeoutMs: config.timeoutMs ?? DEFAULT_TIMEOUT_MS,
       maxRetries: config.maxRetries ?? DEFAULT_MAX_RETRIES,
-    });
+    };
+
+    // Only add supabaseAnonKey if provided
+    if (config.supabaseAnonKey !== undefined) {
+      httpConfig.supabaseAnonKey = config.supabaseAnonKey;
+    }
+
+    this.http = new HTTPClient(httpConfig);
   }
 
   /**
@@ -154,7 +169,7 @@ export class AttentionMarketClient {
       maxRetries: DEFAULT_MAX_RETRIES,
     });
 
-    return await http.request<AgentSignupResponse>('POST', '/v1/agent/signup', {
+    return await http.request<AgentSignupResponse>('POST', '/v1/agent-signup', {
       body: request,
     });
   }

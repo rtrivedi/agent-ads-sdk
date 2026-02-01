@@ -9,7 +9,8 @@ import { APIRequestError, NetworkError, TimeoutError } from './errors.js';
 import type { APIError } from './types.js';
 
 export interface HTTPClientConfig {
-  apiKey?: string;
+  apiKey?: string; // AttentionMarket API key (am_live_* or am_test_*)
+  supabaseAnonKey?: string; // Supabase anon key for infrastructure auth
   baseUrl: string;
   timeoutMs: number;
   maxRetries: number;
@@ -73,8 +74,14 @@ export class HTTPClient {
         ...options.headers,
       };
 
+      // Send Supabase anon key in Authorization (for infrastructure)
+      if (this.config.supabaseAnonKey) {
+        headers['Authorization'] = `Bearer ${this.config.supabaseAnonKey}`;
+      }
+
+      // Send AttentionMarket API key in custom header (for app-level auth)
       if (this.config.apiKey) {
-        headers['Authorization'] = `Bearer ${this.config.apiKey}`;
+        headers['X-AM-API-Key'] = this.config.apiKey;
       }
 
       if (options.idempotencyKey) {

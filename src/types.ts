@@ -202,6 +202,7 @@ export interface APIError {
 
 export interface SDKConfig {
   apiKey: string;
+  supabaseAnonKey?: string; // Optional: Supabase anon key (has default)
   baseUrl?: string;
   timeoutMs?: number;
   maxRetries?: number;

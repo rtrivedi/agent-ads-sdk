@@ -29,3 +29,18 @@ Thumbs.db
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# AttentionMarket Backend (PRIVATE - contains infrastructure details)
+supabase/
+
+# Test files with real credentials
+test-production.ts
+test-live-backend.ts
+
+# Production documentation with infrastructure details
+PRODUCTION_GUIDE.md
+DEVELOPER_INTEGRATION_GUIDE.md
+SECURITY_AUDIT.md
+
+# Claude Code settings
+.claude/
