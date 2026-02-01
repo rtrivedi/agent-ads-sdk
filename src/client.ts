@@ -26,12 +26,41 @@ export class AttentionMarketClient {
   private http: HTTPClient;
 
   constructor(config: SDKConfig) {
+    // Validate configuration
+    this.validateConfig(config);
+
     this.http = new HTTPClient({
       apiKey: config.apiKey,
       baseUrl: config.baseUrl ?? DEFAULT_BASE_URL,
       timeoutMs: config.timeoutMs ?? DEFAULT_TIMEOUT_MS,
       maxRetries: config.maxRetries ?? DEFAULT_MAX_RETRIES,
     });
+  }
+
+  /**
+   * Validate SDK configuration for security
+   */
+  private validateConfig(config: SDKConfig): void {
+    // Validate base URL uses HTTPS
+    const baseUrl = config.baseUrl ?? DEFAULT_BASE_URL;
+    if (!baseUrl.startsWith('https://')) {
+      throw new Error(
+        'Security Error: baseUrl must use HTTPS. ' +
+          'HTTP connections expose your API key to man-in-the-middle attacks. ' +
+          `Received: ${baseUrl}`
+      );
+    }
+
+    // Validate API key format (if provided)
+    if (config.apiKey) {
+      const apiKeyPattern = /^am_(live|test)_[a-zA-Z0-9]+$/;
+      if (!apiKeyPattern.test(config.apiKey)) {
+        console.warn(
+          'Warning: API key does not match expected format (am_live_... or am_test_...). ' +
+            'This may indicate an invalid or compromised key.'
+        );
+      }
+    }
   }
 
   /**

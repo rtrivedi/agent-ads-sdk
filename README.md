@@ -55,6 +55,63 @@ if (unit && unit.unit_type === 'sponsored_suggestion') {
 }
 ```
 
+## Security Best Practices
+
+🔴 **CRITICAL SECURITY REQUIREMENTS**
+
+### 1. Server-Side Only
+
+**This SDK MUST only be used server-side.** Your API key provides full access to your account and billing.
+
+✅ **Safe:** Node.js, serverless functions, server-side rendering
+❌ **Unsafe:** Browser JavaScript, mobile apps without backend proxy
+
+### 2. Sanitize Ad Content Before Display
+
+Ad content can contain malicious HTML/JavaScript. **Always sanitize** before rendering in HTML:
+
+```typescript
+import { escapeHTML, sanitizeURL } from '@the_ro_show/agent-ads-sdk';
+
+// ✅ SAFE: Sanitize content
+const safeTitle = escapeHTML(unit.suggestion.title);
+const safeBody = escapeHTML(unit.suggestion.body);
+const safeURL = sanitizeURL(unit.suggestion.action_url);
+
+if (safeURL) {
+  element.innerHTML = `<a href="${safeURL}">${safeTitle}</a>`;
+}
+```
+
+```typescript
+// ❌ DANGEROUS: Direct HTML injection (XSS vulnerability!)
+element.innerHTML = unit.suggestion.title;
+```
+
+### 3. Validate URLs
+
+Always validate `action_url` before using:
+
+```typescript
+const safeURL = sanitizeURL(unit.suggestion.action_url);
+
+if (!safeURL) {
+  console.error('Dangerous URL blocked');
+  return; // Don't render the ad
+}
+```
+
+Blocks dangerous protocols: `javascript:`, `data:`, `file:`
+
+### 4. See Complete Guidelines
+
+📖 **[Read SECURITY.md](./SECURITY.md)** for comprehensive security guidelines including:
+- XSS prevention examples
+- Phishing protection
+- Rate limiting
+- Input validation
+- Security checklist
+
 ## Testing Without Advertiser Data
 
 Use `MockAttentionMarketClient` to test your integration without needing real ad campaigns.
@@ -148,10 +205,12 @@ For production integrations:
 - **[Claude (Anthropic)](./examples/claude-tool-use-full.ts)** - Complete tool use pattern with schemas and tracking
 - **[OpenAI GPT](./examples/openai-function-calling-full.ts)** - Complete function calling with integration checklist
 - **[Google Gemini](./examples/gemini-function-calling-full.ts)** - Complete function declarations with testing guide
+- **[Safe Web Rendering](./examples/safe-web-rendering.ts)** - XSS prevention and secure HTML rendering
 
 Run any example with:
 ```bash
 npx tsx examples/claude-tool-use-minimal.ts
+npx tsx examples/safe-web-rendering.ts
 ```
 
 ## Full Example with Raw Response
@@ -407,6 +466,42 @@ import { generateUUID } from '@the_ro_show/agent-ads-sdk';
 
 const requestId = generateUUID();
 ```
+
+### `escapeHTML(text): string`
+
+Escape HTML special characters to prevent XSS attacks.
+
+```typescript
+import { escapeHTML } from '@the_ro_show/agent-ads-sdk';
+
+const safeTitle = escapeHTML(unit.suggestion.title);
+element.innerHTML = safeTitle; // Safe from XSS
+```
+
+Escapes: `&`, `<`, `>`, `"`, `'`, `/`
+
+### `sanitizeURL(url, options?): string | null`
+
+Validate and sanitize URLs to prevent XSS and phishing attacks.
+
+```typescript
+import { sanitizeURL } from '@the_ro_show/agent-ads-sdk';
+
+const safeURL = sanitizeURL(unit.suggestion.action_url);
+
+if (safeURL) {
+  window.open(safeURL, '_blank');
+} else {
+  console.error('Dangerous URL blocked');
+}
+```
+
+**Blocked protocols:** `javascript:`, `data:`, `file:`, `vbscript:`
+
+**Options:**
+- `allowHttp: boolean` - Allow HTTP URLs (default: false, HTTPS only)
+- `allowTel: boolean` - Allow tel: links (default: true)
+- `allowMailto: boolean` - Allow mailto: links (default: true)
 
 ## Features
 

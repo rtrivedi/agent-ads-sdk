@@ -185,3 +185,115 @@ export function createClickEvent(params: CreateClickEventParams): EventIngestReq
 
   return event;
 }
+
+// ============================================================================
+// Security & Sanitization Helpers
+// ============================================================================
+
+/**
+ * Escape HTML special characters to prevent XSS attacks.
+ *
+ * Use this when displaying ad content (title, body, cta) in HTML contexts.
+ *
+ * @example
+ * ```typescript
+ * const safeTitle = escapeHTML(unit.suggestion.title);
+ * element.innerHTML = safeTitle; // Safe from XSS
+ * ```
+ */
+export function escapeHTML(text: string): string {
+  const htmlEscapes: Record<string, string> = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#x27;',
+    '/': '&#x2F;',
+  };
+
+  return text.replace(/[&<>"'\/]/g, (char) => htmlEscapes[char] || char);
+}
+
+/**
+ * Sanitize and validate a URL to prevent XSS and phishing attacks.
+ *
+ * Blocks dangerous protocols like javascript:, data:, and file:.
+ * Returns null if the URL is invalid or dangerous.
+ *
+ * @example
+ * ```typescript
+ * const safeURL = sanitizeURL(unit.suggestion.action_url);
+ * if (safeURL) {
+ *   window.open(safeURL, '_blank');
+ * }
+ * ```
+ */
+export function sanitizeURL(
+  url: string,
+  options?: {
+    allowHttp?: boolean;
+    allowTel?: boolean;
+    allowMailto?: boolean;
+  }
+): string | null {
+  const opts = {
+    allowHttp: options?.allowHttp ?? false,
+    allowTel: options?.allowTel ?? true,
+    allowMailto: options?.allowMailto ?? true,
+  };
+
+  try {
+    const trimmedURL = url.trim();
+
+    // Block empty URLs
+    if (!trimmedURL) {
+      return null;
+    }
+
+    // Parse URL
+    const parsedURL = new URL(trimmedURL);
+
+    // Check protocol
+    const protocol = parsedURL.protocol.toLowerCase();
+
+    // Always block dangerous protocols
+    const dangerousProtocols = ['javascript:', 'data:', 'file:', 'vbscript:'];
+    if (dangerousProtocols.includes(protocol)) {
+      console.warn(`Blocked dangerous URL protocol: ${protocol}`);
+      return null;
+    }
+
+    // Allow HTTPS
+    if (protocol === 'https:') {
+      return trimmedURL;
+    }
+
+    // Conditionally allow HTTP
+    if (protocol === 'http:') {
+      if (opts.allowHttp) {
+        return trimmedURL;
+      } else {
+        console.warn('HTTP URL blocked. Use HTTPS or set allowHttp: true');
+        return null;
+      }
+    }
+
+    // Conditionally allow tel:
+    if (protocol === 'tel:') {
+      return opts.allowTel ? trimmedURL : null;
+    }
+
+    // Conditionally allow mailto:
+    if (protocol === 'mailto:') {
+      return opts.allowMailto ? trimmedURL : null;
+    }
+
+    // Block unknown protocols
+    console.warn(`Unknown URL protocol blocked: ${protocol}`);
+    return null;
+  } catch (error) {
+    // Invalid URL format
+    console.warn('Invalid URL format:', url);
+    return null;
+  }
+}

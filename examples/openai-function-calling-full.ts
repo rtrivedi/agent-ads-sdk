@@ -343,4 +343,21 @@ main().catch(console.error);
  *    - Always show disclosure prominently
  *    - Track events accurately for billing and reporting
  *    - Respect user privacy settings
+ *
+ * 7. SECURITY - HTML Rendering:
+ *    - If displaying ads in HTML/web UI, ALWAYS sanitize content first
+ *    - Use escapeHTML() for title, body, and cta before inserting into DOM
+ *    - Use sanitizeURL() for action_url before creating links
+ *    - Example:
+ *      ```typescript
+ *      import { escapeHTML, sanitizeURL } from '@the_ro_show/agent-ads-sdk';
+ *
+ *      const safeTitle = escapeHTML(unit.suggestion.title);
+ *      const safeURL = sanitizeURL(unit.suggestion.action_url);
+ *
+ *      if (safeURL) {
+ *        element.innerHTML = `<a href="${safeURL}">${safeTitle}</a>`;
+ *      }
+ *      ```
+ *    - See SECURITY.md for complete XSS prevention guidelines
  */

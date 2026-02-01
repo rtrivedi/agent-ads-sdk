@@ -61,6 +61,8 @@ export {
   createOpportunity,
   createImpressionEvent,
   createClickEvent,
+  escapeHTML,
+  sanitizeURL,
 } from './utils.js';
 
 export type {
