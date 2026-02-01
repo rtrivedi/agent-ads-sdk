@@ -1,6 +1,6 @@
 {
   "name": "@the_ro_show/agent-ads-sdk",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "TypeScript SDK for integrating agent-native sponsored units (Sponsored Suggestions and Sponsored Tools) into AI agents",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -20,11 +20,11 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/attentionmarket/agent-ads-sdk.git"
+    "url": "https://github.com/rtrivedi/agent-ads-sdk.git"
   },
-  "homepage": "https://github.com/attentionmarket/agent-ads-sdk#readme",
+  "homepage": "https://github.com/rtrivedi/agent-ads-sdk#readme",
   "bugs": {
-    "url": "https://github.com/attentionmarket/agent-ads-sdk/issues"
+    "url": "https://github.com/rtrivedi/agent-ads-sdk/issues"
   },
   "scripts": {
     "build": "tsup",
