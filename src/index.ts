@@ -69,4 +69,5 @@ export type {
   CreateOpportunityParams,
   CreateImpressionEventParams,
   CreateClickEventParams,
+  SanitizeURLOptions,
 } from './utils.js';

@@ -191,34 +191,95 @@ export function createClickEvent(params: CreateClickEventParams): EventIngestReq
 // ============================================================================
 
 /**
+ * HTML escape map - created once to avoid recreation on each call
+ */
+const HTML_ESCAPES: Readonly<Record<string, string>> = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#x27;',
+  '/': '&#x2F;',
+  '`': '&#96;',
+};
+
+/**
+ * Regex for matching HTML special characters - created once for performance
+ */
+const HTML_ESCAPE_REGEX = /[&<>"'`\/]/g;
+
+/**
+ * Maximum URL length to prevent DoS attacks
+ */
+const MAX_URL_LENGTH = 2048;
+
+/**
+ * Dangerous URL protocols that must always be blocked
+ */
+const DANGEROUS_PROTOCOLS = ['javascript:', 'data:', 'file:', 'vbscript:', 'blob:'];
+
+/**
+ * Options for URL sanitization
+ */
+export interface SanitizeURLOptions {
+  /**
+   * Allow HTTP URLs (default: false, HTTPS only)
+   */
+  allowHttp?: boolean;
+  /**
+   * Allow tel: links (default: true)
+   */
+  allowTel?: boolean;
+  /**
+   * Allow mailto: links (default: true)
+   */
+  allowMailto?: boolean;
+  /**
+   * Callback for validation warnings (instead of console.warn)
+   */
+  onWarning?: (message: string, context: { url?: string; protocol?: string }) => void;
+}
+
+/**
  * Escape HTML special characters to prevent XSS attacks.
  *
+ * Handles null/undefined safely by returning empty string.
+ * Escapes: & < > " ' / `
+ *
  * Use this when displaying ad content (title, body, cta) in HTML contexts.
+ *
+ * @param text - Text to escape (can be null/undefined)
+ * @returns Escaped HTML string (empty string if input is null/undefined)
  *
  * @example
  * ```typescript
  * const safeTitle = escapeHTML(unit.suggestion.title);
  * element.innerHTML = safeTitle; // Safe from XSS
+ *
+ * escapeHTML(null); // Returns ''
+ * escapeHTML('<script>alert(1)</script>'); // Returns '&lt;script&gt;alert(1)&lt;/script&gt;'
  * ```
  */
-export function escapeHTML(text: string): string {
-  const htmlEscapes: Record<string, string> = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#x27;',
-    '/': '&#x2F;',
-  };
+export function escapeHTML(text: string | null | undefined): string {
+  // Handle null/undefined safely
+  if (text == null) {
+    return '';
+  }
 
-  return text.replace(/[&<>"'\/]/g, (char) => htmlEscapes[char] || char);
+  return text.replace(HTML_ESCAPE_REGEX, (char) => HTML_ESCAPES[char] || char);
 }
 
 /**
  * Sanitize and validate a URL to prevent XSS and phishing attacks.
  *
- * Blocks dangerous protocols like javascript:, data:, and file:.
- * Returns null if the URL is invalid or dangerous.
+ * Handles null/undefined safely by returning null.
+ * Blocks dangerous protocols like javascript:, data:, file:, blob:, vbscript:.
+ * Validates URL length to prevent DoS attacks (max 2048 chars).
+ * Handles protocol-relative URLs (//example.com).
+ *
+ * @param url - URL to sanitize (can be null/undefined)
+ * @param options - Sanitization options
+ * @returns Sanitized URL string, or null if invalid/dangerous
  *
  * @example
  * ```typescript
@@ -226,20 +287,27 @@ export function escapeHTML(text: string): string {
  * if (safeURL) {
  *   window.open(safeURL, '_blank');
  * }
+ *
+ * sanitizeURL(null); // Returns null
+ * sanitizeURL('javascript:alert(1)'); // Returns null (blocked)
+ * sanitizeURL('https://example.com'); // Returns 'https://example.com'
+ * sanitizeURL('http://example.com', { allowHttp: true }); // Returns 'http://example.com'
  * ```
  */
 export function sanitizeURL(
-  url: string,
-  options?: {
-    allowHttp?: boolean;
-    allowTel?: boolean;
-    allowMailto?: boolean;
-  }
+  url: string | null | undefined,
+  options?: SanitizeURLOptions
 ): string | null {
+  // Handle null/undefined safely
+  if (url == null) {
+    return null;
+  }
+
   const opts = {
     allowHttp: options?.allowHttp ?? false,
     allowTel: options?.allowTel ?? true,
     allowMailto: options?.allowMailto ?? true,
+    onWarning: options?.onWarning ?? undefined,
   };
 
   try {
@@ -250,16 +318,35 @@ export function sanitizeURL(
       return null;
     }
 
+    // Validate URL length to prevent DoS
+    if (trimmedURL.length > MAX_URL_LENGTH) {
+      opts.onWarning?.('URL exceeds maximum length', { url: trimmedURL });
+      return null;
+    }
+
+    // Handle protocol-relative URLs (//example.com)
+    let parsedURL: URL;
+    if (trimmedURL.startsWith('//')) {
+      // Protocol-relative URLs need a base URL to parse
+      try {
+        parsedURL = new URL(trimmedURL, 'https://dummy-base.com');
+        // Convert to absolute HTTPS URL
+        return `https:${trimmedURL}`;
+      } catch {
+        opts.onWarning?.('Invalid protocol-relative URL', { url: trimmedURL });
+        return null;
+      }
+    }
+
     // Parse URL
-    const parsedURL = new URL(trimmedURL);
+    parsedURL = new URL(trimmedURL);
 
     // Check protocol
     const protocol = parsedURL.protocol.toLowerCase();
 
     // Always block dangerous protocols
-    const dangerousProtocols = ['javascript:', 'data:', 'file:', 'vbscript:'];
-    if (dangerousProtocols.includes(protocol)) {
-      console.warn(`Blocked dangerous URL protocol: ${protocol}`);
+    if (DANGEROUS_PROTOCOLS.includes(protocol)) {
+      opts.onWarning?.('Blocked dangerous URL protocol', { url: trimmedURL, protocol });
       return null;
     }
 
@@ -273,7 +360,10 @@ export function sanitizeURL(
       if (opts.allowHttp) {
         return trimmedURL;
       } else {
-        console.warn('HTTP URL blocked. Use HTTPS or set allowHttp: true');
+        opts.onWarning?.('HTTP URL blocked. Use HTTPS or set allowHttp: true', {
+          url: trimmedURL,
+          protocol
+        });
         return null;
       }
     }
@@ -289,11 +379,11 @@ export function sanitizeURL(
     }
 
     // Block unknown protocols
-    console.warn(`Unknown URL protocol blocked: ${protocol}`);
+    opts.onWarning?.('Unknown URL protocol blocked', { url: trimmedURL, protocol });
     return null;
   } catch (error) {
     // Invalid URL format
-    console.warn('Invalid URL format:', url);
+    opts.onWarning?.('Invalid URL format', { url });
     return null;
   }
 }

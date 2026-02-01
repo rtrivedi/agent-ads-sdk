@@ -2,7 +2,7 @@
  * Tests for AttentionMarket SDK.
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import {
   AttentionMarketClient,
   generateUUID,
@@ -14,19 +14,97 @@ import {
 describe('AttentionMarketClient', () => {
   it('should create a client instance', () => {
     const client = new AttentionMarketClient({
-      apiKey: 'test_key',
+      apiKey: 'am_test_validkey123',
     });
     expect(client).toBeInstanceOf(AttentionMarketClient);
   });
 
   it('should create a client with custom config', () => {
     const client = new AttentionMarketClient({
-      apiKey: 'test_key',
+      apiKey: 'am_live_validkey456',
       baseUrl: 'https://custom.api.url',
       timeoutMs: 5000,
       maxRetries: 3,
     });
     expect(client).toBeInstanceOf(AttentionMarketClient);
+  });
+
+  describe('Security Validation', () => {
+    it('should reject HTTP baseUrl', () => {
+      expect(() => {
+        new AttentionMarketClient({
+          apiKey: 'am_test_key',
+          baseUrl: 'http://insecure.api.url',
+        });
+      }).toThrow(/Security Error.*HTTPS/);
+    });
+
+    it('should accept HTTPS baseUrl', () => {
+      expect(() => {
+        new AttentionMarketClient({
+          apiKey: 'am_test_key',
+          baseUrl: 'https://secure.api.url',
+        });
+      }).not.toThrow();
+    });
+
+    it('should accept default HTTPS baseUrl', () => {
+      expect(() => {
+        new AttentionMarketClient({
+          apiKey: 'am_test_key',
+        });
+      }).not.toThrow();
+    });
+
+    it('should warn for invalid API key format', () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      new AttentionMarketClient({
+        apiKey: 'invalid_key_format',
+      });
+
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('API key does not match expected format')
+      );
+
+      warnSpy.mockRestore();
+    });
+
+    it('should not warn for valid am_live_ API key', () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      new AttentionMarketClient({
+        apiKey: 'am_live_1234567890abcdef',
+      });
+
+      expect(warnSpy).not.toHaveBeenCalled();
+
+      warnSpy.mockRestore();
+    });
+
+    it('should not warn for valid am_test_ API key', () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      new AttentionMarketClient({
+        apiKey: 'am_test_1234567890abcdef',
+      });
+
+      expect(warnSpy).not.toHaveBeenCalled();
+
+      warnSpy.mockRestore();
+    });
+
+    it('should allow missing API key without warning', () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      new AttentionMarketClient({
+        apiKey: '',
+      });
+
+      expect(warnSpy).not.toHaveBeenCalled();
+
+      warnSpy.mockRestore();
+    });
   });
 });
 
