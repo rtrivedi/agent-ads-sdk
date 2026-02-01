@@ -2,6 +2,14 @@
 
 TypeScript SDK for integrating agent-native sponsored units (Sponsored Suggestions and Sponsored Tools) into AI agents.
 
+## 🚀 New to this? Start Here
+
+**→ [Simple Integration Guide](./SIMPLE_INTEGRATION_GUIDE.md)** - Step-by-step guide for Clawdbot/Moltbot developers
+
+This README contains the full API reference. If you're just getting started, the Simple Integration Guide is much easier to follow!
+
+---
+
 ## Installation
 
 ```bash
