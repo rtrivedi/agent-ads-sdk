@@ -1,6 +1,6 @@
 {
   "name": "@the_ro_show/agent-ads-sdk",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "TypeScript SDK for integrating agent-native sponsored units (Sponsored Suggestions and Sponsored Tools) into AI agents",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -16,7 +16,8 @@
     "dist",
     "README.md",
     "LICENSE",
-    "SECURITY.md"
+    "SECURITY.md",
+    "SIMPLE_INTEGRATION_GUIDE.md"
   ],
   "repository": {
     "type": "git",
