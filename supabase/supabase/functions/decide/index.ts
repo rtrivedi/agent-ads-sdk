@@ -16,7 +16,77 @@ import { validateAPIKey, createAuthErrorResponse } from '../_shared/auth.ts';
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-am-api-key',
+  'Access-Control-Expose-Headers': 'X-Taxonomy-Warning',
 };
+
+// Backward compatibility: OLD → NEW taxonomy mapping (remove after 2026-05-04)
+const DEPRECATED_TAXONOMIES: Record<string, string> = {
+  'shopping.ecommerce.platform': 'business.ecommerce.platform.trial',
+  'shopping.online_store': 'business.ecommerce.platform.trial',
+  'shopping.store_setup': 'business.ecommerce.platform.trial',
+  'shopping.electronics.search': 'shopping.electronics.computers.compare',
+  'shopping.electronics.phones': 'shopping.electronics.phones.compare',
+  'local_services.movers.quote': 'home_services.moving.local.quote',
+  'local_services.contractors.home': 'home_services.remodeling.kitchen.quote',
+  'local_services.cleaning': 'home_services.cleaning.regular.book',
+  'local_services.cleaners.quote': 'home_services.cleaning.regular.book',
+  'local_services.plumbers.quote': 'home_services.plumbing.emergency.quote',
+  'local_services.electricians.quote': 'home_services.electrical.repair.quote',
+  'local_services.restaurants.search': 'travel.experiences.dining.book',
+  'local_services.pet_care.dog_walking': 'personal_services.pet_care.walking.book',
+  'local_services.lawyers.consultation': 'legal.general.consultation',
+  'business.productivity.tools': 'business.saas.project_management.trial',
+  'business.software.ecommerce': 'business.ecommerce.platform.trial',
+  'business.startup.tools': 'business.saas.crm.trial',
+  'travel.booking.hotels': 'travel.hotels.luxury.book',
+  'travel.booking.flights': 'travel.flights.domestic.book',
+  'travel.flights.search': 'travel.flights.domestic.compare',
+  'travel.experiences': 'travel.experiences.tours.book',
+};
+
+// Hierarchical taxonomy matching: Calculate relevance score
+function calculateTaxonomyRelevance(requestedTaxonomy: string, targetedTaxonomies: string[]): number {
+  let maxRelevance = 0;
+
+  for (const targeted of targetedTaxonomies) {
+    const relevance = getTaxonomyMatchScore(requestedTaxonomy, targeted);
+    if (relevance > maxRelevance) {
+      maxRelevance = relevance;
+    }
+  }
+
+  return maxRelevance;
+}
+
+// Get match score between requested and targeted taxonomy
+function getTaxonomyMatchScore(requested: string, targeted: string): number {
+  // Exact match
+  if (requested === targeted) {
+    return 1.0;
+  }
+
+  const requestedParts = requested.split('.');
+  const targetedParts = targeted.split('.');
+
+  // Check if targeted is a prefix of requested
+  // Example: targeted="insurance.auto" matches requested="insurance.auto.full_coverage.quote"
+  let matchingLevels = 0;
+  for (let i = 0; i < targetedParts.length; i++) {
+    if (i >= requestedParts.length || requestedParts[i] !== targetedParts[i]) {
+      break;
+    }
+    matchingLevels++;
+  }
+
+  // Calculate relevance based on matching depth
+  if (matchingLevels === 0) return 0;
+  if (matchingLevels === 1) return 0.5; // Vertical match only (e.g., "insurance")
+  if (matchingLevels === 2) return 0.7; // Category match (e.g., "insurance.auto")
+  if (matchingLevels === 3) return 0.9; // Subcategory match (e.g., "insurance.auto.full_coverage")
+  if (matchingLevels === 4) return 1.0; // Full match with intent
+
+  return 0;
+}
 
 serve(async (req) => {
   // Handle CORS preflight
@@ -54,10 +124,18 @@ serve(async (req) => {
     }
 
     // Extract targeting criteria from opportunity
-    const taxonomy = opportunity.intent.taxonomy;
+    let taxonomy = opportunity.intent.taxonomy;
     const country = opportunity.context.country;
     const language = opportunity.context.language;
     const platform = opportunity.context.platform;
+
+    // Handle deprecated taxonomies (backward compatibility)
+    let taxonomyWarning: string | undefined;
+    if (DEPRECATED_TAXONOMIES[taxonomy]) {
+      taxonomyWarning = `Taxonomy '${taxonomy}' is deprecated. Use '${DEPRECATED_TAXONOMIES[taxonomy]}' instead. Old taxonomies will be removed on 2026-05-04.`;
+      console.warn(`⚠️  DEPRECATED: ${taxonomyWarning}`);
+      taxonomy = DEPRECATED_TAXONOMIES[taxonomy];
+    }
 
     // Generate decision ID
     const decision_id = `dec_${crypto.randomUUID()}`;
@@ -65,12 +143,21 @@ serve(async (req) => {
     // Query database for matching ad units
     // Match on:
     // 1. Campaign is active
-    // 2. Taxonomy matches (campaign.targeting_taxonomies contains requested taxonomy)
+    // 2. Taxonomy matches (hierarchical matching - will filter in code)
     // 3. Country matches (or campaign targets all countries)
     // 4. Language matches (or campaign targets all languages)
     // 5. Platform matches (or campaign targets all platforms)
     // 6. Campaign has budget remaining
 
+    // Get vertical from taxonomy for broad filtering (e.g., "insurance" from "insurance.auto.full_coverage.quote")
+    const taxonomyParts = taxonomy.split('.');
+    const vertical = taxonomyParts[0];
+
+    // Query for matching campaigns
+    // Note: Currently fetches all active campaigns and filters hierarchically in memory.
+    // TODO: Add custom SQL function for efficient array prefix matching on targeting_taxonomies.
+    // With GIN index, this query is fast enough for most use cases (<1000 campaigns).
+    // For scale beyond 10k campaigns, implement: campaigns.targeting_taxonomies_has_prefix(vertical)
     const { data: adUnits, error: queryError } = await supabase
       .from('ad_units')
       .select(`
@@ -93,8 +180,7 @@ serve(async (req) => {
       .eq('status', 'active')
       .eq('campaigns.status', 'active')
       .eq('unit_type', placement.type)
-      .contains('campaigns.targeting_taxonomies', [taxonomy])
-      .limit(50); // Get more candidates for ranking (will limit after scoring)
+      .limit(50); // Conservative limit - hierarchical filtering happens in memory
 
     if (queryError) {
       console.error('Database query error:', queryError);
@@ -136,31 +222,31 @@ serve(async (req) => {
 
     // Score and rank ads (Option C: Agent Curation)
     // This enables agents to get multiple ads and choose the best one
-    const scoredAds = filteredAds.map((ad: any) => {
-      const campaign = ad.campaigns;
+    const scoredAds = filteredAds
+      .map((ad: any) => {
+        const campaign = ad.campaigns;
 
-      // Calculate relevance score (0-1)
-      let relevance = 0;
+        // Calculate relevance score using hierarchical taxonomy matching
+        const relevance = calculateTaxonomyRelevance(
+          taxonomy,
+          campaign.targeting_taxonomies || []
+        );
 
-      // Exact taxonomy match (currently only signal, weight: 1.0)
-      if (campaign.targeting_taxonomies?.includes(taxonomy)) {
-        relevance = 1.0;
-      }
+        // Future: Add keyword matching here (Phase 2)
+        // Future: Add embedding similarity here (Phase 2)
 
-      // Future: Add keyword matching here (Phase 2)
-      // Future: Add embedding similarity here (Phase 2)
+        // Calculate composite score: bid × quality × relevance
+        const bidAmount = campaign.bid_cpm || 1.0;
+        const quality = campaign.quality_score || 1.0;
+        const compositeScore = bidAmount * quality * relevance;
 
-      // Calculate composite score: bid × quality × relevance
-      const bidAmount = campaign.bid_cpm || 1.0;
-      const quality = campaign.quality_score || 1.0;
-      const compositeScore = bidAmount * quality * relevance;
-
-      return {
-        ...ad,
-        _relevance_score: relevance,
-        _composite_score: compositeScore,
-      };
-    });
+        return {
+          ...ad,
+          _relevance_score: relevance,
+          _composite_score: compositeScore,
+        };
+      })
+      .filter((ad: any) => ad._relevance_score > 0); // Only include ads with some relevance
 
     // Sort by composite score (highest first)
     scoredAds.sort((a, b) => b._composite_score - a._composite_score);
@@ -246,6 +332,11 @@ serve(async (req) => {
     });
 
     // Return filled response
+    const responseHeaders = { ...corsHeaders, 'Content-Type': 'application/json' };
+    if (taxonomyWarning) {
+      responseHeaders['X-Taxonomy-Warning'] = taxonomyWarning;
+    }
+
     return new Response(
       JSON.stringify({
         request_id,
@@ -255,7 +346,7 @@ serve(async (req) => {
         units: formattedUnits,
       }),
       {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: responseHeaders,
       }
     );
   } catch (error) {

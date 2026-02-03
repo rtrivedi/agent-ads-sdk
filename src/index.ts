@@ -72,3 +72,20 @@ export type {
   CreateClickEventParams,
   SanitizeURLOptions,
 } from './utils.js';
+
+// Taxonomy utilities
+export {
+  buildTaxonomy,
+  detectIntent,
+  isValidTaxonomy,
+  parseTaxonomy,
+  getBaseTaxonomy,
+  matchesTaxonomy,
+  getVertical,
+  suggestTaxonomies,
+} from './taxonomy-utils.js';
+
+export type {
+  TaxonomyIntent,
+  ParsedTaxonomy,
+} from './taxonomy-utils.js';

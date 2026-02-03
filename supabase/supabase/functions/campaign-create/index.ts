@@ -97,6 +97,37 @@ serve(async (req) => {
       );
     }
 
+    // Validate taxonomy format
+    function isValidTaxonomy(taxonomy: string): boolean {
+      const parts = taxonomy.split('.');
+
+      // Must be 3 or 4 parts (vertical.category.subcategory[.intent])
+      if (parts.length < 3 || parts.length > 4) {
+        return false;
+      }
+
+      // Check valid intent (if present)
+      const validIntents = ['research', 'compare', 'quote', 'trial', 'book', 'apply', 'consultation'];
+      if (parts.length === 4 && !validIntents.includes(parts[3])) {
+        return false;
+      }
+
+      // Check each part is non-empty and alphanumeric + underscore
+      return parts.every(part => /^[a-z0-9_]+$/.test(part));
+    }
+
+    // Validate all taxonomies
+    const invalidTaxonomies = targeting_taxonomies.filter((t: string) => !isValidTaxonomy(t));
+    if (invalidTaxonomies.length > 0) {
+      return new Response(
+        JSON.stringify({
+          error: 'validation_error',
+          message: `Invalid taxonomy format: ${invalidTaxonomies.join(', ')}. Must be 'vertical.category.subcategory[.intent]'. See TAXONOMY_SYSTEM.md for valid taxonomies.`
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Validate pricing model (must have CPM or CPC)
     if (!bid_cpm && !bid_cpc) {
       return new Response(
