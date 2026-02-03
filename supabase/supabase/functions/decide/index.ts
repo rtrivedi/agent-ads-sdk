@@ -11,6 +11,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 import { validateAPIKey, createAuthErrorResponse } from '../_shared/auth.ts';
+import { checkRateLimit, RateLimits } from '../_shared/rate-limit.ts';
 
 // CORS headers
 const corsHeaders = {
@@ -92,6 +93,12 @@ serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
+  }
+
+  // Rate limiting: 1000 requests per minute per IP
+  const rateLimitResponse = checkRateLimit(req, RateLimits.DECIDE);
+  if (rateLimitResponse) {
+    return rateLimitResponse;
   }
 
   try {
