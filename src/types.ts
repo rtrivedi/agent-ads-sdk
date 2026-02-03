@@ -94,6 +94,16 @@ export interface Privacy {
 // ============================================================================
 
 /**
+ * Scoring metadata for agent curation (Option C: Intelligent Integration)
+ * Included in multi-ad responses to help agents choose the best ad
+ */
+export interface AdScore {
+  relevance: number; // 0.0 - 1.0: How well ad matches intent
+  composite: number; // bid × quality × relevance
+  position: number;  // 1-indexed position in ranked results
+}
+
+/**
  * AdUnit is a discriminated union enforcing the OpenAPI oneOf constraint.
  * Either suggestion OR tool is required based on unit_type.
  */
@@ -104,6 +114,7 @@ export type AdUnit =
       disclosure: Disclosure;
       tracking: Tracking;
       suggestion: SponsoredSuggestion;
+      _score?: AdScore; // Optional: Included for multi-ad responses (agent curation)
     }
   | {
       unit_id: string;
@@ -111,6 +122,7 @@ export type AdUnit =
       disclosure: Disclosure;
       tracking: Tracking;
       tool: SponsoredTool;
+      _score?: AdScore; // Optional: Included for multi-ad responses (agent curation)
     };
 
 export interface Disclosure {
@@ -129,7 +141,9 @@ export interface SponsoredSuggestion {
   title: string;
   body: string;
   cta: string;
-  action_url: string;
+  action_url: string;        // Real advertiser URL (display in web/GUI)
+  tracking_url?: string;     // Optional: Server-side redirect for guaranteed tracking
+  tracked_url?: string;      // Optional: Real URL with tracking param (for SMS/email)
 }
 
 export interface SponsoredTool {

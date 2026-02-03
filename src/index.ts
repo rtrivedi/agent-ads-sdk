@@ -31,6 +31,7 @@ export type {
   Privacy,
   // Ad Units
   AdUnit,
+  AdScore,
   Disclosure,
   Tracking,
   SponsoredSuggestion,
