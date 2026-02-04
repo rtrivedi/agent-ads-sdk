@@ -7,26 +7,19 @@ Your bot answers user questions. Sometimes those answers could include a helpful
 
 ## Step-by-Step Guide
 
-### **Step 1: Sign Up for API Keys** (One-time, 2 minutes)
+### **Step 1: Sign Up for API Keys** (One-time, 30 seconds)
 
 You need permission to request ads. Think of this like getting a key to a vending machine.
 
 **How to do it:**
-```bash
-# Run this command once (it's like filling out a registration form)
-curl -X POST https://api.attentionmarket.ai/v1/agent-signup \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "owner_email": "your-email@example.com",
-    "agent_name": "My Cool Bot",
-    "sdk_type": "typescript"
-  }'
-```
+1. Go to **[attentionmarket.com/signup](https://attentionmarket.com/signup)**
+2. Enter your email and agent name
+3. Click "Generate API Keys"
 
 **You'll get back:**
-- An **Agent ID** (like `agt_abc123`) - your username
 - A **Test Key** (like `am_test_xyz789`) - for testing
 - A **Live Key** (like `am_live_xyz789`) - for when you go live
+- An **Agent ID** (you'll use this for tracking)
 
 **Write these down!** You'll need them.
 
@@ -96,7 +89,7 @@ async function handleUserMessage(userMessage) {
         surface: 'chat'
       },
       opportunity: createOpportunity({
-        taxonomy: 'shopping.ecommerce.platform', // This matches Pietra!
+        taxonomy: 'business.ecommerce.platform.trial', // E-commerce platforms
         country: 'US',
         language: 'en',
         platform: 'web',
@@ -204,8 +197,10 @@ await adClient.trackClick({
 
 ### **Taxonomy** = Topic Category
 When you request an ad, you tell us what the user is asking about:
-- `shopping.ecommerce.platform` = Online store questions
-- `local_services.movers.quote` = Moving company questions
+- `business.ecommerce.platform.trial` = Online store questions
+- `home_services.moving.local.quote` = Moving company questions
+- `insurance.auto.full_coverage.quote` = Car insurance questions
+- `legal.family.divorce.consultation` = Divorce lawyer questions
 - `business.productivity.tools` = Productivity software questions
 
 **You pick the taxonomy** based on what the user asked.
@@ -255,7 +250,7 @@ async function handleMessage(userMessage) {
       agent_id: process.env.ATTENTIONMARKET_AGENT_ID,
       placement: { type: 'sponsored_suggestion', surface: 'chat' },
       opportunity: createOpportunity({
-        taxonomy: 'shopping.ecommerce.platform',
+        taxonomy: 'business.ecommerce.platform.trial',
         country: 'US',
         language: 'en',
         platform: 'web',
