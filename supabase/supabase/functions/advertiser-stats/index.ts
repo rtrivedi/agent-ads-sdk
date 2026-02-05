@@ -36,44 +36,57 @@ serve(async (req) => {
   }
 
   try {
-    // Authenticate advertiser
-    const advertiserKey = req.headers.get('X-Advertiser-Key');
-    if (!advertiserKey) {
-      return new Response(
-        JSON.stringify({
-          error: 'auth_error',
-          message: 'Missing X-Advertiser-Key header'
-        }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Find advertiser (using indexed column for fast lookup)
-    const { data: advertisers } = await supabase
-      .from('advertisers')
-      .select('id, company_name, status')
-      .eq('api_key', advertiserKey);
+    // Parse query params first
+    const url = new URL(req.url);
+    const advertiser_id = url.searchParams.get('advertiser_id');
+    const campaign_id = url.searchParams.get('campaign_id');
+    const period = url.searchParams.get('period') || '30d';
 
-    if (!advertisers || advertisers.length === 0) {
+    // Authenticate advertiser (support two methods)
+    let advertiser;
+
+    if (advertiser_id) {
+      // Method 1: advertiser_id query param (for Lovable UI after login)
+      const { data } = await supabase
+        .from('advertisers')
+        .select('id, company_name, status')
+        .eq('id', advertiser_id)
+        .single();
+      advertiser = data;
+    } else {
+      // Method 2: X-Advertiser-Key header (for programmatic API)
+      const advertiserKey = req.headers.get('X-Advertiser-Key');
+      if (!advertiserKey) {
+        return new Response(
+          JSON.stringify({
+            error: 'auth_error',
+            message: 'Must provide advertiser_id query param or X-Advertiser-Key header'
+          }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const { data } = await supabase
+        .from('advertisers')
+        .select('id, company_name, status')
+        .eq('api_key', advertiserKey)
+        .single();
+      advertiser = data;
+    }
+
+    if (!advertiser) {
       return new Response(
         JSON.stringify({
           error: 'auth_error',
-          message: 'Invalid advertiser API key'
+          message: 'Advertiser not found'
         }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-
-    const advertiser = advertisers[0];
-
-    // Parse query params
-    const url = new URL(req.url);
-    const campaign_id = url.searchParams.get('campaign_id');
-    const period = url.searchParams.get('period') || '30d';
 
     const { start_date, end_date } = getDateRange(period);
 
