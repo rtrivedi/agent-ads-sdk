@@ -41,16 +41,17 @@ serve(async (req) => {
     const {
       contact_email,
       company_name,
+      contact_name,
       website,
       industry,
     } = body;
 
     // Validate required fields
-    if (!contact_email || !company_name) {
+    if (!contact_email || !company_name || !contact_name) {
       return new Response(
         JSON.stringify({
           error: 'validation_error',
-          message: 'contact_email and company_name are required'
+          message: 'contact_email, company_name, and contact_name are required'
         }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -99,6 +100,7 @@ serve(async (req) => {
         id: advertiser_id,
         contact_email,
         company_name,
+        contact_name,
         website: website || null,
         industry: industry || null,
         status: 'active',
@@ -118,22 +120,13 @@ serve(async (req) => {
       );
     }
 
-    // Return success
+    // Return success (simplified for Lovable UI)
     return new Response(
       JSON.stringify({
         advertiser_id,
-        contact_email,
+        api_key: dashboard_api_key,
         company_name,
-        dashboard_api_key,
-        dashboard_url: `${supabaseUrl.replace('https://', 'https://app.')}/advertiser/${advertiser_id}`,
-        status: 'active',
-        message: 'Advertiser account created successfully',
-        next_steps: [
-          'Create your first campaign',
-          'Set your budget and targeting',
-          'Launch ads to AI agents',
-          'Track performance in dashboard'
-        ]
+        status: 'active'
       }),
       {
         status: 201,

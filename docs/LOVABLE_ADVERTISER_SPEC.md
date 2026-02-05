@@ -758,3 +758,29 @@ If you need clarification on any part of this spec, check:
 ---
 
 **Ready to build!** This spec should be complete enough to implement all 3 screens with full functionality.
+
+---
+
+## ✅ BACKEND UPDATED - Ready for Lovable
+
+The backend has been updated to match this spec exactly. Both functions deployed and tested:
+
+### Advertiser Signup (`/advertiser-signup`)
+✅ Accepts `contact_name` field
+✅ Returns simplified response with `advertiser_id`, `api_key`, `company_name`, `status`
+✅ Deployed and working
+
+### Campaign Create (`/campaign-create`)
+✅ Accepts `advertiser_id` in body (no X-Advertiser-Key header needed for UI flow)
+✅ Accepts single `taxonomy` string (not array)
+✅ Accepts `creative` object and creates ad_unit automatically
+✅ Creates both campaign + ad_unit in one transaction
+✅ Deployed and working
+
+### End-to-End Test Passed
+Tested full flow:
+1. Advertiser signup → ✅ Returns advertiser_id
+2. Campaign create → ✅ Creates campaign + ad_unit
+3. Data in database → ✅ Verified
+
+**You can now build the Lovable UI exactly as specified above.** The backend matches the API format 100%.
