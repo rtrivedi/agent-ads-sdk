@@ -22,6 +22,7 @@ coverage/
 
 # OS
 .DS_Store
+**/.DS_Store
 Thumbs.db
 
 # Logs
@@ -35,9 +36,12 @@ supabase/.branches/
 **/.temp/
 supabase/supabase/supabase/
 
-# Test files with real credentials
+# Test files with real credentials (one-off scripts)
 test-production.ts
 test-live-backend.ts
+
+# Internal documentation
+docs/internal/
 
 # Claude Code settings
 .claude/

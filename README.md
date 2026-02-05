@@ -1,6 +1,15 @@
 # AttentionMarket Agent Ads SDK
 
-TypeScript SDK for monetizing AI agents with relevant sponsored content. Earn $5-50 per click.
+[![npm version](https://badge.fury.io/js/@the_ro_show%2Fagent-ads-sdk.svg)](https://www.npmjs.com/package/@the_ro_show/agent-ads-sdk)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
+
+**The first ad network built for AI agents.** Monetize your AI agent with contextual, high-intent sponsored suggestions. Open source, transparent, developer-first.
+
+- 🚀 **5-minute integration** - npm install + 5 lines of code
+- 💰 **70% revenue share** - You keep the majority, we only win when you do
+- 🎯 **10-15% CTR** - High-intent placements, not banner ads
+- 🔓 **100% Open Source** - Audit every line, full transparency
 
 ## Quick Start
 
