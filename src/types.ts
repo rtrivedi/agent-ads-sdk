@@ -266,8 +266,221 @@ export interface APIError {
 export interface SDKConfig {
   apiKey: string;
   agentId?: string;          // Optional: Your agent ID for auto-filling requests
+  appId?: string;            // Optional: Your app ID (for Intenture APIs)
   supabaseAnonKey?: string;  // Optional: Supabase anon key (has default)
   baseUrl?: string;
   timeoutMs?: number;
   maxRetries?: number;
+}
+
+// ============================================================================
+// Intenture Network APIs (Intent-Key Based)
+// ============================================================================
+
+/**
+ * Request an offer using explicit intent-key matching.
+ *
+ * This is the deterministic, high-confidence API for when you KNOW what
+ * the user wants. Use intentKey for exact matching instead of semantic search.
+ *
+ * @example
+ * ```typescript
+ * const offer = await client.requestOffer({
+ *   placementId: 'chat_suggestion',
+ *   intentKey: 'coffee.purchase.nearby',
+ *   context: {
+ *     geo: { city: 'NYC', country: 'US' }
+ *   }
+ * });
+ * ```
+ */
+export interface RequestOfferParams {
+  /** Placement identifier (e.g., 'chat_suggestion', 'inline_card') */
+  placementId: string;
+
+  /**
+   * Intent key for matching (e.g., 'coffee', 'coffee.purchase', 'legal.estate_planning')
+   * Uses hierarchical matching: tries exact match, then walks up taxonomy.
+   */
+  intentKey: string;
+
+  /**
+   * PREVIEW: Source agent for revenue share tracking (optional)
+   *
+   * When another agent refers traffic to you, they can include their
+   * agent_id to track referrals. When revenue share is enabled (future),
+   * the source agent will receive the specified percentage.
+   *
+   * @experimental Revenue share not active yet - logs for analytics only
+   */
+  sourceAgentId?: string;
+
+  /**
+   * PREVIEW: Revenue share percentage for source agent (0-50)
+   * Only applies if sourceAgentId is provided.
+   *
+   * @experimental Revenue share not active yet
+   */
+  revenueSharePct?: number;
+
+  /** Context for targeting and personalization */
+  context?: {
+    /** Geographic context */
+    geo?: {
+      country?: string;
+      region?: string;
+      city?: string;
+      lat?: number;
+      lng?: number;
+    };
+
+    /** Locale for language/region targeting */
+    locale?: string;
+
+    /**
+     * Optional semantic context for fallback matching.
+     * If exact intent-key match fails, system will try semantic matching
+     * using this context within the intent-key category.
+     */
+    semanticContext?: string;
+
+    /**
+     * User context identifier for deduplication (optional)
+     * Use a session hash or similar - NO PII
+     */
+    userContextId?: string;
+  };
+
+  /** Constraints for filtering offers */
+  constraints?: {
+    /** Minimum CPC in micros (e.g., 1000000 = $1.00) */
+    minCpcMicros?: number;
+
+    /** Block specific campaigns from being returned */
+    blockCampaignIds?: string[];
+  };
+}
+
+/**
+ * Request an offer using semantic context matching.
+ *
+ * This is the fuzzy, discovery API for when you're NOT certain what
+ * the user wants. Pass conversation context and let semantic search
+ * figure out the best match.
+ *
+ * @example
+ * ```typescript
+ * const offer = await client.requestOfferFromContext({
+ *   placementId: 'chat_suggestion',
+ *   userMessage: "I'm so tired, long day...",
+ *   conversationHistory: ["How was work?", "Exhausting"],
+ *   context: { geo: { city: 'NYC' } }
+ * });
+ * ```
+ */
+export interface RequestOfferFromContextParams {
+  /** Placement identifier */
+  placementId: string;
+
+  /** User's current message */
+  userMessage: string;
+
+  /**
+   * Optional conversation history for context.
+   * SDK automatically limits to last 5 messages.
+   */
+  conversationHistory?: string[];
+
+  /**
+   * PREVIEW: Source agent for revenue share tracking (optional)
+   * @experimental Revenue share not active yet
+   */
+  sourceAgentId?: string;
+
+  /**
+   * PREVIEW: Revenue share percentage (0-50)
+   * @experimental Revenue share not active yet
+   */
+  revenueSharePct?: number;
+
+  /** Context for targeting */
+  context?: {
+    geo?: {
+      country?: string;
+      region?: string;
+      city?: string;
+    };
+    locale?: string;
+    userContextId?: string;
+  };
+
+  /** Optional category hint as fallback */
+  suggestedCategory?: string;
+}
+
+/**
+ * Offer response (intent-key or semantic matching)
+ */
+export interface OfferResponse {
+  /** Unique offer identifier */
+  offer_id: string;
+
+  /** Request that generated this offer */
+  request_id: string;
+
+  /** Impression identifier for tracking */
+  impression_id: string;
+
+  /** Campaign that won the auction */
+  campaign_id: string;
+
+  /** Creative content */
+  creative: {
+    title: string;
+    body: string;
+    cta: string;
+  };
+
+  /** Click URL for tracking */
+  click_url: string;
+
+  /** Direct landing URL (no tracking) */
+  direct_url: string;
+
+  /** Disclosure information */
+  disclosure: {
+    label: string;
+    sponsor_name: string;
+  };
+
+  /**
+   * Tracking token for manual impression/click tracking.
+   * Only needed if you use direct_url instead of click_url.
+   */
+  tracking_token: string;
+
+  /** Match metadata */
+  match_info: {
+    /** How was this matched: 'intent_key' | 'semantic' | 'hybrid' */
+    match_method: 'intent_key' | 'semantic' | 'hybrid';
+
+    /** For semantic matches: similarity score (0-1) */
+    similarity?: number;
+
+    /** Intent key that matched (may differ from request if hierarchical) */
+    matched_intent_key?: string;
+  };
+
+  /**
+   * Revenue share information (preview)
+   * @experimental Not active yet
+   */
+  revenue_share?: {
+    status: 'preview' | 'active';
+    source_agent_id?: string;
+    source_agent_pct?: number;
+  };
+
+  /** Time-to-live in milliseconds */
+  ttl_ms: number;
 }

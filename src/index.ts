@@ -21,6 +21,10 @@ export type {
   DecideRequest,
   DecideFromContextRequest,
   DecideResponse,
+  // Intenture APIs
+  RequestOfferParams,
+  RequestOfferFromContextParams,
+  OfferResponse,
   // Placement
   PlacementType,
   Placement,

@@ -7,6 +7,88 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.5.0] - 2026-02-06
+
+### 🚀 Intenture Network APIs - Dual-Mode Ad Matching
+
+This release introduces the **Intenture Network protocol** - enabling both intent-key based (high confidence) and semantic context-based (discovery) ad matching APIs.
+
+### Added
+
+#### New Intenture APIs
+- **`requestOffer()`** - Intent-key based offer matching for HIGH confidence scenarios
+  - Hierarchical intent keys (e.g., `coffee.purchase.delivery`)
+  - Deterministic matching for agent-to-agent coordination
+  - Revenue share tracking (preview mode)
+  - Support for geographic and locale targeting
+
+- **`requestOfferFromContext()`** - Semantic context-based matching for discovery
+  - Fuzzy matching from conversation context
+  - Auto-limits conversation history to last 5 messages
+  - Fallback to category hints when needed
+
+- **Revenue Share System (Preview)** - Affiliate/referral tracking between agents
+  - `sourceAgentId` parameter for tracking referrals
+  - `revenueSharePct` (0-50%) for revenue attribution
+  - Preview mode with expected activation Q2 2026
+
+#### Developer Experience Improvements
+- **Google-quality input validation**
+  - `validateIntentKey()` - Format validation with helpful examples
+  - `validatePlacementId()` - Empty check with clear errors
+  - `validateRevenueShare()` - 0-50% range validation
+  - `normalizeLocale()` - Safe locale parsing with fallback
+
+- **Comprehensive documentation**
+  - Current limitations clearly documented in JSDoc
+  - Inline comments explaining temporary solutions
+  - Examples showing correct usage patterns
+
+- **Smart error messages**
+  - Actionable guidance in all error messages
+  - Clear constructor requirements (agentId, appId)
+  - Preview feature warnings with timelines
+
+### Changed
+
+- **appId now required** for Intenture APIs (`requestOffer`, `requestOfferFromContext`)
+- **Idempotency keys auto-generated** if not provided for retry safety
+- **Match method accuracy** - Now reports 'semantic' or 'hybrid' based on actual backend behavior
+
+### Fixed
+
+#### P0 Bugs (Critical)
+- Fixed appId validation - now required and validated with clear errors
+- Documented backend limitation: intentKey temporarily maps to taxonomy field
+- Added revenue share preview warning with expected activation timeline
+
+#### P1 Bugs (High Priority)
+- Fixed campaign_id mapping - uses unit_id placeholder with clear documentation
+- Clarified click_url limitation - equals direct_url until redirector deployed
+- Fixed match_method reporting - accurately reports semantic vs hybrid matching
+
+#### P2 Bugs (Medium Priority)
+- Fixed locale parsing with safe `normalizeLocale()` helper
+- Added automatic idempotency key generation for retry safety
+- Documented impression_id client-side generation (server doesn't provide yet)
+
+### Technical Details
+
+**New Types** (`src/types.ts`):
+- `RequestOfferParams` - Intent-key based request
+- `RequestOfferFromContextParams` - Semantic context-based request
+- `OfferResponse` - Unified offer response format
+
+**Breaking Changes**: None - all new APIs are additive
+
+**Current Limitations** (documented in code):
+- Backend uses semantic matching (intentKey mapped to taxonomy field)
+- `campaign_id` not yet returned from backend (uses unit_id placeholder)
+- `click_url` equals `direct_url` (click redirector not implemented)
+- Revenue share logged but payouts not active (preview mode)
+
+---
+
 ## [0.4.1] - 2026-02-04
 
 ### 🎉 Developer Onboarding Flow Complete

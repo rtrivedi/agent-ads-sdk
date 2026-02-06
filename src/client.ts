@@ -16,6 +16,9 @@ import type {
   AgentSignupRequest,
   AgentSignupResponse,
   AdUnit,
+  RequestOfferParams,
+  RequestOfferFromContextParams,
+  OfferResponse,
 } from './types.js';
 import type { CreateImpressionEventParams, CreateClickEventParams } from './utils.js';
 
@@ -28,9 +31,11 @@ const DEFAULT_MAX_RETRIES = 2;
 export class AttentionMarketClient {
   private http: HTTPClient;
   private agentId: string | undefined;
+  private appId: string | undefined;
 
   constructor(config: SDKConfig) {
     this.agentId = config.agentId;
+    this.appId = config.appId;
     // Validate configuration
     this.validateConfig(config);
 
@@ -253,5 +258,416 @@ export class AttentionMarketClient {
     return await http.request<AgentSignupResponse>('POST', '/v1/agent-signup', {
       body: request,
     });
+  }
+
+  // ============================================================================
+  // Intenture Network APIs (Intent-Key Based Matching)
+  // ============================================================================
+
+  /**
+   * Validate intent-key format.
+   * Format: vertical.category[.subcategory][.intent]
+   * Examples: "coffee", "coffee.purchase", "legal.estate_planning.wills"
+   */
+  private validateIntentKey(intentKey: string): void {
+    if (!intentKey || intentKey.trim().length === 0) {
+      throw new Error('intentKey cannot be empty');
+    }
+
+    // Intent keys should be lowercase alphanumeric with dots and underscores
+    const validPattern = /^[a-z0-9_]+(\.[a-z0-9_]+)*$/;
+    if (!validPattern.test(intentKey)) {
+      throw new Error(
+        `Invalid intentKey format: "${intentKey}". ` +
+        'Use lowercase letters, numbers, underscores, and dots only. ' +
+        'Example: "coffee.purchase.delivery"'
+      );
+    }
+
+    // Should have at least one segment
+    const segments = intentKey.split('.');
+    if (segments.length === 0) {
+      throw new Error('intentKey must have at least one segment');
+    }
+  }
+
+  /**
+   * Validate placement ID is not empty
+   */
+  private validatePlacementId(placementId: string): void {
+    if (!placementId || placementId.trim().length === 0) {
+      throw new Error('placementId cannot be empty');
+    }
+  }
+
+  /**
+   * Validate revenue share percentage (0-50)
+   */
+  private validateRevenueShare(pct?: number): void {
+    if (pct !== undefined) {
+      if (typeof pct !== 'number' || isNaN(pct)) {
+        throw new Error('revenueSharePct must be a number');
+      }
+      if (pct < 0 || pct > 50) {
+        throw new Error(
+          `revenueSharePct must be between 0 and 50, got ${pct}. ` +
+          'Revenue share above 50% is not supported.'
+        );
+      }
+    }
+  }
+
+  /**
+   * Normalize and validate locale string
+   */
+  private normalizeLocale(locale?: string): string {
+    if (!locale || locale.trim().length === 0) {
+      return 'en';
+    }
+
+    const normalized = locale.trim();
+    const languageCode = normalized.split('-')[0]?.toLowerCase();
+
+    if (!languageCode || languageCode.length < 2) {
+      return 'en';
+    }
+
+    return languageCode;
+  }
+
+  /**
+   * Request an offer using explicit intent-key matching.
+   *
+   * Use this API when you have HIGH CONFIDENCE about user intent.
+   * Intent-keys enable deterministic matching and agent-to-agent coordination.
+   *
+   * **Current Limitations:**
+   * - Backend uses semantic matching (intentKey mapped to taxonomy field)
+   * - `campaign_id` not yet available from backend (returns `unit_id` as placeholder)
+   * - `click_url` equals `direct_url` (click redirector not implemented)
+   * - Revenue share tracked but payouts not active (preview mode)
+   *
+   * @example
+   * ```typescript
+   * // User explicitly said "order coffee for delivery"
+   * const offer = await client.requestOffer({
+   *   placementId: 'order_card',
+   *   intentKey: 'coffee.purchase.delivery',
+   *   context: { geo: { city: 'SF', country: 'US' } }
+   * });
+   *
+   * if (offer) {
+   *   // Use tracked click URL for attribution
+   *   window.open(offer.click_url);
+   * }
+   * ```
+   *
+   * @throws {Error} If agentId or appId not provided in SDKConfig
+   * @throws {Error} If intentKey format is invalid
+   * @throws {Error} If revenueSharePct out of range (0-50)
+   */
+  async requestOffer(
+    params: RequestOfferParams,
+    options?: { idempotencyKey?: string },
+  ): Promise<OfferResponse | null> {
+    // Validate required config
+    if (!this.agentId) {
+      throw new Error(
+        'requestOffer() requires agentId in SDKConfig. ' +
+        'Provide agentId in constructor: new AttentionMarketClient({ agentId: "agt_123", ... })'
+      );
+    }
+
+    if (!this.appId) {
+      throw new Error(
+        'requestOffer() requires appId in SDKConfig. ' +
+        'Provide appId in constructor: new AttentionMarketClient({ appId: "app_456", ... })'
+      );
+    }
+
+    // Validate input parameters
+    this.validateIntentKey(params.intentKey);
+    this.validatePlacementId(params.placementId);
+    this.validateRevenueShare(params.revenueSharePct);
+
+    // Build context string for semantic fallback (if provided)
+    const semanticContext = params.context?.semanticContext;
+
+    // Extract and normalize geo/locale
+    const country = params.context?.geo?.country || 'US';
+    const language = this.normalizeLocale(params.context?.locale);
+
+    // Log warning if revenue share requested (preview feature)
+    if (params.sourceAgentId && console.warn) {
+      console.warn(
+        'Revenue share is in PREVIEW mode. ' +
+        'sourceAgentId and revenueSharePct are logged for analytics but payouts are not active yet. ' +
+        'Expected: Q2 2026'
+      );
+    }
+
+    // Generate idempotency key if not provided (ensures retry safety)
+    const idempotencyKey = options?.idempotencyKey || generateUUID();
+
+    // Build DecideRequest with intent-key targeting
+    // NOTE: Backend currently uses semantic matching; intentKey mapped to taxonomy field
+    // TODO: Add dedicated intent_key field when backend supports intent-key matching
+    const request: DecideRequest = {
+      request_id: idempotencyKey,
+      agent_id: this.agentId,
+      placement: {
+        type: 'sponsored_suggestion',  // Default placement type
+        surface: params.placementId
+      },
+      opportunity: {
+        intent: {
+          taxonomy: params.intentKey,  // TEMPORARY: Maps to taxonomy until intent_key field added
+          query: semanticContext || params.intentKey
+        },
+        context: {
+          country,
+          language,
+          platform: 'web' as const,
+          ...(params.context?.geo?.region ? { region: params.context.geo.region } : {}),
+          ...(params.context?.geo?.city ? { city: params.context.geo.city } : {})
+        },
+        constraints: {
+          max_units: 1,
+          allowed_unit_types: ['sponsored_suggestion']
+        },
+        privacy: {
+          data_policy: 'coarse_only'
+        }
+      },
+      // Add semantic context if provided (for fallback matching)
+      ...(semanticContext ? { context: semanticContext } : {}),
+      user_intent: params.intentKey
+    };
+
+    // Call existing decide endpoint with idempotency key
+    const response = await this.decideRaw(request, { idempotencyKey });
+
+    // No fill
+    if (response.status === 'no_fill' || response.units.length === 0) {
+      return null;
+    }
+
+    // Convert AdUnit to OfferResponse
+    const adUnit = response.units[0];
+
+    // Only support sponsored_suggestion for now
+    if (!adUnit || adUnit.unit_type !== 'sponsored_suggestion') {
+      return null;
+    }
+
+    // Generate client-side impression_id (server doesn't provide one yet)
+    const impressionId = generateUUID();
+
+    // Determine actual match method used by backend
+    const matchMethod = semanticContext ? 'hybrid' : 'semantic';
+
+    return {
+      offer_id: adUnit.unit_id,
+      request_id: response.request_id,
+      impression_id: impressionId,
+      // LIMITATION: Backend doesn't return campaign_id yet - use unit_id as placeholder
+      campaign_id: adUnit.unit_id,
+      creative: {
+        title: adUnit.suggestion.title,
+        body: adUnit.suggestion.body,
+        cta: adUnit.suggestion.cta
+      },
+      // LIMITATION: Click redirector not implemented yet
+      // Both URLs are identical until /c/{token} endpoint is deployed
+      click_url: adUnit.suggestion.action_url,
+      direct_url: adUnit.suggestion.action_url,
+      disclosure: {
+        label: adUnit.disclosure.label,
+        sponsor_name: adUnit.disclosure.sponsor_name
+      },
+      tracking_token: adUnit.tracking.token,
+      match_info: {
+        match_method: matchMethod,  // Accurately reports semantic or hybrid
+        matched_intent_key: params.intentKey
+      },
+      // Revenue share: Logged for analytics but payouts not active
+      ...(params.sourceAgentId ? {
+        revenue_share: {
+          status: 'preview' as const,
+          source_agent_id: params.sourceAgentId,
+          ...(params.revenueSharePct !== undefined ? { source_agent_pct: params.revenueSharePct } : {})
+        }
+      } : {}),
+      ttl_ms: response.ttl_ms
+    };
+  }
+
+  /**
+   * Request an offer using semantic context matching.
+   *
+   * This is the fuzzy, discovery API for when you're NOT certain what
+   * the user wants. Pass conversation context and let semantic search
+   * figure out the best match.
+   *
+   * **Current Limitations:**
+   * - `campaign_id` not yet available from backend (returns `unit_id` as placeholder)
+   * - `click_url` equals `direct_url` (click redirector not implemented)
+   * - Revenue share tracked but payouts not active (preview mode)
+   * - Conversation history auto-limited to last 5 messages
+   *
+   * @example
+   * ```typescript
+   * const offer = await client.requestOfferFromContext({
+   *   placementId: 'chat_suggestion',
+   *   userMessage: "I'm so tired, long day at work...",
+   *   conversationHistory: ["How was your day?", "Exhausting"],
+   *   context: { geo: { city: 'NYC' } }
+   * });
+   *
+   * if (offer) {
+   *   console.log(`Maybe you'd like: ${offer.creative.title}`);
+   * }
+   * ```
+   *
+   * @throws {Error} If agentId was not provided in SDKConfig
+   * @throws {Error} If revenueSharePct out of range (0-50)
+   */
+  async requestOfferFromContext(
+    params: RequestOfferFromContextParams,
+    options?: { idempotencyKey?: string },
+  ): Promise<OfferResponse | null> {
+    // Validate required config
+    if (!this.agentId) {
+      throw new Error(
+        'requestOfferFromContext() requires agentId in SDKConfig. ' +
+        'Provide agentId in constructor: new AttentionMarketClient({ agentId: "agt_123", ... })'
+      );
+    }
+
+    if (!this.appId) {
+      throw new Error(
+        'requestOfferFromContext() requires appId in SDKConfig. ' +
+        'Provide appId in constructor: new AttentionMarketClient({ appId: "app_456", ... })'
+      );
+    }
+
+    // Validate input parameters
+    this.validatePlacementId(params.placementId);
+    this.validateRevenueShare(params.revenueSharePct);
+
+    // Log warning if revenue share requested (preview feature)
+    if (params.sourceAgentId && console.warn) {
+      console.warn(
+        'Revenue share is in PREVIEW mode. ' +
+        'sourceAgentId and revenueSharePct are logged for analytics but payouts are not active yet. ' +
+        'Expected: Q2 2026'
+      );
+    }
+
+    // Limit conversation history to last 5 messages
+    const historyLimit = 5;
+    const history = params.conversationHistory || [];
+    const limitedHistory = history.slice(-historyLimit);
+
+    // Build context string from user message + limited history
+    const contextParts = [...limitedHistory, params.userMessage];
+    const context = contextParts.join('\n');
+
+    // Use provided values or sensible defaults
+    const country = params.context?.geo?.country || 'US';
+    const language = this.normalizeLocale(params.context?.locale);
+    const taxonomy = params.suggestedCategory || 'unknown';
+
+    // Generate idempotency key if not provided (ensures retry safety)
+    const idempotencyKey = options?.idempotencyKey || generateUUID();
+
+    // Build full DecideRequest with semantic context
+    const request: DecideRequest = {
+      request_id: idempotencyKey,
+      agent_id: this.agentId,
+      placement: {
+        type: 'sponsored_suggestion',
+        surface: params.placementId
+      },
+      opportunity: {
+        intent: {
+          taxonomy,
+          query: params.userMessage
+        },
+        context: {
+          country,
+          language,
+          platform: 'web' as const,
+          ...(params.context?.geo?.region ? { region: params.context.geo.region } : {}),
+          ...(params.context?.geo?.city ? { city: params.context.geo.city } : {})
+        },
+        constraints: {
+          max_units: 1,
+          allowed_unit_types: ['sponsored_suggestion']
+        },
+        privacy: {
+          data_policy: 'coarse_only'
+        }
+      },
+      ...(context ? { context } : {}),
+      user_intent: params.userMessage
+    };
+
+    // Call existing decide endpoint with idempotency key
+    const response = await this.decideRaw(request, { idempotencyKey });
+
+    // No fill
+    if (response.status === 'no_fill' || response.units.length === 0) {
+      return null;
+    }
+
+    // Convert AdUnit to OfferResponse
+    const adUnit = response.units[0];
+
+    // Only support sponsored_suggestion for now
+    if (!adUnit || adUnit.unit_type !== 'sponsored_suggestion') {
+      return null;
+    }
+
+    // Generate client-side impression_id (server doesn't provide one yet)
+    const impressionId = generateUUID();
+
+    // Extract similarity score if available
+    const similarity = adUnit._score?.relevance;
+
+    return {
+      offer_id: adUnit.unit_id,
+      request_id: response.request_id,
+      impression_id: impressionId,
+      // LIMITATION: Backend doesn't return campaign_id yet - use unit_id as placeholder
+      campaign_id: adUnit.unit_id,
+      creative: {
+        title: adUnit.suggestion.title,
+        body: adUnit.suggestion.body,
+        cta: adUnit.suggestion.cta
+      },
+      // LIMITATION: Click redirector not implemented yet
+      // Both URLs are identical until /c/{token} endpoint is deployed
+      click_url: adUnit.suggestion.action_url,
+      direct_url: adUnit.suggestion.action_url,
+      disclosure: {
+        label: adUnit.disclosure.label,
+        sponsor_name: adUnit.disclosure.sponsor_name
+      },
+      tracking_token: adUnit.tracking.token,
+      match_info: {
+        match_method: 'semantic',  // Always semantic for this API
+        ...(similarity !== undefined ? { similarity } : {})
+      },
+      // Revenue share: Logged for analytics but payouts not active
+      ...(params.sourceAgentId ? {
+        revenue_share: {
+          status: 'preview' as const,
+          source_agent_id: params.sourceAgentId,
+          ...(params.revenueSharePct !== undefined ? { source_agent_pct: params.revenueSharePct } : {})
+        }
+      } : {}),
+      ttl_ms: response.ttl_ms
+    };
   }
 }
