@@ -29,8 +29,10 @@ All API calls use this Supabase backend:
 ### Endpoints Used
 
 1. **Advertiser Signup:** `POST /advertiser-signup`
-2. **Create Campaign:** `POST /campaign-create`
-3. **Get Stats:** `GET /advertiser-stats?advertiser_id={id}`
+2. **Advertiser Login:** `POST /advertiser-login`
+3. **Create Campaign:** `POST /campaign-create`
+4. **Get Stats:** `GET /advertiser-stats?advertiser_id={id}`
+5. **Get Taxonomies:** `GET /rest/v1/taxonomies` (Supabase REST API)
 
 ---
 
@@ -87,6 +89,17 @@ Subtitle: "Reach users at high-intent moments. 30-second setup."
   - Max length: 50 characters
   - Error message: "Name must be 2-50 characters"
 
+**4. Password**
+- Type: `<Input type="password">`
+- Label: "Password"
+- Placeholder: "••••••••"
+- Required: Yes
+- Validation:
+  - Min length: 8 characters
+  - Max length: 128 characters
+  - Must contain at least one letter and one number
+  - Error message: "Password must be at least 8 characters and contain a letter and number"
+
 #### Submit Button
 - Text: "Create Account"
 - Style: Primary button, full width
@@ -117,7 +130,8 @@ const response = await fetch(
     body: JSON.stringify({
       company_name: "Acme Inc",
       contact_email: "you@company.com",
-      contact_name: "Jane Smith"
+      contact_name: "Jane Smith",
+      password: "SecurePass123"
     })
   }
 );
@@ -736,9 +750,86 @@ Use throughout the flow to share state.
 
 ---
 
+## Login Flow (For Returning Advertisers)
+
+### Component Name
+`AdvertiserLogin`
+
+### Layout
+- Max width: 500px
+- Centered on page
+- Card style with padding
+- Dark theme
+
+### UI Elements
+
+**1. Email Input**
+- Type: `<Input type="email">`
+- Label: "Email"
+- Placeholder: "you@company.com"
+- Required: Yes
+
+**2. Password Input**
+- Type: `<Input type="password">`
+- Label: "Password"
+- Placeholder: "••••••••"
+- Required: Yes
+
+**3. Submit Button**
+- Text: "Log In"
+- Style: Primary button, full width
+- Loading state: "Logging in..."
+
+### API Integration
+
+**Endpoint:** `POST /advertiser-login`
+
+**Request:**
+```typescript
+const response = await fetch(
+  'https://peruwnbrqkvmrldhpoom.supabase.co/functions/v1/advertiser-login',
+  {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBlcnV3bmJycWt2bXJsZGhwb29tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5NjcwMDYsImV4cCI6MjA4NTU0MzAwNn0.FMCjeunas8ICKm9W9bo2hZwyrBttzTcJbplbAyl4XhU'
+    },
+    body: JSON.stringify({
+      contact_email: "you@company.com",
+      password: "SecurePass123"
+    })
+  }
+);
+```
+
+**Success Response (200):**
+```json
+{
+  "advertiser_id": "abc-123-def",
+  "company_name": "Acme Inc",
+  "status": "active"
+}
+```
+
+**Error Response (401):**
+```json
+{
+  "error": "invalid_credentials",
+  "message": "Invalid email or password"
+}
+```
+
+### State Management
+
+**After successful login:**
+1. Store `advertiser_id` and `company_name` in localStorage or state
+2. Navigate to Dashboard (Screen 3)
+
+---
+
 ## Future Enhancements (Out of Scope for MVP)
 
-- Login flow for returning advertisers
+- Password reset flow
 - Edit campaign functionality
 - Pause/resume campaign from dashboard
 - View detailed analytics (clicks over time, etc.)

@@ -42,6 +42,9 @@ serve(async (req) => {
       creative,
       targeting,
       status,
+      intent_description,    // NEW: Plain English description of what advertiser solves
+      ideal_customer,        // NEW: Who is the ideal customer
+      trigger_contexts,      // NEW: Array of trigger phrases
     } = body;
 
     // Validate required fields
@@ -185,8 +188,47 @@ serve(async (req) => {
     // Generate campaign ID
     const campaign_id = crypto.randomUUID();
 
+    // Generate semantic intent embedding (if intent provided)
+    let intent_embedding = null;
+    if (intent_description || ideal_customer || trigger_contexts) {
+      const openaiKey = Deno.env.get('OPENAI_API_KEY');
+      if (openaiKey) {
+        try {
+          // Combine all intent signals into one text
+          const intentText = [
+            intent_description || '',
+            ideal_customer ? `Ideal customer: ${ideal_customer}` : '',
+            trigger_contexts?.length ? `Triggers: ${trigger_contexts.join(', ')}` : ''
+          ].filter(Boolean).join('\n');
+
+          // Generate embedding via OpenAI
+          const embeddingResponse = await fetch('https://api.openai.com/v1/embeddings', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${openaiKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              model: 'text-embedding-3-small',
+              input: intentText,
+            }),
+          });
+
+          if (embeddingResponse.ok) {
+            const embeddingData = await embeddingResponse.json();
+            intent_embedding = embeddingData.data[0].embedding;
+          } else {
+            console.warn('Failed to generate intent embedding:', await embeddingResponse.text());
+          }
+        } catch (error) {
+          console.warn('Error generating intent embedding:', error);
+          // Don't fail campaign creation if embedding fails
+        }
+      }
+    }
+
     // Insert campaign
-    const { data: campaign, error: campaignError } = await supabase
+    const { data: campaign, error: campaignError} = await supabase
       .from('campaigns')
       .insert({
         id: campaign_id,
@@ -201,6 +243,11 @@ serve(async (req) => {
         bid_cpc: cpcNum,
         bid_cpm: null, // Not using CPM for MVP
         status: status || 'active',
+        // NEW: Semantic intent fields
+        intent_description: intent_description || null,
+        ideal_customer: ideal_customer || null,
+        trigger_contexts: trigger_contexts || null,
+        intent_embedding: intent_embedding ? JSON.stringify(intent_embedding) : null,
       })
       .select()
       .single();

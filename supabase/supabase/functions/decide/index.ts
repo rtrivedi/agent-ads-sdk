@@ -120,6 +120,8 @@ serve(async (req) => {
       agent_id,
       placement,
       opportunity,
+      context,           // NEW: Full conversation context for semantic matching
+      user_intent,       // NEW: Detected user intent
     } = requestBody;
 
     // Validate required fields
@@ -147,6 +149,40 @@ serve(async (req) => {
     // Generate decision ID
     const decision_id = `dec_${crypto.randomUUID()}`;
 
+    // Generate context embedding for semantic matching (if context provided)
+    let context_embedding = null;
+    let useSemanticMatching = false;
+
+    if (context || user_intent) {
+      const openaiKey = Deno.env.get('OPENAI_API_KEY');
+      if (openaiKey) {
+        try {
+          const contextText = [context, user_intent].filter(Boolean).join('\n');
+
+          const embeddingResponse = await fetch('https://api.openai.com/v1/embeddings', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${openaiKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              model: 'text-embedding-3-small',
+              input: contextText,
+            }),
+          });
+
+          if (embeddingResponse.ok) {
+            const embeddingData = await embeddingResponse.json();
+            context_embedding = embeddingData.data[0].embedding;
+            useSemanticMatching = true;
+          }
+        } catch (error) {
+          console.warn('Failed to generate context embedding:', error);
+          // Fall back to taxonomy matching
+        }
+      }
+    }
+
     // Query database for matching ad units
     // Match on:
     // 1. Campaign is active
@@ -161,33 +197,48 @@ serve(async (req) => {
     const vertical = taxonomyParts[0];
 
     // Query for matching campaigns
-    // Note: Currently fetches all active campaigns and filters hierarchically in memory.
-    // TODO: Add custom SQL function for efficient array prefix matching on targeting_taxonomies.
-    // With GIN index, this query is fast enough for most use cases (<1000 campaigns).
-    // For scale beyond 10k campaigns, implement: campaigns.targeting_taxonomies_has_prefix(vertical)
-    const { data: adUnits, error: queryError } = await supabase
-      .from('ad_units')
-      .select(`
-        *,
-        campaigns!inner(
-          id,
-          advertiser_id,
-          targeting_taxonomies,
-          targeting_countries,
-          targeting_languages,
-          targeting_platforms,
-          status,
-          budget,
-          budget_spent,
-          bid_cpm,
-          bid_cpc,
-          quality_score
-        )
-      `)
-      .eq('status', 'active')
-      .eq('campaigns.status', 'active')
-      .eq('unit_type', placement.type)
-      .limit(50); // Conservative limit - hierarchical filtering happens in memory
+    // Two modes: Semantic matching (if context embedding available) OR taxonomy matching (fallback)
+    let adUnits;
+    let queryError;
+
+    if (useSemanticMatching && context_embedding) {
+      // Semantic matching via vector similarity
+      const { data, error } = await supabase.rpc('find_ads_by_semantic_similarity', {
+        query_embedding: JSON.stringify(context_embedding),
+        match_threshold: 0.65,  // Minimum similarity score (0-1)
+        match_count: 50,
+        placement_type: placement.type
+      });
+      adUnits = data;
+      queryError = error;
+    } else {
+      // Taxonomy matching (existing logic)
+      const { data, error } = await supabase
+        .from('ad_units')
+        .select(`
+          *,
+          campaigns!inner(
+            id,
+            advertiser_id,
+            targeting_taxonomies,
+            targeting_countries,
+            targeting_languages,
+            targeting_platforms,
+            status,
+            budget,
+            budget_spent,
+            bid_cpm,
+            bid_cpc,
+            quality_score
+          )
+        `)
+        .eq('status', 'active')
+        .eq('campaigns.status', 'active')
+        .eq('unit_type', placement.type)
+        .limit(50);
+      adUnits = data;
+      queryError = error;
+    }
 
     if (queryError) {
       console.error('Database query error:', queryError);

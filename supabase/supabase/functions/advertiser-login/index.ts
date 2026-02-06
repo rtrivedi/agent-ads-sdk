@@ -2,17 +2,19 @@
  * AttentionMarket API - POST /v1/advertiser-login
  *
  * Public endpoint for advertiser login
- * Validates credentials and returns advertiser session info
+ * Validates email + password and returns advertiser session info
  *
  * Flow:
- * 1. Validate email and API key
+ * 1. Validate email and password
  * 2. Look up advertiser in database
- * 3. Return advertiser details for session
+ * 3. Verify password hash
+ * 4. Return advertiser details for session
  */
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 import { checkRateLimit, RateLimits } from '../_shared/rate-limit.ts';
+import { verifyPassword } from '../_shared/password.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -36,14 +38,14 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const body = await req.json();
-    const { contact_email, api_key } = body;
+    const { contact_email, password } = body;
 
     // Validate required fields
-    if (!contact_email || !api_key) {
+    if (!contact_email || !password) {
       return new Response(
         JSON.stringify({
           error: 'validation_error',
-          message: 'contact_email and api_key are required'
+          message: 'contact_email and password are required'
         }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -61,19 +63,41 @@ serve(async (req) => {
       );
     }
 
-    // Look up advertiser by email and API key
+    // Look up advertiser by email
     const { data: advertiser, error: queryError } = await supabase
       .from('advertisers')
-      .select('id, company_name, contact_email, status')
+      .select('id, company_name, contact_email, status, password_hash')
       .eq('contact_email', contact_email)
-      .eq('api_key', api_key)
       .single();
 
     if (queryError || !advertiser) {
       return new Response(
         JSON.stringify({
           error: 'invalid_credentials',
-          message: 'Invalid email or API key'
+          message: 'Invalid email or password'
+        }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Check if password_hash exists (old accounts might not have it)
+    if (!advertiser.password_hash) {
+      return new Response(
+        JSON.stringify({
+          error: 'password_not_set',
+          message: 'Account created before password login was added. Contact support@attentionmarket.com'
+        }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Verify password
+    const isValidPassword = await verifyPassword(password, advertiser.password_hash);
+    if (!isValidPassword) {
+      return new Response(
+        JSON.stringify({
+          error: 'invalid_credentials',
+          message: 'Invalid email or password'
         }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -90,7 +114,7 @@ serve(async (req) => {
       );
     }
 
-    // Return success
+    // Return success (don't include password_hash!)
     return new Response(
       JSON.stringify({
         advertiser_id: advertiser.id,

@@ -15,6 +15,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 import { checkRateLimit, RateLimits } from '../_shared/rate-limit.ts';
+import { hashPassword, validatePassword } from '../_shared/password.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -42,16 +43,29 @@ serve(async (req) => {
       contact_email,
       company_name,
       contact_name,
+      password,
       website,
       industry,
     } = body;
 
     // Validate required fields
-    if (!contact_email || !company_name || !contact_name) {
+    if (!contact_email || !company_name || !contact_name || !password) {
       return new Response(
         JSON.stringify({
           error: 'validation_error',
-          message: 'contact_email, company_name, and contact_name are required'
+          message: 'contact_email, company_name, contact_name, and password are required'
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate password strength
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.valid) {
+      return new Response(
+        JSON.stringify({
+          error: 'validation_error',
+          message: passwordValidation.error
         }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -90,8 +104,11 @@ serve(async (req) => {
     // Generate advertiser_id
     const advertiser_id = crypto.randomUUID();
 
-    // Generate dashboard API key
+    // Generate dashboard API key (still used for programmatic access)
     const dashboard_api_key = `adv_${generateSecureToken(64)}`;
+
+    // Hash password
+    const password_hash = await hashPassword(password);
 
     // Insert advertiser
     const { data: advertiser, error: insertError } = await supabase
@@ -101,10 +118,11 @@ serve(async (req) => {
         contact_email,
         company_name,
         contact_name,
+        password_hash,
         website: website || null,
         industry: industry || null,
         status: 'active',
-        api_key: dashboard_api_key // Now stored in indexed column for fast lookups
+        api_key: dashboard_api_key // Kept for programmatic API access
       })
       .select()
       .single();

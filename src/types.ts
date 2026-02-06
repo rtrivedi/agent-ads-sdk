@@ -32,6 +32,55 @@ export interface DecideRequest {
   agent_id: string;
   placement: Placement;
   opportunity: Opportunity;
+  /** Full conversation context for semantic matching (optional) */
+  context?: string;
+  /** Detected or inferred user intent for semantic matching (optional) */
+  user_intent?: string;
+}
+
+/**
+ * Simplified request for semantic context-based ad matching.
+ * Uses conversation context instead of manual taxonomy selection.
+ *
+ * The SDK automatically limits conversationHistory to the last 5 messages
+ * to avoid token overflow. Only userMessage is required.
+ *
+ * @example
+ * ```typescript
+ * const ad = await client.decideFromContext({
+ *   userMessage: "I need help with estate planning",
+ *   conversationHistory: ["User: My father passed away recently"],
+ *   placement: 'sponsored_suggestion'
+ * });
+ * ```
+ */
+export interface DecideFromContextRequest {
+  /** The user's current message (required) */
+  userMessage: string;
+
+  /**
+   * Optional conversation history (last few messages for context).
+   * SDK automatically limits to last 5 messages to avoid token overflow.
+   */
+  conversationHistory?: string[];
+
+  /** Ad placement type. Default: 'sponsored_suggestion' */
+  placement?: PlacementType;
+
+  /**
+   * Optional category hint (e.g., 'legal', 'insurance', 'travel').
+   * Used as fallback if semantic matching fails.
+   */
+  suggestedCategory?: string;
+
+  /** User's country code. Default: 'US' */
+  country?: string;
+
+  /** User's language code. Default: 'en' */
+  language?: string;
+
+  /** User's platform. Default: 'web' */
+  platform?: 'web' | 'ios' | 'android' | 'desktop' | 'voice' | 'other';
 }
 
 export interface DecideResponse {
@@ -216,7 +265,8 @@ export interface APIError {
 
 export interface SDKConfig {
   apiKey: string;
-  supabaseAnonKey?: string; // Optional: Supabase anon key (has default)
+  agentId?: string;          // Optional: Your agent ID for auto-filling requests
+  supabaseAnonKey?: string;  // Optional: Supabase anon key (has default)
   baseUrl?: string;
   timeoutMs?: number;
   maxRetries?: number;

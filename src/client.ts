@@ -4,10 +4,11 @@
  */
 
 import { HTTPClient } from './http.js';
-import { createImpressionEvent, createClickEvent } from './utils.js';
+import { createImpressionEvent, createClickEvent, generateUUID } from './utils.js';
 import type {
   SDKConfig,
   DecideRequest,
+  DecideFromContextRequest,
   DecideResponse,
   EventIngestRequest,
   EventIngestResponse,
@@ -26,8 +27,10 @@ const DEFAULT_MAX_RETRIES = 2;
 
 export class AttentionMarketClient {
   private http: HTTPClient;
+  private agentId: string | undefined;
 
   constructor(config: SDKConfig) {
+    this.agentId = config.agentId;
     // Validate configuration
     this.validateConfig(config);
 
@@ -114,6 +117,84 @@ export class AttentionMarketClient {
 
     // Return first unit if available
     return response.units[0] ?? null;
+  }
+
+  /**
+   * Simplified ad matching using conversation context and semantic search.
+   * Automatically handles request construction, taxonomy fallback, and defaults.
+   *
+   * Requires: agentId in SDKConfig constructor
+   *
+   * @example
+   * const ad = await client.decideFromContext({
+   *   userMessage: "My father passed away and I need help organizing his estate",
+   *   placement: 'sponsored_suggestion'
+   * });
+   *
+   * @throws {Error} If agentId was not provided in SDKConfig
+   */
+  async decideFromContext(
+    params: DecideFromContextRequest,
+    options?: { idempotencyKey?: string },
+  ): Promise<AdUnit | null> {
+    // Validate agentId is available
+    if (!this.agentId) {
+      throw new Error(
+        'decideFromContext() requires agentId to be set in SDKConfig. ' +
+        'Either provide agentId in the constructor or use decide() directly.'
+      );
+    }
+
+    // Limit conversation history to last 5 messages to avoid token overflow
+    const historyLimit = 5;
+    const history = params.conversationHistory || [];
+    const limitedHistory = history.slice(-historyLimit);
+
+    // Build context string from user message + limited history
+    const contextParts = [...limitedHistory, params.userMessage];
+    const context = contextParts.join('\n');
+
+    // Use provided values or sensible defaults
+    const country = params.country || 'US';
+    const language = params.language || 'en';
+    const platform = params.platform || 'web';
+    const placementType = params.placement || 'sponsored_suggestion';
+
+    // Build taxonomy from suggestedCategory or use fallback
+    // Backend semantic matching doesn't strictly require valid taxonomy
+    const taxonomy = params.suggestedCategory || 'unknown';
+
+    // Build full DecideRequest with semantic context
+    const request: DecideRequest = {
+      request_id: generateUUID(),
+      agent_id: this.agentId,
+      placement: {
+        type: placementType,
+        surface: 'chat'
+      },
+      opportunity: {
+        intent: {
+          taxonomy,
+          query: params.userMessage
+        },
+        context: {
+          country,
+          language,
+          platform
+        },
+        constraints: {
+          max_units: 1,
+          allowed_unit_types: [placementType]
+        },
+        privacy: {
+          data_policy: 'coarse_only'
+        }
+      },
+      context,
+      user_intent: params.userMessage
+    };
+
+    return await this.decide(request, options);
   }
 
   /**

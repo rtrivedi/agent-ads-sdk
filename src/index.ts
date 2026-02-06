@@ -19,6 +19,7 @@ export type {
   AgentSignupResponse,
   // Decide
   DecideRequest,
+  DecideFromContextRequest,
   DecideResponse,
   // Placement
   PlacementType,
