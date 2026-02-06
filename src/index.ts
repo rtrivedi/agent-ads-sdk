@@ -74,6 +74,18 @@ export type {
   SanitizeURLOptions,
 } from './utils.js';
 
+// Formatting utilities
+export {
+  formatNatural,
+  formatInlineMention,
+  validateAdFits,
+} from './formatting.js';
+
+export type {
+  NaturalFormatOptions,
+  FormattedAd,
+} from './formatting.js';
+
 // Taxonomy utilities
 export {
   buildTaxonomy,
