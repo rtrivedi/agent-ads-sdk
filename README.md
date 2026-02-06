@@ -247,11 +247,13 @@ await showRelevantAd("I need a divorce lawyer in California");
 
 ---
 
-## API Reference
+## SDK Capabilities
 
-### Client Methods
+### 🎯 Core Ad Serving
 
-**`client.decide(request)`** - Get ads (convenience method)
+#### `decide()` - Request contextual ads based on user intent
+Get a sponsored suggestion when you know what the user wants. Pass a taxonomy (like "insurance.auto.quote") and we return a relevant ad with 70% revenue share. Think of it like Google AdSense, but built for conversational AI.
+
 ```typescript
 const decision = await client.decide({
   request_id: crypto.randomUUID(),
@@ -264,58 +266,187 @@ const decision = await client.decide({
 });
 ```
 
-**`client.decideRaw(request)`** - Get full response with metadata
-```typescript
-const response = await client.decideRaw(request);
-// Returns: { status, request_id, decision_id, units[], ttl_ms }
-```
+#### `decideFromContext()` - Get ads from natural conversation
+Just pass the user's message and conversation history. Our semantic engine figures out what they need and returns the best ad. No taxonomy required - perfect for open-ended conversations.
 
-**`client.trackImpression(params)`** - Track when ad is shown
 ```typescript
-await client.trackImpression({
-  agent_id: 'your_agent_id',
-  request_id: 'req_123',
-  decision_id: 'dec_456',
-  unit_id: 'unit_789',
-  tracking_token: 'trk_abc'
+const ad = await client.decideFromContext({
+  userMessage: "I need help with estate planning",
+  conversationHistory: ["My father passed away recently"],
+  placement: 'sponsored_suggestion'
 });
 ```
 
-**`client.trackClick(params)`** - Track when ad is clicked (you earn $)
+---
+
+### 🌐 Intenture Network APIs (NEW in v0.5.0)
+
+#### `requestOffer()` - Intent-key based matching for high confidence scenarios
+When you KNOW what the user wants (they said "order coffee" or "book lawyer"), use intent-keys like `coffee.purchase.delivery` for deterministic matching. Enables agent-to-agent coordination and revenue sharing.
+
 ```typescript
-await client.trackClick({
-  agent_id: 'your_agent_id',
-  request_id: 'req_123',
-  decision_id: 'dec_456',
-  unit_id: 'unit_789',
-  tracking_token: 'trk_abc',
-  href: 'https://advertiser.com'
+const offer = await client.requestOffer({
+  placementId: 'order_card',
+  intentKey: 'coffee.purchase.delivery',
+  context: { geo: { city: 'SF', country: 'US' } }
 });
 ```
 
-### Helper Functions
+#### `requestOfferFromContext()` - Semantic discovery for fuzzy intents
+When you're NOT sure what they need (they said "I'm so tired"), pass the conversation and let semantic search find relevant offers. Auto-limits history to last 5 messages.
 
-- `buildTaxonomy(vertical, category, subcategory, intent?)` - Build taxonomy string
-- `detectIntent(query)` - Auto-detect user intent from query
-- `suggestTaxonomies(query)` - Get relevant taxonomy suggestions
+```typescript
+const offer = await client.requestOfferFromContext({
+  placementId: 'chat_suggestion',
+  userMessage: "I'm so tired, long day at work...",
+  conversationHistory: ["How was your day?", "Exhausting"],
+  context: { geo: { city: 'NYC' } }
+});
+```
+
+#### Revenue Share (Preview) - Track referrals between agents
+If another agent sends users to you, include their agent_id to split revenue (0-50%). Currently in preview mode (logs only) - payouts activate Q2 2026. Think affiliate marketing for AI agents.
+
+```typescript
+const offer = await client.requestOffer({
+  intentKey: 'legal.divorce.consultation',
+  sourceAgentId: 'agt_referrer_123',  // Agent who sent the user
+  revenueSharePct: 30,                 // Give them 30% of revenue
+  // ... other params
+});
+```
+
+---
+
+### 🧠 Intent Detection
+
+#### `detectIntent()` - Auto-detect where users are in their journey
+Analyzes queries to determine if they're researching ("what is X?"), comparing ("X vs Y"), getting quotes ("how much?"), or ready to buy ("I want X"). Returns 'research', 'compare', 'quote', 'apply', 'support', or 'other'.
+
+```typescript
+detectIntent("What is car insurance?")        // → 'research'
+detectIntent("Compare car insurance options") // → 'compare'
+detectIntent("Get car insurance quote")       // → 'quote'
+detectIntent("I want to buy car insurance")   // → 'apply'
+```
+
+#### `buildTaxonomy()` - Type-safe taxonomy builder
+Constructs valid taxonomies like "insurance.auto.full_coverage.quote" with validation. Pass vertical, category, subcategory, and intent - it handles the formatting and catches errors.
+
+```typescript
+const taxonomy = buildTaxonomy('insurance', 'auto', 'full_coverage', 'quote');
+// → "insurance.auto.full_coverage.quote"
+```
+
+#### `suggestTaxonomies()` - Smart taxonomy recommendations
+Pass a user query and get back 3-5 relevant taxonomy suggestions ranked by relevance. Great for when you're not sure which category to use.
+
+```typescript
+const suggestions = suggestTaxonomies("I need a lawyer for divorce");
+// → ['legal.family.divorce.consultation', 'legal.family.custody.consultation']
+```
+
+#### Taxonomy Utilities
 - `isValidTaxonomy(taxonomy)` - Validate taxonomy format
 - `parseTaxonomy(taxonomy)` - Parse taxonomy into components
 - `getBaseTaxonomy(taxonomy)` - Get taxonomy without intent
 - `matchesTaxonomy(tax1, tax2)` - Check if taxonomies match
 - `getVertical(taxonomy)` - Extract industry vertical
 
-### Security Helpers
+---
 
-- `escapeHTML(text)` - Escape HTML to prevent XSS
-- `sanitizeURL(url)` - Validate and sanitize URLs
+### 🎨 Response Formatting
 
-**Always sanitize ad content before rendering!**
+#### `formatNatural()` - Convert ads into natural conversation
+Transforms sponsored suggestions into conversational responses that feel native to your agent. Handles disclosure labels, CTA integration, and tone matching automatically.
+
+```typescript
+const formatted = formatNatural(ad, {
+  tone: 'friendly',
+  includeDisclosure: true
+});
+// → "I found a great option for you! [Sponsored: Lemonade]..."
+```
+
+#### `formatInlineMention()` - Subtle in-message placement
+Weaves ads into your agent's response as natural mentions. Like "Btw, Lemonade offers great rates for new drivers [Sponsored]". Less intrusive than separate ad blocks.
+
+```typescript
+const mention = formatInlineMention(ad);
+// → "Btw, Lemonade offers 20% off for new drivers [Sponsored]"
+```
+
+#### `validateAdFits()` - Check if ad matches conversation context
+Before showing an ad, validate it fits the current conversation. Checks relevance, tone, and user intent to avoid jarring placements.
+
+```typescript
+const fits = validateAdFits(ad, conversationContext);
+if (fits) {
+  // Show the ad
+}
+```
 
 ---
 
-## Testing
+### 📊 Event Tracking
 
-### Mock Client (No API calls)
+#### `trackImpression()` - Log when users see an ad
+Record that an ad was shown to a user. Required for billing and analytics. Include the unit_id and tracking token from the ad response.
+
+```typescript
+await client.trackImpression({
+  agent_id: 'your_agent_id',
+  request_id: decision.request_id,
+  decision_id: decision.decision_id,
+  unit_id: ad.unit_id,
+  tracking_token: ad.tracking.token
+});
+```
+
+#### `trackClick()` - Log when users click an ad
+Record when users interact with ads. This is how you get paid. Automatically deduplicates to prevent double-charging.
+
+```typescript
+await client.trackClick({
+  agent_id: 'your_agent_id',
+  request_id: decision.request_id,
+  decision_id: decision.decision_id,
+  unit_id: ad.unit_id,
+  tracking_token: ad.tracking.token,
+  href: ad.suggestion.action_url
+});
+```
+
+---
+
+### 🛠️ Helper Utilities
+
+#### `createOpportunity()` - Build opportunity objects easily
+Helper to construct the opportunity payload for decide() calls. Handles defaults and validation.
+
+```typescript
+const opportunity = createOpportunity({
+  taxonomy: 'insurance.auto.quote',
+  country: 'US'
+});
+```
+
+#### Security Helpers
+- `escapeHTML(text)` - Sanitize ad content before rendering to prevent XSS attacks
+- `sanitizeURL(url)` - Validate and sanitize URLs before opening
+
+**Always sanitize ad content before displaying in web contexts!**
+
+#### ID Generation
+- `generateUUID()` - Create unique request IDs (crypto-secure randomness)
+- `generateTimestamp()` - Generate timestamps that match our API requirements
+
+---
+
+### 🧪 Testing
+
+#### `MockAttentionMarketClient` - Test without real API calls
+Drop-in replacement that returns fake ads for testing. Simulates latency, errors, and no-fill scenarios. Perfect for unit tests and local development.
 
 ```typescript
 import { MockAttentionMarketClient } from '@the_ro_show/agent-ads-sdk';
@@ -330,12 +461,48 @@ const client = new MockAttentionMarketClient({
 const decision = await client.decide(request);
 ```
 
-### Test Taxonomies
+---
 
-Use your test key with real API:
+### ⚠️ Error Handling
+
+#### `APIRequestError` - API returned an error response
+Thrown when the backend rejects your request (invalid key, bad params, etc). Includes detailed error message and request_id for debugging.
+
+#### `NetworkError` - Connection failed
+Network issues, DNS failures, or backend unavailable. Includes automatic retry logic for transient failures.
+
+#### `TimeoutError` - Request exceeded timeout
+Request took too long (default 5s). Configure with `timeoutMs` in constructor.
+
+```typescript
+try {
+  const decision = await client.decide(request);
+} catch (error) {
+  if (error instanceof TimeoutError) {
+    console.log('Request timed out, try again');
+  } else if (error instanceof NetworkError) {
+    console.log('Network issue, retrying...');
+  } else if (error instanceof APIRequestError) {
+    console.log('API error:', error.message);
+  }
+}
+```
+
+## Using Test vs Live Keys
+
+### Test Environment
+Use your test key for development:
 ```typescript
 const client = new AttentionMarketClient({
   apiKey: process.env.ATTENTIONMARKET_TEST_KEY  // am_test_...
+});
+```
+
+### Production Environment
+Use your live key for production:
+```typescript
+const client = new AttentionMarketClient({
+  apiKey: process.env.ATTENTIONMARKET_API_KEY  // am_live_...
 });
 ```
 
