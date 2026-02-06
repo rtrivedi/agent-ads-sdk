@@ -284,19 +284,26 @@ serve(async (req) => {
       .map((ad: any) => {
         const campaign = ad.campaigns;
 
-        // Calculate relevance score using hierarchical taxonomy matching
-        const relevance = calculateTaxonomyRelevance(
-          taxonomy,
-          campaign.targeting_taxonomies || []
-        );
+        // Use different scoring based on match method
+        let relevance: number;
+        let compositeScore: number;
 
-        // Future: Add keyword matching here (Phase 2)
-        // Future: Add embedding similarity here (Phase 2)
-
-        // Calculate composite score: bid × quality × relevance
-        const bidAmount = campaign.bid_cpm || 1.0;
-        const quality = campaign.quality_score || 1.0;
-        const compositeScore = bidAmount * quality * relevance;
+        if (useSemanticMatching && ad.semantic_similarity !== undefined) {
+          // For semantic matching: use similarity score from SQL function
+          relevance = ad.semantic_similarity;
+          const bidAmount = campaign.bid_cpc || campaign.bid_cpm || 1.0;
+          const quality = campaign.quality_score || 1.0;
+          compositeScore = relevance * bidAmount * quality;
+        } else {
+          // For taxonomy matching: use hierarchical taxonomy relevance
+          relevance = calculateTaxonomyRelevance(
+            taxonomy,
+            campaign.targeting_taxonomies || []
+          );
+          const bidAmount = campaign.bid_cpm || campaign.bid_cpc || 1.0;
+          const quality = campaign.quality_score || 1.0;
+          compositeScore = bidAmount * quality * relevance;
+        }
 
         return {
           ...ad,
@@ -329,8 +336,15 @@ serve(async (req) => {
       status: matchingAds.length > 0 ? 'filled' : 'no_fill',
       ad_unit_ids: matchingAds.map((ad: any) => ad.id),
       candidate_ad_count: filteredAds.length, // Total ads that matched before ranking
+      // Semantic matching analytics
+      conversation_context: context || null,
+      user_intent_detected: user_intent || null,
+      match_method: useSemanticMatching ? 'semantic' : 'taxonomy',
+      semantic_similarity_score: useSemanticMatching && matchingAds.length > 0
+        ? matchingAds[0]?.semantic_similarity || null
+        : null,
       scoring_metadata: {
-        scoring_method: 'composite_v1', // bid × quality × relevance
+        scoring_method: useSemanticMatching ? 'semantic_v1' : 'composite_v1',
         top_scores: matchingAds.slice(0, 5).map((ad: any) => ({
           unit_id: ad.id,
           relevance: ad._relevance_score,

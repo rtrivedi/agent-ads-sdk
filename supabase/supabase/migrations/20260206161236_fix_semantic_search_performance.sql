@@ -1,10 +1,20 @@
--- SQL function for fast semantic ad matching via vector similarity
--- OPTIMIZED: Calculates similarity once using CTE, uses correct bid type
+-- Fix critical performance and correctness bugs in semantic search
+
+-- 1. Drop old IVFFlat index (requires minimum 100 rows)
+DROP INDEX IF EXISTS idx_campaigns_intent_embedding;
+
+-- 2. Create HNSW index instead (no minimum row requirement, better performance)
+CREATE INDEX IF NOT EXISTS idx_campaigns_intent_embedding ON campaigns
+USING hnsw (intent_embedding vector_cosine_ops);
+
+-- 3. Recreate semantic search function with optimizations:
+--    - Calculate cosine similarity once (not 3 times)
+--    - Use correct bid type (bid_cpc OR bid_cpm)
 CREATE OR REPLACE FUNCTION find_ads_by_semantic_similarity(
-  query_embedding TEXT,          -- JSON string of embedding vector
-  match_threshold DECIMAL,       -- Minimum similarity (0-1)
-  match_count INT,               -- Max results to return
-  placement_type TEXT            -- Filter by ad type
+  query_embedding TEXT,
+  match_threshold DECIMAL,
+  match_count INT,
+  placement_type TEXT
 )
 RETURNS TABLE (
   id UUID,
@@ -44,7 +54,7 @@ BEGIN
       c.bid_cpm,
       c.bid_cpc,
       c.quality_score,
-      -- Calculate similarity ONCE
+      -- Calculate similarity ONCE (not 3x)
       (1 - (c.intent_embedding <=> query_embedding::vector))::DECIMAL(5,4) as similarity
     FROM ad_units au
     INNER JOIN campaigns c ON c.id = au.campaign_id
@@ -90,13 +100,13 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-COMMENT ON FUNCTION find_ads_by_semantic_similarity IS 'Find ads using vector similarity search, ranked by: similarity × bid × quality';
+COMMENT ON FUNCTION find_ads_by_semantic_similarity IS
+  'OPTIMIZED: Find ads using vector similarity (calculated once), ranked by similarity × bid × quality';
 
--- Log migration
+-- Log changes
 DO $$
 BEGIN
-  RAISE NOTICE '✅ Created semantic search function: find_ads_by_semantic_similarity()';
-  RAISE NOTICE '   - Uses pgvector cosine similarity (<=>)';
-  RAISE NOTICE '   - Ranks by: similarity × bid × quality';
-  RAISE NOTICE '   - Returns ads above match_threshold';
+  RAISE NOTICE '✅ Fixed Bug #1: Replaced IVFFlat with HNSW index (no minimum row requirement)';
+  RAISE NOTICE '✅ Fixed Bug #2: Cosine similarity now calculated once instead of 3x';
+  RAISE NOTICE '✅ Fixed Bug #3: Scoring uses bid_cpc OR bid_cpm correctly';
 END $$;

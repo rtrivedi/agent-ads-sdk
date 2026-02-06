@@ -247,7 +247,7 @@ serve(async (req) => {
         intent_description: intent_description || null,
         ideal_customer: ideal_customer || null,
         trigger_contexts: trigger_contexts || null,
-        intent_embedding: intent_embedding ? JSON.stringify(intent_embedding) : null,
+        intent_embedding: intent_embedding ? `[${intent_embedding.join(',')}]` : null,
       })
       .select()
       .single();

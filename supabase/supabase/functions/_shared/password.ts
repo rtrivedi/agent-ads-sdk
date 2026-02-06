@@ -81,9 +81,20 @@ export async function verifyPassword(password: string, storedHash: string): Prom
       256
     );
 
-    // Compare hashes
+    // Compare hashes using constant-time comparison to prevent timing attacks
     const newHashB64 = btoa(String.fromCharCode(...new Uint8Array(hashBuffer)));
-    return newHashB64 === hashB64;
+
+    // Constant-time comparison: always compare full length
+    if (newHashB64.length !== hashB64.length) {
+      return false;
+    }
+
+    let mismatch = 0;
+    for (let i = 0; i < newHashB64.length; i++) {
+      mismatch |= newHashB64.charCodeAt(i) ^ hashB64.charCodeAt(i);
+    }
+
+    return mismatch === 0;
   } catch (error) {
     console.error('Password verification error:', error);
     return false;

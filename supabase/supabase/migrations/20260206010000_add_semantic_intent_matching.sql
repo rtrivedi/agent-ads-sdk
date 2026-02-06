@@ -12,9 +12,9 @@ ADD COLUMN IF NOT EXISTS trigger_contexts TEXT[],
 ADD COLUMN IF NOT EXISTS intent_embedding vector(1536);
 
 -- Index for fast vector similarity search
+-- Using HNSW instead of IVFFlat (no minimum row requirement)
 CREATE INDEX IF NOT EXISTS idx_campaigns_intent_embedding ON campaigns
-USING ivfflat (intent_embedding vector_cosine_ops)
-WITH (lists = 100);
+USING hnsw (intent_embedding vector_cosine_ops);
 
 COMMENT ON COLUMN campaigns.intent_description IS 'Plain English: What problems does this advertiser solve?';
 COMMENT ON COLUMN campaigns.ideal_customer IS 'Plain English: Who is the ideal customer?';
