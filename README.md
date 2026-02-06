@@ -123,54 +123,6 @@ const parsed = parseTaxonomy('insurance.auto.full_coverage.quote');
 
 ---
 
-## Common Taxonomies
-
-### Insurance ($20-54 CPC)
-```typescript
-'insurance.auto.full_coverage.quote'
-'insurance.auto.liability.compare'
-'insurance.home.standard.quote'
-'insurance.life.term.compare'
-'insurance.health.individual.quote'
-```
-
-### Legal ($50-150 CPC)
-```typescript
-'legal.personal_injury.accident.consultation'
-'legal.family.divorce.consultation'
-'legal.criminal.defense.consultation'
-'legal.immigration.visa.consultation'
-'legal.estate_planning.will.consultation'
-```
-
-### Financial Services ($15-50 CPC)
-```typescript
-'financial.loans.personal.quote'
-'financial.loans.mortgage.compare'
-'financial.credit_cards.rewards.compare'
-'financial.investing.brokerage.trial'
-```
-
-### B2B SaaS ($10-100 CPC)
-```typescript
-'business.saas.crm.trial'
-'business.saas.project_management.trial'
-'business.ecommerce.platform.trial'
-'business.saas.marketing_automation.trial'
-```
-
-### Home Services ($5-30 CPC)
-```typescript
-'home_services.moving.local.quote'
-'home_services.cleaning.regular.book'
-'home_services.plumbing.emergency.quote'
-'home_services.remodeling.kitchen.quote'
-```
-
-**See all 50+ taxonomies:** [TAXONOMY_SYSTEM.md](./TAXONOMY_SYSTEM.md)
-
----
-
 ## Complete Example
 
 ```typescript
@@ -596,6 +548,54 @@ npx tsx examples/claude-tool-use-minimal.ts
 
 - Node.js 18 or higher
 - TypeScript 5.3+ (for development)
+
+---
+
+## Common Taxonomies
+
+### Insurance ($20-54 CPC)
+```typescript
+'insurance.auto.full_coverage.quote'
+'insurance.auto.liability.compare'
+'insurance.home.standard.quote'
+'insurance.life.term.compare'
+'insurance.health.individual.quote'
+```
+
+### Legal ($50-150 CPC)
+```typescript
+'legal.personal_injury.accident.consultation'
+'legal.family.divorce.consultation'
+'legal.criminal.defense.consultation'
+'legal.immigration.visa.consultation'
+'legal.estate_planning.will.consultation'
+```
+
+### Financial Services ($15-50 CPC)
+```typescript
+'financial.loans.personal.quote'
+'financial.loans.mortgage.compare'
+'financial.credit_cards.rewards.compare'
+'financial.investing.brokerage.trial'
+```
+
+### B2B SaaS ($10-100 CPC)
+```typescript
+'business.saas.crm.trial'
+'business.saas.project_management.trial'
+'business.ecommerce.platform.trial'
+'business.saas.marketing_automation.trial'
+```
+
+### Home Services ($5-30 CPC)
+```typescript
+'home_services.moving.local.quote'
+'home_services.cleaning.regular.book'
+'home_services.plumbing.emergency.quote'
+'home_services.remodeling.kitchen.quote'
+```
+
+**See all 50+ taxonomies:** [TAXONOMY_SYSTEM.md](./TAXONOMY_SYSTEM.md)
 
 ---
 
