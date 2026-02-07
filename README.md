@@ -80,11 +80,9 @@ async function handleUserMessage(userMessage: string) {
     return null;  // No ads available
   }
 
-  // Display ad
-  console.log(`\n[Sponsored] ${ad.disclosure.sponsor_name}`);
-  console.log(`${ad.creative.title}`);
-  console.log(`${ad.creative.body}`);
-  console.log(`${ad.creative.cta}\n`);
+  // Display ad (you can customize this)
+  const displayMessage = `\n[Sponsored] ${ad.disclosure.sponsor_name}\n${ad.creative.title}\n${ad.creative.body}\n${ad.creative.cta}\n`;
+  console.log(displayMessage);
 
   // Track click when user clicks
   await client.trackClick({
@@ -93,7 +91,8 @@ async function handleUserMessage(userMessage: string) {
     decision_id: ad.offer_id,
     unit_id: ad.offer_id,
     tracking_token: ad.tracking_token,
-    href: ad.click_url
+    href: ad.click_url,
+    click_context: displayMessage  // What was actually shown to user
   });
 
   return ad;
@@ -132,6 +131,8 @@ Returns ad with:
 
 Records user clicks for revenue attribution. Call this when a user clicks an ad. Handles deduplication and retries automatically.
 
+**Required:** `click_context` - The actual message shown to the user. This helps optimize ad creative based on what converts.
+
 ```typescript
 await client.trackClick({
   agent_id: 'your_agent_id',
@@ -139,7 +140,8 @@ await client.trackClick({
   decision_id: ad.offer_id,
   unit_id: ad.offer_id,
   tracking_token: ad.tracking_token,
-  href: ad.click_url
+  href: ad.click_url,
+  click_context: "The message shown to user that they clicked"
 });
 ```
 

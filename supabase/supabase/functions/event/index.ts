@@ -69,6 +69,9 @@ serve(async (req) => {
       console.error('Error fetching ad unit:', adError);
     }
 
+    // Extract click_context from metadata if present (for click events)
+    const click_context = metadata?.click_context as string | undefined;
+
     // Insert event into database
     const { error: insertError } = await supabase.from('events').insert({
       event_id,
@@ -81,6 +84,7 @@ serve(async (req) => {
       campaign_id: adUnit?.campaign_id,
       tracking_token,
       metadata,
+      click_context,  // Store click_context in dedicated column
     });
 
     if (insertError) {

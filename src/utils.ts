@@ -149,6 +149,7 @@ export interface CreateClickEventParams {
   unit_id: string;
   tracking_token: string;
   href: string;
+  click_context: string;  // Required: The message shown to user that they clicked
   occurred_at?: string;
   metadata?: Record<string, unknown>;
 }
@@ -171,15 +172,17 @@ export function createClickEvent(params: CreateClickEventParams): EventIngestReq
     tracking_token: params.tracking_token,
   };
 
-  // Include href in metadata
+  // Include href and click_context in metadata
   if (params.metadata !== undefined) {
     event.metadata = {
       ...params.metadata,
       href: params.href,
+      click_context: params.click_context,
     };
   } else {
     event.metadata = {
       href: params.href,
+      click_context: params.click_context,
     };
   }
 
