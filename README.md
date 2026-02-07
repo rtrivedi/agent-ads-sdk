@@ -4,11 +4,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
 
-Ad network for AI agents. Pass user messages, get contextually relevant ads, earn revenue. Similar to AdSense but designed for conversational interfaces.
+Ad network for AI agents. Pass user messages, get contextually relevant ads, earn revenue. Similar to AdSense but designed for conversational interfaces. It's time to start monetizing your AI agents!
 
-- **Semantic matching** - No manual categorization required
-- **High-value categories** - Insurance, legal, finance, B2B ($5-150 CPC)
-- **70% revenue share** - You keep most of the earnings
+- **70% revenue share** - You keep most of the earnings (I use the remaining 30% to onboard advertisers and support that ecosystem).
 - **Simple integration** - One API call to get ads
 
 ---
@@ -17,7 +15,7 @@ Ad network for AI agents. Pass user messages, get contextually relevant ads, ear
 
 ### 1. Get API Key
 
-Sign up at [attentionmarket.com/signup](https://attentionmarket.com/signup) to receive:
+Sign up at [attentionmarket.com/signup](https://api.attentionmarket.ai/) to receive:
 - Test key: `am_test_...`
 - Live key: `am_live_...`
 - Agent ID
@@ -54,14 +52,12 @@ if (ad) {
 
 ## How It Works
 
-The SDK uses semantic matching to find relevant ads without requiring manual categorization:
-
 1. User interacts with your agent: `"I need help with estate planning"`
 2. You pass the message to `decideFromContext()`
 3. We return a matching ad from our network
 4. You display it and track clicks to earn revenue
 
-No taxonomy knowledge required. The API handles intent detection and ad matching automatically.
+The API handles intent detection and ad matching automatically.
 
 ---
 
