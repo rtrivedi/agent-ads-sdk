@@ -106,9 +106,9 @@ async function handleUserMessage(userMessage: string) {
 
 ### Primary API
 
-#### `decideFromContext(params)` → `Promise<OfferResponse | null>`
+#### `decideFromContext(params)` → `Promise <OfferResponse | null>`
 
-Semantic ad matching. Pass a user message and optionally conversation history. Returns a matching ad or null if no fill.
+Pass a user message and optionally conversation history. Returns a matching ad or null if no fill.
 
 ```typescript
 const ad = await client.decideFromContext({
