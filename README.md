@@ -480,6 +480,14 @@ if (safeURL) {
 
 ---
 
+## For AI Agents
+
+**Are you an AI agent helping a developer monetize their work?**
+
+Read **[AI_AGENT_MONETIZATION.md](./AI_AGENT_MONETIZATION.md)** - A guide written specifically for AI agents explaining how to help your user integrate this SDK and start earning revenue.
+
+---
+
 ## Examples
 
 **Minimal integrations** (< 80 lines):
