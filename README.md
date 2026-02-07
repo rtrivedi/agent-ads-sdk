@@ -431,31 +431,45 @@ const client = new AttentionMarketClient({
 
 ---
 
-## Security
+## Sanitizing Ad Content
 
-### ⚠️ CRITICAL: Server-Side Only
-
-**Never use this SDK in browsers or mobile apps.** Your API key has full access to your account.
-
-✅ **Safe:** Node.js, serverless functions, server-side rendering
-❌ **Unsafe:** Browser JavaScript, React/Vue components, mobile apps
-
-### Sanitize Ad Content
-
-Always escape ad content before rendering:
+Ad creative comes from third-party advertisers. Always sanitize before rendering in HTML contexts:
 
 ```typescript
 import { escapeHTML, sanitizeURL } from '@the_ro_show/agent-ads-sdk';
 
-const safeTitle = escapeHTML(ad.suggestion.title);
-const safeURL = sanitizeURL(ad.suggestion.action_url);
+const safeTitle = escapeHTML(ad.creative.title);
+const safeURL = sanitizeURL(ad.click_url);
 
 if (safeURL) {
   element.innerHTML = `<a href="${safeURL}">${safeTitle}</a>`;
 }
 ```
 
-**See [SECURITY.md](./SECURITY.md) for complete guidelines.**
+<details>
+<summary><strong>Security considerations</strong></summary>
+
+<br>
+
+### Server-Side Only
+
+This SDK must run server-side. Do not use in browsers or mobile apps where the API key would be exposed.
+
+**Supported:**
+- Node.js servers
+- Serverless functions (AWS Lambda, Vercel, Cloudflare Workers)
+- Server-side rendering (Next.js, Remix)
+
+**Not supported:**
+- Browser JavaScript
+- Client-side React/Vue/Angular
+- Mobile apps
+
+### Additional Guidelines
+
+See [SECURITY.md](./SECURITY.md) for complete security best practices.
+
+</details>
 
 ---
 
