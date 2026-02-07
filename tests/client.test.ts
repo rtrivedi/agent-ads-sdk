@@ -243,6 +243,7 @@ describe('createClickEvent', () => {
       unit_id: 'unit_abc',
       tracking_token: 'trk_xyz',
       href: 'https://example.com',
+      click_context: 'Check out this great service!',
     });
 
     expect(event.event_type).toBe('click');
@@ -251,7 +252,10 @@ describe('createClickEvent', () => {
     expect(event.decision_id).toBe('dec_789');
     expect(event.unit_id).toBe('unit_abc');
     expect(event.tracking_token).toBe('trk_xyz');
-    expect(event.metadata).toEqual({ href: 'https://example.com' });
+    expect(event.metadata).toEqual({
+      href: 'https://example.com',
+      click_context: 'Check out this great service!'
+    });
     expect(event.event_id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
     expect(event.occurred_at).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
   });
@@ -265,13 +269,14 @@ describe('createClickEvent', () => {
       unit_id: 'unit_abc',
       tracking_token: 'trk_xyz',
       href: 'https://example.com',
+      click_context: 'Custom time test message',
       occurred_at: customTime,
     });
 
     expect(event.occurred_at).toBe(customTime);
   });
 
-  it('should merge href with additional metadata', () => {
+  it('should merge href and click_context with additional metadata', () => {
     const event = createClickEvent({
       agent_id: 'agt_123',
       request_id: 'req_456',
@@ -279,12 +284,14 @@ describe('createClickEvent', () => {
       unit_id: 'unit_abc',
       tracking_token: 'trk_xyz',
       href: 'https://example.com',
+      click_context: 'Merge test message',
       metadata: { custom_field: 'value' },
     });
 
     expect(event.metadata).toEqual({
       custom_field: 'value',
       href: 'https://example.com',
+      click_context: 'Merge test message',
     });
   });
 });

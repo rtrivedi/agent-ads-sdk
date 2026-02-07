@@ -64,9 +64,9 @@ async function testMoversQuery() {
   if (unit && unit.unit_type === 'sponsored_suggestion') {
     console.log('✅ Received sponsored unit:\n');
     console.log(`[${unit.disclosure.label}] ${unit.disclosure.sponsor_name}`);
-    console.log(`\n${unit.suggestion.title}`);
-    console.log(unit.suggestion.body);
-    console.log(`\n→ ${unit.suggestion.cta}`);
+
+    const displayedMessage = `${unit.suggestion.title}\n${unit.suggestion.body}\n→ ${unit.suggestion.cta}`;
+    console.log(`\n${displayedMessage}`);
     console.log(`   ${unit.suggestion.action_url}\n`);
 
     // Track impression
@@ -86,6 +86,7 @@ async function testMoversQuery() {
       unit_id: unit.unit_id,
       tracking_token: unit.tracking.token,
       href: unit.suggestion.action_url,
+      click_context: displayedMessage,
     });
   } else {
     console.log('❌ No sponsored unit received');

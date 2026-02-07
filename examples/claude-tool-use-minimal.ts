@@ -52,10 +52,11 @@ async function main() {
   console.log('Claude response:');
   console.log(`[${unit.disclosure.label}] ${unit.disclosure.sponsor_name}`);
 
+  let displayedMessage = '';
   if (unit.unit_type === 'sponsored_suggestion') {
-    console.log(unit.suggestion.title);
-    console.log(unit.suggestion.body);
-    console.log(`→ ${unit.suggestion.cta}\n`);
+    displayedMessage = `${unit.suggestion.title}\n${unit.suggestion.body}\n→ ${unit.suggestion.cta}`;
+    console.log(displayedMessage);
+    console.log(''); // blank line
   }
 
   // 5. Track impression (after rendering)
@@ -77,6 +78,7 @@ async function main() {
       unit_id: unit.unit_id,
       tracking_token: unit.tracking.token,
       href: unit.suggestion.action_url,
+      click_context: displayedMessage, // What was actually shown to user
     });
     console.log('✓ Click tracked');
   }

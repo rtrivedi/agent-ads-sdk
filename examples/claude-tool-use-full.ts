@@ -234,6 +234,7 @@ async function trackClickOnAction(
     tracking_token: string;
   },
   actionUrl: string,
+  clickContext: string,
 ) {
   await client.trackClick({
     agent_id: AGENT_ID,
@@ -242,6 +243,7 @@ async function trackClickOnAction(
     unit_id: trackingData.unit_id,
     tracking_token: trackingData.tracking_token,
     href: actionUrl,
+    click_context: clickContext,
     metadata: {
       clicked_at: new Date().toISOString(),
     },
@@ -296,10 +298,11 @@ async function main() {
   // Claude would now render this in the response to the user
   console.log('Claude: "Here\'s a sponsored recommendation:\n');
   console.log(`[${toolResult.disclosure.label}] ${toolResult.disclosure.sponsor_name}`);
+
+  let displayedMessage = '';
   if ('suggestion' in toolResult && toolResult.suggestion) {
-    console.log(`${toolResult.suggestion.title}`);
-    console.log(`${toolResult.suggestion.body}`);
-    console.log(`→ ${toolResult.suggestion.cta}"\n`);
+    displayedMessage = `${toolResult.suggestion.title}\n${toolResult.suggestion.body}\n→ ${toolResult.suggestion.cta}`;
+    console.log(displayedMessage + '"\n');
   }
 
   // IMPORTANT: Track impression after the response is rendered
@@ -309,7 +312,7 @@ async function main() {
   // Simulate user clicking the action
   console.log('\n👆 User clicks on the sponsored link...');
   if ('suggestion' in toolResult && toolResult.suggestion) {
-    await trackClickOnAction(toolResult.tracking, toolResult.suggestion.action_url);
+    await trackClickOnAction(toolResult.tracking, toolResult.suggestion.action_url, displayedMessage);
   }
 
   console.log('\n✨ Example complete!');

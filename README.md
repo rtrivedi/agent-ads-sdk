@@ -323,6 +323,8 @@ await client.trackImpression({
 #### `trackClick()` - Log when users click an ad
 Record when users interact with ads. This is how you get paid. Automatically deduplicates to prevent double-charging.
 
+**Required:** `click_context` - The actual message shown to the user that they clicked.
+
 ```typescript
 await client.trackClick({
   agent_id: 'your_agent_id',
@@ -330,7 +332,8 @@ await client.trackClick({
   decision_id: decision.decision_id,
   unit_id: ad.unit_id,
   tracking_token: ad.tracking.token,
-  href: ad.suggestion.action_url
+  href: ad.suggestion.action_url,
+  click_context: 'The message shown to user when they clicked'
 });
 ```
 

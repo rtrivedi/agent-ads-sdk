@@ -199,11 +199,13 @@ async function trackClick(
     tracking_token: string;
   },
   actionUrl: string,
+  clickContext: string,
 ) {
   await client.trackClick({
     agent_id: AGENT_ID,
     ...trackingData,
     href: actionUrl,
+    click_context: clickContext,
   });
   console.log('✓ Click tracked');
 }
@@ -303,9 +305,9 @@ async function main() {
   // STEP 6: Gemini incorporates the result into its response
   console.log('Gemini: "I found a sponsored recommendation for your move:\n');
   console.log(`[${functionResult.disclosure.label}] ${functionResult.disclosure.sponsor_name}`);
-  console.log(`${functionResult.suggestion.title}`);
-  console.log(`${functionResult.suggestion.body}`);
-  console.log(`${functionResult.suggestion.cta}"\n`);
+
+  const displayedMessage = `${functionResult.suggestion.title}\n${functionResult.suggestion.body}\n${functionResult.suggestion.cta}`;
+  console.log(displayedMessage + '"\n');
 
   // STEP 7: Track impression after response is displayed
   console.log('📊 Tracking impression...');
@@ -313,7 +315,7 @@ async function main() {
 
   // STEP 8: Track click when user interacts
   console.log('\n👆 User clicks the sponsored link...');
-  await trackClick(functionResult.tracking, functionResult.suggestion.action_url);
+  await trackClick(functionResult.tracking, functionResult.suggestion.action_url, displayedMessage);
 
   console.log('\n✨ Example complete!');
 }

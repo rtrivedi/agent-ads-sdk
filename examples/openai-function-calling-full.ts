@@ -206,11 +206,13 @@ async function trackClick(
     tracking_token: string;
   },
   actionUrl: string,
+  clickContext: string,
 ) {
   await client.trackClick({
     agent_id: AGENT_ID,
     ...trackingData,
     href: actionUrl,
+    click_context: clickContext,
   });
   console.log('✓ Click tracked');
 }
@@ -294,9 +296,9 @@ async function main() {
   // STEP 5: GPT incorporates the result into its response
   console.log('GPT: "I found a sponsored recommendation for you:\n');
   console.log(`[${resultData.disclosure.label}] ${resultData.disclosure.sponsor_name}`);
-  console.log(`${resultData.suggestion.title}`);
-  console.log(`${resultData.suggestion.body}`);
-  console.log(`→ ${resultData.suggestion.cta}"\n`);
+
+  const displayedMessage = `${resultData.suggestion.title}\n${resultData.suggestion.body}\n→ ${resultData.suggestion.cta}`;
+  console.log(displayedMessage + '"\n');
 
   // STEP 6: Track impression after displaying to user
   console.log('📊 Tracking impression...');
@@ -304,7 +306,7 @@ async function main() {
 
   // STEP 7: Track click when user interacts
   console.log('\n👆 User clicks the link...');
-  await trackClick(resultData.tracking, resultData.suggestion.action_url);
+  await trackClick(resultData.tracking, resultData.suggestion.action_url, displayedMessage);
 
   console.log('\n✨ Example complete!');
 }
