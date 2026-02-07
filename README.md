@@ -495,11 +495,7 @@ npx tsx examples/claude-tool-use-minimal.ts
 
 ## Documentation
 
-- **[Simple Integration Guide](./SIMPLE_INTEGRATION_GUIDE.md)** - Step-by-step for beginners
-- **[Taxonomy System](./TAXONOMY_SYSTEM.md)** - Complete taxonomy reference
-- **[Migration Guide](./TAXONOMY_MIGRATION_GUIDE.md)** - Upgrading from older versions
 - **[Security Guide](./SECURITY.md)** - Security best practices
-- **[Advertiser Guide](./ADVERTISER_ONBOARDING_GUIDE.md)** - For advertisers
 
 ---
 
@@ -516,79 +512,10 @@ npx tsx examples/claude-tool-use-minimal.ts
 
 ---
 
-## Pricing
-
-**Free to use.** You earn money when users click ads:
-
-- **Insurance:** $20-54 per click
-- **Legal:** $50-150 per click
-- **Financial:** $15-50 per click
-- **B2B SaaS:** $10-100 per click
-- **Home Services:** $5-30 per click
-
-**You keep 70% of revenue.** Paid monthly via Stripe.
-
----
-
 ## Requirements
 
 - Node.js 18 or higher
 - TypeScript 5.3+ (for development)
-
----
-
-## Available Ad Categories
-
-The network currently has active campaigns in these verticals:
-
-| Category | CPC Range | Common Intents |
-|----------|-----------|----------------|
-| Legal | $50-150 | Divorce, estate planning, personal injury, immigration |
-| Insurance | $20-54 | Auto, home, life, health |
-| Financial | $15-50 | Loans, credit cards, mortgages, investing |
-| B2B SaaS | $10-100 | CRM, project management, ecommerce tools |
-| Home Services | $5-30 | Moving, cleaning, repairs |
-| Travel | $3-20 | Flights, hotels, packages |
-| Ecommerce | $2-15 | Retail, subscriptions |
-| Education | $10-50 | Courses, certifications |
-
-The semantic matching API automatically maps user queries to available inventory. If your use case isn't listed, contact support@attentionmarket.com to discuss adding new categories.
-
-<details>
-<summary><strong>View detailed taxonomy reference (advanced users only)</strong></summary>
-
-<br>
-
-**Full taxonomy list:** [TAXONOMY_SYSTEM.md](./TAXONOMY_SYSTEM.md)
-
-Example taxonomies for advanced `decide()` API:
-```typescript
-// Insurance
-'insurance.auto.full_coverage.quote'
-'insurance.auto.liability.compare'
-'insurance.home.standard.quote'
-'insurance.life.term.compare'
-
-// Legal
-'legal.personal_injury.accident.consultation'
-'legal.family.divorce.consultation'
-'legal.estate_planning.will.consultation'
-
-// Financial
-'financial.loans.personal.quote'
-'financial.credit_cards.rewards.compare'
-'financial.investing.brokerage.trial'
-
-// B2B SaaS
-'business.saas.crm.trial'
-'business.saas.project_management.trial'
-
-// Home Services
-'home_services.moving.local.quote'
-'home_services.plumbing.emergency.quote'
-```
-
-</details>
 
 ---
 
