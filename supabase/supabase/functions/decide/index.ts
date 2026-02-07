@@ -220,6 +220,7 @@ serve(async (req) => {
           campaigns!inner(
             id,
             advertiser_id,
+            targeting_strategy,
             targeting_taxonomies,
             targeting_countries,
             targeting_languages,
@@ -229,7 +230,8 @@ serve(async (req) => {
             budget_spent,
             bid_cpm,
             bid_cpc,
-            quality_score
+            quality_score,
+            metadata
           )
         `)
         .eq('status', 'active')
@@ -245,9 +247,41 @@ serve(async (req) => {
       throw queryError;
     }
 
-    // Filter by country, language, platform (if specified in targeting)
+    // Filter by targeting strategy, country, language, platform
+    const userQuery = user_intent || context || '';
+
     const filteredAds = (adUnits || []).filter((ad: any) => {
       const campaign = ad.campaigns;
+
+      // NEW: Check targeting strategy
+      if (campaign.targeting_strategy === 'keyword') {
+        // KEYWORD MODE: Must match at least one keyword
+        const queryLower = userQuery.toLowerCase();
+        const taxonomies = campaign.targeting_taxonomies || [];
+
+        if (taxonomies.length === 0) {
+          return false; // No keywords defined, skip
+        }
+
+        const hasMatch = taxonomies.some((keyword: string) =>
+          queryLower.includes(keyword.toLowerCase())
+        );
+
+        if (!hasMatch) {
+          return false; // No keyword match
+        }
+      } else if (campaign.targeting_strategy === 'automatic') {
+        // AUTOMATIC MODE: Use business description for matching
+        // Simple word overlap check (semantic embeddings happen in scoring below)
+        const businessDesc = campaign.metadata?.business_description || '';
+
+        if (!businessDesc) {
+          return false; // No business description, skip
+        }
+
+        // For now, allow all automatic campaigns through
+        // Scoring will rank them by relevance
+      }
 
       // Check country (if campaign specifies countries)
       if (campaign.targeting_countries && campaign.targeting_countries.length > 0) {
@@ -284,18 +318,50 @@ serve(async (req) => {
       .map((ad: any) => {
         const campaign = ad.campaigns;
 
-        // Use different scoring based on match method
+        // Use different scoring based on targeting strategy
         let relevance: number;
         let compositeScore: number;
 
-        if (useSemanticMatching && ad.semantic_similarity !== undefined) {
-          // For semantic matching: use similarity score from SQL function
+        if (campaign.targeting_strategy === 'keyword') {
+          // KEYWORD MODE: Score by keyword match percentage
+          const queryLower = userQuery.toLowerCase();
+          const taxonomies = campaign.targeting_taxonomies || [];
+          const matchedKeywords = taxonomies.filter((kw: string) =>
+            queryLower.includes(kw.toLowerCase())
+          );
+          relevance = matchedKeywords.length / taxonomies.length;
+
+          const bidAmount = campaign.bid_cpc || campaign.bid_cpm || 1.0;
+          const quality = campaign.quality_score || 1.0;
+          compositeScore = relevance * bidAmount * quality;
+
+        } else if (campaign.targeting_strategy === 'automatic') {
+          // AUTOMATIC MODE: Score by word overlap with business description
+          const businessDesc = campaign.metadata?.business_description || '';
+          const queryWords = userQuery.toLowerCase().split(/\s+/).filter(w => w.length > 3);
+          const descWords = businessDesc.toLowerCase().split(/\s+/).filter(w => w.length > 3);
+
+          if (queryWords.length === 0) {
+            relevance = 0.5; // Default if no query
+          } else {
+            const overlap = queryWords.filter(qw =>
+              descWords.some(dw => dw.includes(qw) || qw.includes(dw))
+            );
+            relevance = overlap.length / queryWords.length;
+          }
+
+          const bidAmount = campaign.bid_cpc || campaign.bid_cpm || 1.0;
+          const quality = campaign.quality_score || 1.0;
+          compositeScore = relevance * bidAmount * quality;
+
+        } else if (useSemanticMatching && ad.semantic_similarity !== undefined) {
+          // Fallback: For semantic matching via embeddings
           relevance = ad.semantic_similarity;
           const bidAmount = campaign.bid_cpc || campaign.bid_cpm || 1.0;
           const quality = campaign.quality_score || 1.0;
           compositeScore = relevance * bidAmount * quality;
         } else {
-          // For taxonomy matching: use hierarchical taxonomy relevance
+          // Fallback: For taxonomy matching
           relevance = calculateTaxonomyRelevance(
             taxonomy,
             campaign.targeting_taxonomies || []

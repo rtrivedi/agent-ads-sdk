@@ -432,9 +432,40 @@ const client = new AttentionMarketClient({
 
 ---
 
-## Sanitizing Ad Content
+## Security
 
-Ad creative comes from third-party advertisers. Always sanitize before rendering in HTML contexts:
+### Server-Side Only
+
+**IMPORTANT:** This SDK must run server-side. Never expose your API key in client-side code.
+
+**✅ Supported:**
+- Node.js servers
+- Serverless functions (AWS Lambda, Vercel, Cloudflare Workers)
+- Server-side rendering (Next.js, Remix)
+
+**❌ Not supported:**
+- Browser JavaScript
+- Client-side React/Vue/Angular
+- Mobile apps
+
+### API Key Management
+
+Store your API key in environment variables:
+
+```bash
+export ATTENTIONMARKET_API_KEY=am_live_...
+```
+
+Never commit API keys to version control. Add to `.gitignore`:
+
+```
+.env
+.env.local
+```
+
+### Sanitize Ad Content
+
+Ad content comes from third-party advertisers. Always sanitize before rendering in HTML:
 
 ```typescript
 import { escapeHTML, sanitizeURL } from '@the_ro_show/agent-ads-sdk';
@@ -446,31 +477,6 @@ if (safeURL) {
   element.innerHTML = `<a href="${safeURL}">${safeTitle}</a>`;
 }
 ```
-
-<details>
-<summary><strong>Security considerations</strong></summary>
-
-<br>
-
-### Server-Side Only
-
-This SDK must run server-side. Do not use in browsers or mobile apps where the API key would be exposed.
-
-**Supported:**
-- Node.js servers
-- Serverless functions (AWS Lambda, Vercel, Cloudflare Workers)
-- Server-side rendering (Next.js, Remix)
-
-**Not supported:**
-- Browser JavaScript
-- Client-side React/Vue/Angular
-- Mobile apps
-
-### Additional Guidelines
-
-See [SECURITY.md](./SECURITY.md) for complete security best practices.
-
-</details>
 
 ---
 
@@ -490,12 +496,6 @@ Run any example:
 ```bash
 npx tsx examples/claude-tool-use-minimal.ts
 ```
-
----
-
-## Documentation
-
-- **[Security Guide](./SECURITY.md)** - Security best practices
 
 ---
 
@@ -522,7 +522,6 @@ npx tsx examples/claude-tool-use-minimal.ts
 ## Support
 
 - **Issues:** [GitHub Issues](https://github.com/rtrivedi/agent-ads-sdk/issues)
-- **Docs:** [SIMPLE_INTEGRATION_GUIDE.md](./SIMPLE_INTEGRATION_GUIDE.md)
 - **Email:** support@attentionmarket.com
 
 ---
@@ -530,9 +529,3 @@ npx tsx examples/claude-tool-use-minimal.ts
 ## License
 
 MIT
-
----
-
-## Changelog
-
-See [CHANGELOG.md](./CHANGELOG.md) for detailed version history.
