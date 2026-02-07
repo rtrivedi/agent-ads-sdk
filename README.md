@@ -1,118 +1,100 @@
-# AttentionMarket - Monetize Your AI Agent
+# AttentionMarket Agent Ads SDK
 
 [![npm version](https://badge.fury.io/js/@the_ro_show%2Fagent-ads-sdk.svg)](https://www.npmjs.com/package/@the_ro_show/agent-ads-sdk)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
 
-**Like Google AdSense, but for AI agents.** 3 lines of code, start earning.
+Ad network for AI agents. Pass user messages, get contextually relevant ads, earn revenue. Similar to AdSense but designed for conversational interfaces.
 
-✨ **Zero config** - AI auto-matches ads
-💰 **$5-150 per click** - 70% revenue share
-🚀 **2-minute setup** - Just pass messages
-🎯 **10-15% CTR** - High-intent, contextual ads
+- **Semantic matching** - No manual categorization required
+- **High-value categories** - Insurance, legal, finance, B2B ($5-150 CPC)
+- **70% revenue share** - You keep most of the earnings
+- **Simple integration** - One API call to get ads
 
 ---
 
-## Get Started in 2 Minutes
+## Quick Start
 
-### 1. Get Your API Key (30 seconds)
+### 1. Get API Key
 
-Visit **[attentionmarket.com/signup](https://attentionmarket.com/signup)** - Free forever, no credit card
+Sign up at [attentionmarket.com/signup](https://attentionmarket.com/signup) to receive:
+- Test key: `am_test_...`
+- Live key: `am_live_...`
+- Agent ID
 
-You'll receive:
-- Test key: `am_test_...` (for development)
-- Live key: `am_live_...` (for production)
-
-### 2. Install (10 seconds)
+### 2. Install
 
 ```bash
 npm install @the_ro_show/agent-ads-sdk
 ```
 
-### 3. Add 3 Lines of Code (60 seconds)
+### 3. Basic Usage
 
 ```typescript
 import { AttentionMarketClient } from '@the_ro_show/agent-ads-sdk';
 
-// Setup (one time)
 const client = new AttentionMarketClient({
   apiKey: process.env.ATTENTIONMARKET_API_KEY,
   agentId: 'your_agent_id'
 });
 
-// Get an ad (that's it!)
+// Request an ad based on user message
 const ad = await client.decideFromContext({
   userMessage: "I need car insurance"
 });
 
 if (ad) {
-  console.log(`${ad.creative.title} - ${ad.creative.body}`);
-  // User clicks → You earn $20-50!
+  console.log(ad.creative.title);
+  console.log(ad.creative.body);
+  console.log(ad.creative.cta);
 }
 ```
-
-**That's it!** You're earning money. No taxonomies to learn, no ad targeting to configure.
 
 ---
 
 ## How It Works
 
-**1. User asks your agent a question**
-```
-"I need help with estate planning"
-```
+The SDK uses semantic matching to find relevant ads without requiring manual categorization:
 
-**2. You pass it to us** (one line of code)
-```typescript
-const ad = await client.decideFromContext({ userMessage });
-```
+1. User interacts with your agent: `"I need help with estate planning"`
+2. You pass the message to `decideFromContext()`
+3. We return a matching ad from our network
+4. You display it and track clicks to earn revenue
 
-**3. We return a relevant ad** (AI-powered matching)
-```
-"Estate Planning Services - Get expert help with wills and trusts"
-```
-
-**4. User clicks → You earn money**
-```
-$50-150 per click for legal services
-```
-
-**No categories to learn. No targeting to configure. Just works.**
+No taxonomy knowledge required. The API handles intent detection and ad matching automatically.
 
 ---
 
-## Complete Working Example
+## Complete Example
 
-Here's everything you need - setup, get ad, show ad, track revenue:
+Full integration including ad retrieval, display, and click tracking:
 
 ```typescript
 import { AttentionMarketClient } from '@the_ro_show/agent-ads-sdk';
 
-// 1. Setup (one time, at app startup)
 const client = new AttentionMarketClient({
   apiKey: process.env.ATTENTIONMARKET_API_KEY,
-  agentId: 'your_agent_id'  // Get this from signup
+  agentId: 'your_agent_id'
 });
 
-// 2. When user asks a question, get a relevant ad
 async function handleUserMessage(userMessage: string) {
   const ad = await client.decideFromContext({ userMessage });
 
   if (!ad) {
-    return null;  // No ads available - show normal response
+    return null;  // No ads available
   }
 
-  // 3. Show the ad to user
-  console.log(`\n💰 [Sponsored] ${ad.disclosure.sponsor_name}`);
+  // Display ad
+  console.log(`\n[Sponsored] ${ad.disclosure.sponsor_name}`);
   console.log(`${ad.creative.title}`);
   console.log(`${ad.creative.body}`);
-  console.log(`→ ${ad.creative.cta}\n`);
+  console.log(`${ad.creative.cta}\n`);
 
-  // 4. When user clicks, track it (this is how you get paid!)
+  // Track click when user clicks
   await client.trackClick({
     agent_id: 'your_agent_id',
     request_id: ad.request_id,
-    decision_id: ad.offer_id,  // Same as offer_id for new APIs
+    decision_id: ad.offer_id,
     unit_id: ad.offer_id,
     tracking_token: ad.tracking_token,
     href: ad.click_url
@@ -120,68 +102,39 @@ async function handleUserMessage(userMessage: string) {
 
   return ad;
 }
-
-// Example usage
-await handleUserMessage("I need car insurance");
-await handleUserMessage("I want to hire a divorce lawyer");
-await handleUserMessage("How do I invest in stocks?");
-```
-
-**That's 12 lines of actual code.** Everything else is comments and formatting.
-
----
-
-## What You Don't Need to Know
-
-❌ **No taxonomy systems to learn** - We auto-match with AI
-❌ **No ad targeting to configure** - Semantic matching handles it
-❌ **No auction bidding to manage** - We optimize for you
-❌ **No advertiser relationships** - We have 100+ campaigns ready
-❌ **No payment processing** - Paid monthly via Stripe
-
-**You just pass messages and show ads. We handle everything else.**
-
-
-## What You Can Do
-
-### 🚀 Get Ads (The Only API You Need)
-
-#### `decideFromContext()` - AI-powered ad matching
-**This is the main API.** Just pass any user message and we'll automatically find relevant ads using AI. No categories, no taxonomies, no configuration. **90% of developers only use this.**
-
-```typescript
-const ad = await client.decideFromContext({
-  userMessage: "I need help with estate planning"
-});
-
-if (ad) {
-  console.log(ad.creative.title);   // "Estate Planning Services"
-  console.log(ad.creative.body);    // "Get expert help with wills and trusts"
-  console.log(ad.creative.cta);     // "Get Free Consultation"
-}
-```
-
-**What it does:**
-- Analyzes the user's message with AI
-- Finds the best matching ad from 100+ campaigns
-- Returns ad creative ready to show
-- Works with ANY message - no category knowledge required
-
-**Optional parameters:**
-```typescript
-const ad = await client.decideFromContext({
-  userMessage: "I'm so tired...",
-  conversationHistory: ["How was work?", "Exhausting"],  // More context = better matching
-  context: { geo: { city: 'NYC', country: 'US' } }       // Location targeting
-});
 ```
 
 ---
 
-### 💰 Track Revenue (Required to Get Paid)
+## API Reference
 
-#### `trackClick()` - Record when users click ads
-**Call this when a user clicks an ad** - this is how you earn money. Automatically deduplicates and handles retries.
+### Primary API
+
+#### `decideFromContext(params)` → `Promise<OfferResponse | null>`
+
+Semantic ad matching. Pass a user message and optionally conversation history. Returns a matching ad or null if no fill.
+
+```typescript
+const ad = await client.decideFromContext({
+  userMessage: "I need help with estate planning",
+  conversationHistory: ["My father passed away recently"],  // Optional
+  context: { geo: { city: 'NYC', country: 'US' } }          // Optional
+});
+```
+
+Returns ad with:
+- `creative.title` - Ad headline
+- `creative.body` - Ad description
+- `creative.cta` - Call to action
+- `click_url` - URL to open on click
+- `tracking_token` - Required for revenue tracking
+- `disclosure` - Sponsor information
+
+### Revenue Tracking
+
+#### `trackClick(params)` → `Promise<void>`
+
+Records user clicks for revenue attribution. Call this when a user clicks an ad. Handles deduplication and retries automatically.
 
 ```typescript
 await client.trackClick({
@@ -194,14 +147,11 @@ await client.trackClick({
 });
 ```
 
-**That's it!** The click is recorded and you'll get paid $5-150 depending on the category.
+### Testing
 
----
+#### `MockAttentionMarketClient`
 
-### 🧪 Testing
-
-#### `MockAttentionMarketClient` - Test without real API calls
-Perfect for unit tests and local development. Returns fake ads instantly.
+Mock client for testing without API calls. Simulates latency and fill rate behavior.
 
 ```typescript
 import { MockAttentionMarketClient } from '@the_ro_show/agent-ads-sdk';
@@ -572,27 +522,22 @@ npx tsx examples/claude-tool-use-minimal.ts
 
 ---
 
-## What Categories Have Ads?
+## Available Ad Categories
 
-**You don't need to memorize these!** Use `decideFromContext()` and we'll automatically match to the best available ads.
+The network currently has active campaigns in these verticals:
 
-But if you're curious, here are our top categories with active advertisers:
+| Category | CPC Range | Common Intents |
+|----------|-----------|----------------|
+| Legal | $50-150 | Divorce, estate planning, personal injury, immigration |
+| Insurance | $20-54 | Auto, home, life, health |
+| Financial | $15-50 | Loans, credit cards, mortgages, investing |
+| B2B SaaS | $10-100 | CRM, project management, ecommerce tools |
+| Home Services | $5-30 | Moving, cleaning, repairs |
+| Travel | $3-20 | Flights, hotels, packages |
+| Ecommerce | $2-15 | Retail, subscriptions |
+| Education | $10-50 | Courses, certifications |
 
-| Category | Cost Per Click | Example Queries |
-|----------|---------------|-----------------|
-| 💰 **Legal** | $50-150 | Divorce, estate planning, personal injury, immigration |
-| 🏥 **Insurance** | $20-54 | Auto, home, life, health insurance |
-| 💳 **Financial** | $15-50 | Loans, credit cards, investing, mortgages |
-| 🏢 **B2B SaaS** | $10-100 | CRM, project management, ecommerce platforms |
-| 🏠 **Home Services** | $5-30 | Moving, cleaning, plumbing, repairs |
-| ✈️ **Travel** | $3-20 | Flights, hotels, vacation packages |
-| 🛍️ **Shopping** | $2-15 | Ecommerce, retail, subscriptions |
-| 🎓 **Education** | $10-50 | Online courses, degrees, certifications |
-
-**Don't see your category?** No problem!
-- ✅ Use `decideFromContext()` and we'll find the closest match
-- ✅ Email us at support@attentionmarket.com to request new categories
-- ✅ New advertiser categories added weekly
+The semantic matching API automatically maps user queries to available inventory. If your use case isn't listed, contact support@attentionmarket.com to discuss adding new categories.
 
 <details>
 <summary><strong>View detailed taxonomy reference (advanced users only)</strong></summary>
@@ -648,27 +593,4 @@ MIT
 
 ## Changelog
 
-### v0.4.0 (2026-02-03)
-
-**New Features:**
-- ✨ Hierarchical taxonomy matching (3x more inventory)
-- ✨ `buildTaxonomy()` helper function
-- ✨ `detectIntent()` auto-intent detection
-- ✨ `suggestTaxonomies()` get relevant taxonomies
-- ✨ `isValidTaxonomy()` and `parseTaxonomy()` validators
-- ✨ 50 Phase 1 high-value taxonomies (insurance, legal, finance, etc.)
-
-**Improvements:**
-- 🎯 Relevance scoring (1.0 → 0.9 → 0.7 → 0.5)
-- 🔄 Backward compatibility for old taxonomies (90-day migration window)
-- 📚 Complete taxonomy documentation
-
-**Breaking Changes:**
-- None! Fully backward compatible.
-
-### v0.2.1
-
-- Initial public release
-- Multi-ad response support
-- Mock client for testing
-- Security helpers (escapeHTML, sanitizeURL)
+See [CHANGELOG.md](./CHANGELOG.md) for detailed version history.
