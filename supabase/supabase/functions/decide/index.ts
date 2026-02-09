@@ -12,6 +12,7 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 import { validateAPIKey, createAuthErrorResponse } from '../_shared/auth.ts';
 import { checkRateLimit, RateLimits } from '../_shared/rate-limit.ts';
+import { generateTrackingToken } from '../_shared/tracking-token.ts';
 
 // CORS headers
 const corsHeaders = {
@@ -435,39 +436,44 @@ serve(async (req) => {
       );
     }
 
-    // Format ad units in AttentionMarket API format
-    const formattedUnits = matchingAds.map((ad: any, index: number) => {
-      const trackingToken = `trk_${crypto.randomUUID()}`;
+    // Format ad units in AttentionMarket API format (async for signed tracking URLs)
+    const formattedUnits = await Promise.all(
+      matchingAds.map(async (ad: any, index: number) => {
+        const trackingToken = `trk_${crypto.randomUUID()}`;
 
-      return {
-        unit_id: ad.id,
-        unit_type: ad.unit_type,
-        disclosure: {
-          label: ad.disclosure_label,
-          explanation: ad.disclosure_explanation,
-          sponsor_name: ad.sponsor_name,
-        },
-        tracking: {
-          token: trackingToken,
-          impression_url: `${supabaseUrl}/functions/v1/event`,
-          click_url: `${supabaseUrl}/functions/v1/click/${trackingToken}`, // ← Server-side click tracking
-        },
-        suggestion: {
-          title: ad.title,
-          body: ad.body,
-          cta: ad.cta,
-          action_url: ad.action_url, // ← Real URL (show this to user in web/GUI)
-          tracking_url: `${supabaseUrl}/functions/v1/click/${trackingToken}`, // ← Optional: server-side redirect
-          tracked_url: `${ad.action_url}${ad.action_url.includes('?') ? '&' : '?'}ref=am_${trackingToken}`, // ← For SMS/email (tracking param)
-        },
-        // Include scoring metadata for agent curation (Option C)
-        _score: {
-          relevance: ad._relevance_score,
-          composite: ad._composite_score,
-          position: index + 1, // 1-indexed position for tracking
-        },
-      };
-    });
+        // Generate signed tracking token for redirect URL (simplified - only unit_id + agent_id)
+        const signedToken = await generateTrackingToken(ad.id, agent_id);
+
+        return {
+          unit_id: ad.id,
+          unit_type: ad.unit_type,
+          disclosure: {
+            label: ad.disclosure_label,
+            explanation: ad.disclosure_explanation,
+            sponsor_name: ad.sponsor_name,
+          },
+          tracking: {
+            token: trackingToken,
+            impression_url: `${supabaseUrl}/functions/v1/event`,
+            click_url: `${supabaseUrl}/functions/v1/click/${trackingToken}`, // ← Server-side click tracking
+          },
+          suggestion: {
+            title: ad.title,
+            body: ad.body,
+            cta: ad.cta,
+            action_url: ad.action_url, // ← Real URL (show this to user in web/GUI)
+            tracking_url: `${supabaseUrl}/functions/v1/track-click/${signedToken}`, // ← NEW: Signed redirect for chatbots/WhatsApp
+            tracked_url: `${ad.action_url}${ad.action_url.includes('?') ? '&' : '?'}ref=am_${trackingToken}`, // ← For SMS/email (tracking param)
+          },
+          // Include scoring metadata for agent curation (Option C)
+          _score: {
+            relevance: ad._relevance_score,
+            composite: ad._composite_score,
+            position: index + 1, // 1-indexed position for tracking
+          },
+        };
+      })
+    );
 
     // Return filled response
     const responseHeaders = { ...corsHeaders, 'Content-Type': 'application/json' };
