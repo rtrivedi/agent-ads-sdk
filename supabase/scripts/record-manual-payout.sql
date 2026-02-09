@@ -8,7 +8,11 @@
 -- 1. Replace the variables below with actual values
 -- 2. Run this script in Supabase SQL Editor
 -- 3. Verify the balances updated correctly
+--
+-- IMPORTANT: Wrapped in transaction for data consistency
 -- ============================================================================
+
+BEGIN;  -- Start transaction
 
 -- CONFIGURATION: Update these values
 -- ----------------------------------------
@@ -31,6 +35,7 @@ DECLARE
 BEGIN
 
   -- Step 1: Get earnings summary for this period
+  -- NOTE: Looking for 'reconciled' status (earnings moved from pending to available)
   SELECT
     COUNT(*),
     SUM(gross_amount),
@@ -40,7 +45,7 @@ BEGIN
   WHERE developer_id = v_developer_id
     AND occurred_at >= v_period_start
     AND occurred_at <= v_period_end
-    AND status = 'pending';
+    AND status = 'reconciled';
 
   RAISE NOTICE '📊 Payout Summary:';
   RAISE NOTICE '   Developer: % (%)', v_agent_id, v_developer_id;
@@ -55,9 +60,16 @@ BEGIN
   FROM developers
   WHERE id = v_developer_id;
 
+  -- Validate sufficient balance
   IF v_developer_balance < v_amount THEN
     RAISE EXCEPTION 'Insufficient balance: Developer has $% but payout is $%',
       v_developer_balance, v_amount;
+  END IF;
+
+  -- Validate that earnings exist for this period
+  IF v_click_count = 0 OR v_revenue_before_share IS NULL THEN
+    RAISE EXCEPTION 'No reconciled earnings found for period % to %. Run reconcile-to-available.sql first.',
+      v_period_start, v_period_end;
   END IF;
 
   -- Step 3: Create payout record
@@ -104,7 +116,7 @@ BEGIN
   WHERE developer_id = v_developer_id
     AND occurred_at >= v_period_start
     AND occurred_at <= v_period_end
-    AND status = 'pending';
+    AND status = 'reconciled';  -- Changed from 'pending' to 'reconciled'
 
   RAISE NOTICE '✅ Marked % earnings as paid_out', v_click_count;
 
@@ -124,3 +136,5 @@ BEGIN
   RAISE NOTICE '   New balance: $%', v_developer_balance - v_amount;
 
 END $$;
+
+COMMIT;  -- Commit transaction

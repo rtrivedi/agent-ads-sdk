@@ -8,12 +8,12 @@
 -- ============================================================================
 
 ALTER TABLE developers
-ADD COLUMN IF NOT EXISTS pending_earnings DECIMAL(10,2) DEFAULT 0.00,
-ADD COLUMN IF NOT EXISTS available_balance DECIMAL(10,2) DEFAULT 0.00,
-ADD COLUMN IF NOT EXISTS lifetime_earnings DECIMAL(10,2) DEFAULT 0.00,
-ADD COLUMN IF NOT EXISTS total_paid_out DECIMAL(10,2) DEFAULT 0.00,
-ADD COLUMN IF NOT EXISTS revenue_share_pct DECIMAL(5,2) DEFAULT 70.00,
-ADD COLUMN IF NOT EXISTS payout_threshold DECIMAL(10,2) DEFAULT 100.00,
+ADD COLUMN IF NOT EXISTS pending_earnings DECIMAL(12,2) DEFAULT 0.00 CHECK (pending_earnings >= 0),
+ADD COLUMN IF NOT EXISTS available_balance DECIMAL(12,2) DEFAULT 0.00 CHECK (available_balance >= 0),
+ADD COLUMN IF NOT EXISTS lifetime_earnings DECIMAL(12,2) DEFAULT 0.00 CHECK (lifetime_earnings >= 0),
+ADD COLUMN IF NOT EXISTS total_paid_out DECIMAL(12,2) DEFAULT 0.00 CHECK (total_paid_out >= 0),
+ADD COLUMN IF NOT EXISTS revenue_share_pct DECIMAL(5,2) DEFAULT 70.00 CHECK (revenue_share_pct >= 0 AND revenue_share_pct <= 100),
+ADD COLUMN IF NOT EXISTS payout_threshold DECIMAL(10,2) DEFAULT 100.00 CHECK (payout_threshold >= 0),
 ADD COLUMN IF NOT EXISTS payout_schedule TEXT DEFAULT 'monthly' CHECK (payout_schedule IN ('weekly', 'monthly', 'manual')),
 ADD COLUMN IF NOT EXISTS payment_method JSONB DEFAULT '{}',
 ADD COLUMN IF NOT EXISTS tax_info JSONB DEFAULT '{}',
@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS payouts (
   agent_id TEXT NOT NULL,
 
   -- Payment details
-  amount DECIMAL(10,2) NOT NULL,
+  amount DECIMAL(10,2) NOT NULL CHECK (amount > 0),
   currency TEXT DEFAULT 'USD',
   status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'processing', 'paid', 'failed', 'cancelled')),
 
@@ -53,11 +53,12 @@ CREATE TABLE IF NOT EXISTS payouts (
   -- Time period covered
   period_start TIMESTAMP WITH TIME ZONE NOT NULL,
   period_end TIMESTAMP WITH TIME ZONE NOT NULL,
+  CHECK (period_start < period_end),
 
   -- Metadata
-  click_count INTEGER DEFAULT 0,
-  revenue_before_share DECIMAL(10,2), -- Total advertiser spend
-  platform_fee DECIMAL(10,2), -- 30% platform cut
+  click_count INTEGER DEFAULT 0 CHECK (click_count >= 0),
+  revenue_before_share DECIMAL(10,2) CHECK (revenue_before_share >= 0), -- Total advertiser spend
+  platform_fee DECIMAL(10,2) CHECK (platform_fee >= 0), -- 30% platform cut
 
   -- Timestamps
   initiated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -93,10 +94,10 @@ CREATE TABLE IF NOT EXISTS earnings (
   event_id UUID REFERENCES events(id) ON DELETE SET NULL,
 
   -- Amounts
-  gross_amount DECIMAL(10,2) NOT NULL, -- Full CPC amount
-  platform_fee DECIMAL(10,2) NOT NULL, -- 30% cut
-  net_amount DECIMAL(10,2) NOT NULL,   -- Developer's 70%
-  revenue_share_pct DECIMAL(5,2) DEFAULT 70.00,
+  gross_amount DECIMAL(10,2) NOT NULL CHECK (gross_amount > 0), -- Full CPC amount
+  platform_fee DECIMAL(10,2) NOT NULL CHECK (platform_fee >= 0), -- 30% cut
+  net_amount DECIMAL(10,2) NOT NULL CHECK (net_amount > 0),   -- Developer's 70%
+  revenue_share_pct DECIMAL(5,2) DEFAULT 70.00 CHECK (revenue_share_pct >= 0 AND revenue_share_pct <= 100),
 
   -- Status
   status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'reconciled', 'paid_out')),
@@ -105,7 +106,10 @@ CREATE TABLE IF NOT EXISTS earnings (
 
   -- Context
   occurred_at TIMESTAMP WITH TIME ZONE NOT NULL,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+
+  -- Prevent duplicate earnings for same event
+  CONSTRAINT unique_event_earning UNIQUE (event_id)
 );
 
 CREATE INDEX idx_earnings_developer_id ON earnings(developer_id);
@@ -173,7 +177,29 @@ COMMENT ON COLUMN events.reconciled_at IS 'When this event was included in earni
 COMMENT ON COLUMN events.earning_id IS 'Link to earnings record created from this event';
 
 -- ============================================================================
--- 6. LOG MIGRATION
+-- 6. CREATE ATOMIC INCREMENT FUNCTION FOR DEVELOPER EARNINGS
+-- ============================================================================
+
+CREATE OR REPLACE FUNCTION increment_developer_earnings(
+  p_developer_id UUID,
+  p_amount DECIMAL
+)
+RETURNS void
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  UPDATE developers
+  SET
+    pending_earnings = pending_earnings + p_amount,
+    lifetime_earnings = lifetime_earnings + p_amount
+  WHERE id = p_developer_id;
+END;
+$$;
+
+COMMENT ON FUNCTION increment_developer_earnings IS 'Atomically increment developer earnings to avoid race conditions';
+
+-- ============================================================================
+-- 7. LOG MIGRATION
 -- ============================================================================
 
 DO $$

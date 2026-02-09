@@ -9,7 +9,11 @@
 -- 1. Marks all pending earnings as "reconciled"
 -- 2. Moves money from pending_earnings to available_balance
 -- 3. Available balance is what you'll pay out via wire transfer
+--
+-- IMPORTANT: Wrapped in transaction for data consistency
 -- ============================================================================
+
+BEGIN;  -- Start transaction
 
 DO $$
 DECLARE
@@ -73,3 +77,5 @@ BEGIN
   RAISE NOTICE '   3. Use record-manual-payout.sql to log each payout';
 
 END $$;
+
+COMMIT;  -- Commit transaction
