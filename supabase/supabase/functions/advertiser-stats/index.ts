@@ -53,7 +53,7 @@ serve(async (req) => {
       // Method 1: advertiser_id query param (for Lovable UI after login)
       const { data } = await supabase
         .from('advertisers')
-        .select('id, company_name, status')
+        .select('id, company_name, status, wallet_balance')
         .eq('id', advertiser_id)
         .single();
       advertiser = data;
@@ -72,7 +72,7 @@ serve(async (req) => {
 
       const { data } = await supabase
         .from('advertisers')
-        .select('id, company_name, status')
+        .select('id, company_name, status, wallet_balance')
         .eq('api_key', advertiserKey)
         .single();
       advertiser = data;
@@ -163,6 +163,7 @@ serve(async (req) => {
       JSON.stringify({
         advertiser_id: advertiser.id,
         company_name: advertiser.company_name,
+        wallet_balance: parseFloat(advertiser.wallet_balance || 0),
         period: {
           start: start_date,
           end: end_date,
