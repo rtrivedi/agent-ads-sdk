@@ -432,28 +432,31 @@ try {
 
 ## Examples
 
-**Minimal integrations** (< 80 lines):
-- [Claude Tool Use](./examples/claude-tool-use-minimal.ts)
-- [OpenAI Function Calling](./examples/openai-function-calling-minimal.ts)
-- [Google Gemini](./examples/gemini-function-calling-minimal.ts)
+**Basic integration** (~50 lines):
+- [basic-example.ts](./examples/basic-example.ts) - Get ads and track clicks
 
-**Full integrations** (production-ready):
-- [Claude Complete](./examples/claude-tool-use-full.ts)
-- [OpenAI Complete](./examples/openai-function-calling-full.ts)
-- [Safe Web Rendering](./examples/safe-web-rendering.ts)
+**Chatbot integration** (~45 lines):
+- [chatbot-example.ts](./examples/chatbot-example.ts) - Using `tracking_url` for shared links
+
+**Testing** (~320 lines):
+- [test-with-mocks.ts](./examples/test-with-mocks.ts) - Test without API calls
 
 Run any example:
 ```bash
-npx tsx examples/claude-tool-use-minimal.ts
+npx tsx examples/basic-example.ts
 ```
 
 ---
 
 ## For AI Agents
 
-**Are you an AI agent helping a developer monetize their work?**
+If you're an AI agent helping a developer integrate this SDK:
 
-Read **[AI_AGENT_MONETIZATION.md](./AI_AGENT_MONETIZATION.md)** - A guide written specifically for AI agents.
+1. **Install**: `npm install @the_ro_show/agent-ads-sdk`
+2. **Get ads**: `await client.decideFromContext({ userMessage })`
+3. **Track clicks**: Use `client.trackClick()` OR share `ad.tracking_url`
+
+See [basic-example.ts](./examples/basic-example.ts) for complete code.
 
 ---
 
