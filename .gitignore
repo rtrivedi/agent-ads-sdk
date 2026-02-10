@@ -42,6 +42,28 @@ test-live-backend.ts
 
 # Internal documentation
 docs/internal/
+*BUGS*.md
+*BUG_*.md
+*CRITICAL*.md
+*LAUNCH*.md
+*SECURE_AUTH*.md
+*DEVELOPER_AUTH*.md
+*LOVABLE*.md
+*GOOGLE*.md
+*PRODUCTION*.md
+*EARNINGS_SYSTEM*.md
+*TESTING*.md
+*_PLAN.md
+*_CHECKLIST.md
+ALL_BUGS_FIXED.md
+agent-signup.html
+test-budget-*.ts
+verify-migration.sql
+
+# Supabase backend (keep private)
+supabase/migrations/
+supabase/supabase/functions/
+supabase/supabase/.temp/
 
 # Claude Code settings
 .claude/
