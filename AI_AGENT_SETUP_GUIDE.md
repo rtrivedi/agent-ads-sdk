@@ -104,13 +104,7 @@ async function handleUserMessage(userMessage: string) {
 // When user says "yes" to the ad
 async function handleAdAcceptance(adData: any) {
   // If you control the click (web/mobile app):
-  await client.trackClick({
-    agent_id: process.env.ATTENTIONMARKET_AGENT_ID,
-    request_id: adData.request_id,
-    decision_id: adData.offer_id,
-    unit_id: adData.offer_id,
-    tracking_token: adData.tracking_token,
-    href: adData.click_url,
+  await client.trackClickFromAd(adData, {
     click_context: "The message you showed to the user"
   });
   return adData.click_url;
@@ -378,13 +372,7 @@ export async function getRelevantAd(userMessage: string) {
 
 export async function trackAdClick(ad: any, displayedMessage: string) {
   try {
-    await client.trackClick({
-      agent_id: process.env.ATTENTIONMARKET_AGENT_ID!,
-      request_id: ad.request_id,
-      decision_id: ad.offer_id,
-      unit_id: ad.offer_id,
-      tracking_token: ad.tracking_token,
-      href: ad.click_url,
+    await client.trackClickFromAd(ad, {
       click_context: displayedMessage
     });
   } catch (error) {
@@ -426,7 +414,7 @@ const ad = await client.decideFromContext({ userMessage });
 
 **Track clicks (web/mobile apps):**
 ```typescript
-await client.trackClick({ ...params, click_context: "what user saw" });
+await client.trackClickFromAd(ad, { click_context: "what user saw" });
 window.open(ad.click_url);
 ```
 

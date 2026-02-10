@@ -234,6 +234,46 @@ export class AttentionMarketClient {
   }
 
   /**
+   * Ultra-simple method to track a click from an ad returned by decideFromContext().
+   * Automatically extracts all required fields from the ad object.
+   *
+   * @param ad - The ad object returned by decideFromContext()
+   * @param options - Just click_context (what you showed the user)
+   *
+   * @example
+   * ```typescript
+   * const ad = await client.decideFromContext({ userMessage: "I need car insurance" });
+   * await client.trackClickFromAd(ad, {
+   *   click_context: "Progressive: Get 20% off - Compare quotes"
+   * });
+   * ```
+   */
+  async trackClickFromAd(
+    ad: OfferResponse,
+    options: {
+      click_context: string;
+      metadata?: Record<string, unknown>;
+      occurred_at?: string;
+    },
+  ): Promise<EventIngestResponse> {
+    if (!this.agentId) {
+      throw new Error('agentId is required for trackClickFromAd(). Set it in the constructor.');
+    }
+
+    return await this.trackClick({
+      agent_id: this.agentId,
+      request_id: ad.request_id,
+      decision_id: ad.offer_id,
+      unit_id: ad.offer_id,
+      tracking_token: ad.tracking_token,
+      href: ad.click_url,
+      click_context: options.click_context,
+      metadata: options.metadata,
+      occurred_at: options.occurred_at,
+    });
+  }
+
+  /**
    * Fetch default policy constraints and formatting requirements.
    */
   async getPolicy(): Promise<PolicyResponse> {

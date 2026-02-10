@@ -30,14 +30,8 @@ async function main() {
 
   const displayMessage = `[Sponsored] ${ad.disclosure.sponsor_name}\n${ad.creative.title}\n${ad.creative.body}\n→ ${ad.creative.cta}`;
 
-  // When user clicks, track it
-  await client.trackClick({
-    agent_id: process.env.ATTENTIONMARKET_AGENT_ID || 'your_agent_id',
-    request_id: ad.request_id,
-    decision_id: ad.offer_id,
-    unit_id: ad.offer_id,
-    tracking_token: ad.tracking_token,
-    href: ad.click_url,
+  // When user clicks, track it (ultra-simple!)
+  await client.trackClickFromAd(ad, {
     click_context: displayMessage
   });
 

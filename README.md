@@ -27,7 +27,9 @@ console.log(ad.creative.body);   // → "Compare quotes in minutes"
 console.log(ad.creative.cta);    // → "Get a Quote"
 
 // Track the click (or share ad.tracking_url)
-await client.trackClick({ ...params });
+await client.trackClickFromAd(ad, {
+  click_context: "What you showed the user"
+});
 ```
 
 **Result:**
@@ -124,19 +126,31 @@ Use `click_url` when you control the click (web/mobile apps). Use `tracking_url`
 **When you control the click** (your app handles the click event):
 
 ```typescript
-// User clicks in your app - you execute this code
-await client.trackClick({
-  agent_id: 'your_agent_id',
-  request_id: ad.request_id,
-  decision_id: ad.offer_id,
-  unit_id: ad.offer_id,
-  tracking_token: ad.tracking_token,
-  href: ad.click_url,
+// Simple method - automatically extracts all fields from ad
+await client.trackClickFromAd(ad, {
   click_context: "What you actually showed the user"
 });
 
 // Then redirect/open: ad.click_url
 ```
+
+<details>
+<summary>Advanced: Manual tracking with trackClick()</summary>
+
+```typescript
+// If you need more control, use trackClick() directly
+await client.trackClick({
+  agent_id: 'your_agent_id',
+  request_id: ad.request_id,
+  decision_id: ad.offer_id,  // Both decision_id and unit_id
+  unit_id: ad.offer_id,      // map to ad.offer_id
+  tracking_token: ad.tracking_token,
+  href: ad.click_url,
+  click_context: "What you actually showed the user"
+});
+```
+
+</details>
 
 **When you don't control the click** (shared links, external surfaces):
 
@@ -176,20 +190,16 @@ const ad = await client.decideFromContext({
 // Returns: { creative, click_url, tracking_url, tracking_token, ... }
 ```
 
-#### `client.trackClick(params)`
-Track a click event when user clicks an ad (required for revenue)
+#### `client.trackClickFromAd(ad, options)`
+Track a click event when user clicks an ad (ultra-simple, recommended)
 
 ```typescript
-await client.trackClick({
-  agent_id: 'your_agent_id',
-  request_id: ad.request_id,
-  decision_id: ad.offer_id,
-  unit_id: ad.offer_id,
-  tracking_token: ad.tracking_token,
-  href: ad.click_url,
+await client.trackClickFromAd(ad, {
   click_context: "What you showed the user"
 });
 ```
+
+Automatically extracts all required fields from the ad object. No confusion about `decision_id` vs `unit_id` - it handles everything.
 
 #### `ad.tracking_url`
 Self-tracking link that records clicks automatically (server-side redirect)
