@@ -484,3 +484,44 @@ export interface OfferResponse {
   /** Time-to-live in milliseconds */
   ttl_ms: number;
 }
+
+// ============================================================================
+// DecideFromContext Response
+// ============================================================================
+
+/**
+ * Response from decideFromContext() that includes both the ad unit
+ * and the tracking metadata needed for click tracking.
+ *
+ * Provides convenient field access that matches backend naming (creative, click_url, etc.)
+ * while maintaining access to full AdUnit structure.
+ */
+export interface AdResponse {
+  /** Request ID for tracking (generated internally by decideFromContext) */
+  request_id: string;
+
+  /** Decision ID for tracking */
+  decision_id: string;
+
+  /** Creative content */
+  creative: {
+    title: string;
+    body: string;
+    cta: string;
+  };
+
+  /** Direct clickURL (use with trackClick) */
+  click_url: string;
+
+  /** Server-side tracking URL (use when you don't control the click) */
+  tracking_url?: string;
+
+  /** Tracking token for event tracking */
+  tracking_token: string;
+
+  /** Disclosure information */
+  disclosure: Disclosure;
+
+  /** Full ad unit (for advanced usage) */
+  _ad: AdUnit;
+}

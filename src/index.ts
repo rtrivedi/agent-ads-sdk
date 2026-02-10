@@ -21,6 +21,7 @@ export type {
   DecideRequest,
   DecideFromContextRequest,
   DecideResponse,
+  AdResponse,  // New: Simple response from decideFromContext()
   // Intenture APIs
   RequestOfferParams,
   RequestOfferFromContextParams,

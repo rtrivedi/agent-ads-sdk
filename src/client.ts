@@ -128,6 +128,9 @@ export class AttentionMarketClient {
    * Simplified ad matching using conversation context and semantic search.
    * Automatically handles request construction, taxonomy fallback, and defaults.
    *
+   * Returns AdResponse with convenient field access (creative, click_url, etc.)
+   * plus tracking metadata for easy click tracking.
+   *
    * Requires: agentId in SDKConfig constructor
    *
    * @example
@@ -141,7 +144,7 @@ export class AttentionMarketClient {
   async decideFromContext(
     params: DecideFromContextRequest,
     options?: { idempotencyKey?: string },
-  ): Promise<AdUnit | null> {
+  ): Promise<import('./types.js').AdResponse | null> {
     // Validate agentId is available
     if (!this.agentId) {
       throw new Error(
@@ -199,7 +202,39 @@ export class AttentionMarketClient {
       user_intent: params.userMessage
     };
 
-    return await this.decide(request, options);
+    // Call decideRaw to get full response with metadata
+    const response = await this.decideRaw(request, options);
+
+    if (response.status === 'no_fill' || response.units.length === 0) {
+      return null;
+    }
+
+    // Get first ad unit
+    const adUnit = response.units[0];
+
+    // Only support sponsored_suggestion for now (most common use case)
+    if (!adUnit || adUnit.unit_type !== 'sponsored_suggestion') {
+      return null;
+    }
+
+    // TypeScript now knows adUnit is of type sponsored_suggestion
+    // Construct AdResponse with convenient field access
+    const adResponse: import('./types.js').AdResponse = {
+      request_id: response.request_id,
+      decision_id: response.decision_id,
+      creative: {
+        title: adUnit.suggestion.title,
+        body: adUnit.suggestion.body,
+        cta: adUnit.suggestion.cta,
+      },
+      click_url: adUnit.suggestion.action_url,
+      ...(adUnit.suggestion.tracking_url && { tracking_url: adUnit.suggestion.tracking_url }),
+      tracking_token: adUnit.tracking.token,
+      disclosure: adUnit.disclosure,
+      _ad: adUnit,
+    };
+
+    return adResponse;
   }
 
   /**
@@ -243,13 +278,15 @@ export class AttentionMarketClient {
    * @example
    * ```typescript
    * const ad = await client.decideFromContext({ userMessage: "I need car insurance" });
-   * await client.trackClickFromAd(ad, {
-   *   click_context: "Progressive: Get 20% off - Compare quotes"
-   * });
+   * if (ad) {
+   *   await client.trackClickFromAd(ad, {
+   *     click_context: "Progressive: Get 20% off - Compare quotes"
+   *   });
+   * }
    * ```
    */
   async trackClickFromAd(
-    ad: OfferResponse,
+    ad: import('./types.js').AdResponse,
     options: {
       click_context: string;
       metadata?: Record<string, unknown>;
@@ -260,17 +297,25 @@ export class AttentionMarketClient {
       throw new Error('agentId is required for trackClickFromAd(). Set it in the constructor.');
     }
 
-    return await this.trackClick({
+    const trackParams: any = {
       agent_id: this.agentId,
       request_id: ad.request_id,
-      decision_id: ad.offer_id,
-      unit_id: ad.offer_id,
+      decision_id: ad.decision_id,
+      unit_id: ad._ad.unit_id,
       tracking_token: ad.tracking_token,
       href: ad.click_url,
       click_context: options.click_context,
-      metadata: options.metadata,
-      occurred_at: options.occurred_at,
-    });
+    };
+
+    // Only add optional fields if they're provided
+    if (options.metadata) {
+      trackParams.metadata = options.metadata;
+    }
+    if (options.occurred_at) {
+      trackParams.occurred_at = options.occurred_at;
+    }
+
+    return await this.trackClick(trackParams);
   }
 
   /**
