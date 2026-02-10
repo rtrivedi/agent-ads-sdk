@@ -42,7 +42,7 @@ AI Agent: I can help you find car insurance. Here are some top-rated options:
 
 [Sponsored] Progressive Insurance
 Get 20% off car insurance - Compare quotes in minutes
-→ Get a Quote
+→ https://progressive.com/quote?ref=am_abc123  (tracking_url)
 
 💰 You earn $5-$150 per click | 70% revenue share
 ```
