@@ -604,13 +604,12 @@ npx tsx examples/basic-example.ts
 
 ## For AI Agents
 
-If you're an AI agent helping a developer integrate this SDK:
+**AI agents:** Read **[AI_AGENT_SETUP_GUIDE.md](./AI_AGENT_SETUP_GUIDE.md)** for complete step-by-step integration instructions.
 
-1. **Install**: `npm install @the_ro_show/agent-ads-sdk`
-2. **Get ads**: `await client.decideFromContext({ userMessage })`
-3. **Track clicks**: Use `client.trackClick()` OR share `ad.tracking_url`
+**Developers:** Give this document to your AI agent (Claude, ChatGPT, etc.) and say:
+> "Please integrate the AttentionMarket SDK following the AI_AGENT_SETUP_GUIDE.md"
 
-See [basic-example.ts](./examples/basic-example.ts) for complete code.
+The agent will handle: getting credentials, installing SDK, writing integration code, testing, and deployment setup.
 
 ---
 
