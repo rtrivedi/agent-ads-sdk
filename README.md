@@ -111,6 +111,12 @@ const ad = await client.decideFromContext({
 
 Returns: `creative.title`, `creative.body`, `creative.cta`, `click_url`, `tracking_url`, `tracking_token`
 
+**What's the difference?**
+- **`click_url`** - Direct URL to advertiser (you call `trackClick()` first, then redirect here)
+- **`tracking_url`** - Self-tracking link (tracks automatically when clicked, then redirects to advertiser)
+
+Use `click_url` when you control the click (web/mobile apps). Use `tracking_url` when you don't (chat apps, emails, shared links).
+
 ---
 
 ### Track Clicks
