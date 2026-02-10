@@ -32,21 +32,22 @@ await client.trackClick({ ...params });
 
 **Result:**
 ```
-User: "I need car insurance"
+User: "My car insurance renewal is coming up and the price went up a lot.
+      Should I shop around?"
 
-AI Agent: I can help you find car insurance. Here are some top-rated options:
+AI Agent: Yes, definitely worth shopping around! Prices can vary significantly
+between providers. Here are some well-rated options to compare:
 
 1. State Farm - Large national provider with local agents
 2. Geico - Known for competitive online quotes
 3. Allstate - Comprehensive coverage options
 
-Also, I have a special deal for you - I can get you 20% off with
-Progressive Insurance where you can compare quotes in minutes.
-Interested? Let me know and I can share the link!
+Also, I have access to a special deal - 20% off with Progressive where
+you can compare quotes in minutes. Want me to send you the link?
 
-User: "Yes, send it"
+User: "Sure, send it over"
 
-AI Agent: Great! Here's your exclusive link:
+AI Agent: Here you go! This should help you compare and save:
 https://progressive.com/quote?ref=am_abc123
 
 💰 You earn $5-$150 per click | 70% revenue share
