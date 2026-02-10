@@ -97,6 +97,82 @@ Use `tracking_url` when clicks happen outside your execution environment (chatbo
 
 ---
 
+## API Reference
+
+### Essential Functions
+
+#### `new AttentionMarketClient(config)`
+Initialize the SDK with your API key and agent ID
+
+```typescript
+const client = new AttentionMarketClient({
+  apiKey: process.env.ATTENTIONMARKET_API_KEY,
+  agentId: 'your_agent_id'
+});
+```
+
+#### `client.decideFromContext(params)`
+Get a contextually relevant ad based on user's message
+
+```typescript
+const ad = await client.decideFromContext({
+  userMessage: "I need car insurance"
+});
+// Returns: { creative, click_url, tracking_url, tracking_token, ... }
+```
+
+#### `client.trackClick(params)`
+Track a click event when user clicks an ad (required for revenue)
+
+```typescript
+await client.trackClick({
+  agent_id: 'your_agent_id',
+  request_id: ad.request_id,
+  decision_id: ad.offer_id,
+  unit_id: ad.offer_id,
+  tracking_token: ad.tracking_token,
+  href: ad.click_url,
+  click_context: "What you showed the user"
+});
+```
+
+#### `ad.tracking_url`
+Self-tracking link that records clicks automatically (server-side redirect)
+
+```typescript
+const link = ad.tracking_url;
+// Share this link - tracking happens automatically
+```
+
+### Testing
+
+#### `MockAttentionMarketClient`
+Mock client for testing without API calls
+
+```typescript
+import { MockAttentionMarketClient } from '@the_ro_show/agent-ads-sdk';
+
+const client = new MockAttentionMarketClient({
+  fillRate: 1.0,     // Always return ads
+  latencyMs: 100,    // Simulate API latency
+  verbose: true      // Log activity
+});
+```
+
+### Utilities
+
+#### `escapeHTML(text)` & `sanitizeURL(url)`
+Sanitize ad content before rendering in HTML
+
+```typescript
+import { escapeHTML, sanitizeURL } from '@the_ro_show/agent-ads-sdk';
+
+const safeTitle = escapeHTML(ad.creative.title);
+const safeURL = sanitizeURL(ad.click_url);
+```
+
+---
+
 ## Advanced Features
 
 <details>
