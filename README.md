@@ -19,7 +19,7 @@ npm install @the_ro_show/agent-ads-sdk
 
 ### 1. Get API Key
 
-Sign up at [attentionmarket.ai/signup](https://api.attentionmarket.ai/) to receive:
+Sign up at [api.attentionmarket.ai](https://api.attentionmarket.ai) to receive:
 - Test key: `am_test_...`
 - Live key: `am_live_...`
 - Agent ID
