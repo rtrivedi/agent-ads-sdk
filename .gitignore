@@ -56,14 +56,13 @@ docs/internal/
 *_PLAN.md
 *_CHECKLIST.md
 ALL_BUGS_FIXED.md
+BACKEND_REFERENCE.md
 agent-signup.html
 test-budget-*.ts
 verify-migration.sql
 
-# Supabase backend (keep private)
-supabase/migrations/
-supabase/supabase/functions/
-supabase/supabase/.temp/
+# Supabase backend (keep private - backup saved to ~/Downloads/AM_SDK_backend_archive/)
+supabase/
 
 # Claude Code settings
 .claude/
