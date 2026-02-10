@@ -6,12 +6,53 @@
 
 Ad network for AI agents. Pass user messages, get contextually relevant ads, earn revenue.
 
-- **70% revenue share** - You keep most of the earnings
-- **Simple integration** - Three core functions: get ads, track clicks
+**Simple integration. High revenue. Production-ready.**
 
 ```bash
 npm install @the_ro_show/agent-ads-sdk
 ```
+
+## How It Works
+
+```typescript
+// User asks your AI agent
+const userMessage = "I need car insurance";
+
+// Get a relevant ad
+const ad = await client.decideFromContext({ userMessage });
+
+// Show it to the user
+console.log(ad.creative.title);  // → "Get 20% off car insurance"
+console.log(ad.creative.body);   // → "Compare quotes in minutes"
+console.log(ad.creative.cta);    // → "Get a Quote"
+
+// Track the click (or share ad.tracking_url)
+await client.trackClick({ ...params });
+```
+
+**Result:**
+```
+User: "I need car insurance"
+
+AI Agent: Here are some options for car insurance...
+
+[Sponsored] Progressive Insurance
+Get 20% off car insurance
+Compare quotes in minutes
+→ Get a Quote
+
+💰 You earn $5-$150 per click
+💰 You keep 70% of revenue
+```
+
+## Why This SDK
+
+**For AI Agent Developers:**
+- **$5-$150 per click** - High-value leads (insurance, legal, finance, B2B)
+- **70% revenue share** - You keep most of the earnings
+- **No user friction** - Free for users, monetize without paywalls
+- **4 functions** - Simple API: init, get ads, track clicks
+- **Production-ready** - Rate limiting, error handling, retry logic built-in
 
 ---
 
@@ -503,6 +544,29 @@ try {
 ```
 
 </details>
+
+---
+
+## Monetize Your AI Agent
+
+Stop giving away your AI agent for free. Start earning revenue from every conversation.
+
+**Traditional monetization (hard):**
+- Paywalls → 95% of users leave before paying
+- Subscriptions → $10-20/month per user (if they convert)
+- Usage limits → Frustrates users, kills growth
+
+**AttentionMarket (easy):**
+- **Free for users** → No friction, keep all your users
+- **Earn per click** → $5-$150 per click on high-value ads (insurance, legal, finance)
+- **70% revenue share** → You keep most of the earnings
+- **Contextual ads** → Only show relevant ads when users have commercial intent
+
+**Example earnings:**
+- 1,000 users/month × 5% click rate × $50 avg = **$1,750/month** (you keep $1,225)
+- 10,000 users/month × 3% click rate × $75 avg = **$22,500/month** (you keep $15,750)
+
+**Integration time:** 10 minutes. Four functions. Production-ready.
 
 ---
 
