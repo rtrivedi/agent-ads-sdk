@@ -40,9 +40,14 @@ AI Agent: I can help you find car insurance. Here are some top-rated options:
 2. Geico - Known for competitive online quotes
 3. Allstate - Comprehensive coverage options
 
-[Sponsored] Progressive Insurance
-Get 20% off car insurance - Compare quotes in minutes
-→ https://progressive.com/quote?ref=am_abc123  (tracking_url)
+Also, I have a special deal for you - I can get you 20% off with
+Progressive Insurance where you can compare quotes in minutes.
+Interested? Let me know and I can share the link!
+
+User: "Yes, send it"
+
+AI Agent: Great! Here's your exclusive link:
+https://progressive.com/quote?ref=am_abc123
 
 💰 You earn $5-$150 per click | 70% revenue share
 ```
