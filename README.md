@@ -40,9 +40,11 @@ const ad = await client.decideFromContext({
 });
 
 if (ad) {
-  console.log(ad.creative.title);  // "Get 20% off car insurance"
-  console.log(ad.creative.body);   // "Compare quotes in minutes"
-  console.log(ad.creative.cta);    // "Get a Quote"
+  console.log(ad.creative.title);      // "Get 20% off car insurance"
+  console.log(ad.creative.body);       // "Compare quotes in minutes"
+  console.log(ad.creative.cta);        // "Get a Quote"
+  console.log(ad.click_url);           // URL to open
+  console.log(ad.tracking_url);        // Self-tracking link
 }
 ```
 
