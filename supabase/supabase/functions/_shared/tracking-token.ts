@@ -76,8 +76,14 @@ async function verifySignature(data: string, signature: string): Promise<boolean
   // Decode signature from base64url
   const signatureBase64 = base64urlDecode(signature);
   const signatureBytes = new Uint8Array(signatureBase64.length);
+
+  // P2 Fix #15: Validate character codes are in valid byte range
   for (let i = 0; i < signatureBase64.length; i++) {
-    signatureBytes[i] = signatureBase64.charCodeAt(i);
+    const charCode = signatureBase64.charCodeAt(i);
+    if (charCode > 255) {
+      throw new Error('Invalid signature encoding: contains non-byte characters');
+    }
+    signatureBytes[i] = charCode;
   }
 
   return await crypto.subtle.verify(
@@ -134,17 +140,40 @@ export async function validateTrackingToken(token: string): Promise<TrackingToke
     throw new Error('Invalid token: signature verification failed');
   }
 
-  // Decode payload
-  const jsonData = base64urlDecode(encodedData);
-  const payload = JSON.parse(jsonData) as TrackingTokenPayload;
-
-  // Validate required fields
-  if (!payload.u || !payload.a || !payload.t) {
-    throw new Error('Invalid token: missing required fields');
+  // P1 Fix #6: Add proper error handling for decoding and parsing
+  let jsonData: string;
+  try {
+    jsonData = base64urlDecode(encodedData);
+  } catch (e) {
+    throw new Error('Invalid token: malformed encoding');
   }
 
+  let payload: any;
+  try {
+    payload = JSON.parse(jsonData);
+  } catch (e) {
+    throw new Error('Invalid token: malformed payload JSON');
+  }
+
+  // P1 Fix #5: Validate required fields with type checking and empty string validation
+  if (!payload.u || typeof payload.u !== 'string' || payload.u.trim() === '') {
+    throw new Error('Invalid token: missing or invalid unit_id');
+  }
+  if (!payload.a || typeof payload.a !== 'string' || payload.a.trim() === '') {
+    throw new Error('Invalid token: missing or invalid agent_id');
+  }
+  if (!payload.t || typeof payload.t !== 'number' || payload.t <= 0) {
+    throw new Error('Invalid token: missing or invalid timestamp');
+  }
+
+  const validatedPayload: TrackingTokenPayload = {
+    u: payload.u,
+    a: payload.a,
+    t: payload.t,
+  };
+
   // Check token age
-  const tokenAgeMs = Date.now() - (payload.t * 1000);
+  const tokenAgeMs = Date.now() - (validatedPayload.t * 1000);
   if (tokenAgeMs > TOKEN_MAX_AGE_MS) {
     throw new Error('Invalid token: expired (older than 7 days)');
   }
@@ -153,5 +182,5 @@ export async function validateTrackingToken(token: string): Promise<TrackingToke
     throw new Error('Invalid token: timestamp in future');
   }
 
-  return payload;
+  return validatedPayload;
 }

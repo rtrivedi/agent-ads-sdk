@@ -53,6 +53,27 @@ serve(async (req) => {
       );
     }
 
+    // Validate API key format and determine environment
+    // P1 Fix #9: Proper environment detection to prevent ambiguous keys
+    let environment: 'test' | 'live';
+    let apiKeyColumn: 'api_key_test' | 'api_key_live';
+
+    if (apiKey.startsWith('am_live_')) {
+      environment = 'live';
+      apiKeyColumn = 'api_key_live';
+    } else if (apiKey.startsWith('am_test_')) {
+      environment = 'test';
+      apiKeyColumn = 'api_key_test';
+    } else {
+      return new Response(
+        JSON.stringify({
+          error: 'auth_error',
+          message: 'Invalid API key format. Must start with am_test_ or am_live_'
+        }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const { data: developer, error: authError } = await supabase
       .from('developers')
       .select(`
@@ -66,9 +87,10 @@ serve(async (req) => {
         revenue_share_pct,
         payout_threshold,
         payout_schedule,
-        last_payout_at
+        last_payout_at,
+        status
       `)
-      .eq('api_key', apiKey)
+      .eq(apiKeyColumn, apiKey)
       .single();
 
     if (authError || !developer) {
@@ -81,10 +103,23 @@ serve(async (req) => {
       );
     }
 
-    // Get this month's stats
+    // Check developer status
+    if (developer.status !== 'active') {
+      return new Response(
+        JSON.stringify({
+          error: 'auth_error',
+          message: `Developer account is ${developer.status}. Contact support@attentionmarket.ai`
+        }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // P2 Fix #10: Corrected comment - queries last 30 days, not calendar month
+    // Get last 30 days stats
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
-    const { data: recentEarnings } = await supabase
+    // P2 Fix #11: Add error handling for earnings query
+    const { data: recentEarnings, error: earningsError } = await supabase
       .from('earnings')
       .select('id, gross_amount, net_amount, occurred_at, status')
       .eq('developer_id', developer.id)
@@ -92,13 +127,18 @@ serve(async (req) => {
       .order('occurred_at', { ascending: false })
       .limit(100);
 
+    if (earningsError) {
+      console.error('[DeveloperEarnings] Failed to fetch recent earnings:', earningsError);
+      // Continue with empty array rather than failing entire request
+    }
+
     const clicksThisMonth = recentEarnings?.length || 0;
     const pendingThisMonth = recentEarnings
       ?.filter(e => e.status === 'pending')
       .reduce((sum, e) => sum + parseFloat(e.net_amount), 0) || 0;
 
     // Get detailed earnings breakdown (last 100)
-    const { data: earningsBreakdown } = await supabase
+    const { data: earningsBreakdown, error: breakdownError } = await supabase
       .from('earnings')
       .select(`
         id,
@@ -113,8 +153,12 @@ serve(async (req) => {
       .order('occurred_at', { ascending: false })
       .limit(100);
 
+    if (breakdownError) {
+      console.error('[DeveloperEarnings] Failed to fetch earnings breakdown:', breakdownError);
+    }
+
     // Get payout history
-    const { data: payouts } = await supabase
+    const { data: payouts, error: payoutsError } = await supabase
       .from('payouts')
       .select(`
         id,
@@ -134,6 +178,10 @@ serve(async (req) => {
       .eq('developer_id', developer.id)
       .order('completed_at', { ascending: false })
       .limit(20);
+
+    if (payoutsError) {
+      console.error('[DeveloperEarnings] Failed to fetch payout history:', payoutsError);
+    }
 
     // Check payout eligibility
     const eligibleForPayout = parseFloat(developer.available_balance) >= parseFloat(developer.payout_threshold);
