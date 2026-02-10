@@ -34,15 +34,17 @@ await client.trackClick({ ...params });
 ```
 User: "I need car insurance"
 
-AI Agent: Here are some options for car insurance...
+AI Agent: I can help you find car insurance. Here are some top-rated options:
+
+1. State Farm - Large national provider with local agents
+2. Geico - Known for competitive online quotes
+3. Allstate - Comprehensive coverage options
 
 [Sponsored] Progressive Insurance
-Get 20% off car insurance
-Compare quotes in minutes
+Get 20% off car insurance - Compare quotes in minutes
 → Get a Quote
 
-💰 You earn $5-$150 per click
-💰 You keep 70% of revenue
+💰 You earn $5-$150 per click | 70% revenue share
 ```
 
 ## Why This SDK
