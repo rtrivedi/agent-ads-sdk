@@ -61,6 +61,74 @@ export class AttentionMarketClient {
   }
 
   /**
+   * Infer taxonomy from user message using keyword matching
+   * Returns best-guess taxonomy based on common patterns
+   */
+  private inferTaxonomy(userMessage: string): string {
+    const msg = userMessage.toLowerCase();
+
+    // E-commerce / Business
+    if (msg.match(/\b(ecommerce|e-commerce|online store|shopify|sell products?|product brand)\b/)) {
+      return 'business.ecommerce.platform.trial';
+    }
+    if (msg.match(/\b(start.*business|launch.*business|business formation|llc|incorporate)\b/)) {
+      return 'business.ecommerce.platform.trial'; // Many new businesses need e-commerce
+    }
+
+    // Insurance
+    if (msg.match(/\b(car insurance|auto insurance|vehicle insurance)\b/)) {
+      return 'insurance.auto.full_coverage.quote';
+    }
+    if (msg.match(/\b(health insurance|medical insurance)\b/)) {
+      return 'insurance.health.individual.quote';
+    }
+    if (msg.match(/\b(life insurance)\b/)) {
+      return 'insurance.life.term.quote';
+    }
+    if (msg.match(/\b(insurance)\b/)) {
+      return 'insurance.auto.full_coverage.quote'; // Default to auto
+    }
+
+    // Finance
+    if (msg.match(/\b(personal loan|debt consolidation|borrow money)\b/)) {
+      return 'finance.loans.personal.apply';
+    }
+    if (msg.match(/\b(credit card)\b/)) {
+      return 'finance.credit_cards.rewards.apply';
+    }
+
+    // Home Services
+    if (msg.match(/\b(mover?s?|moving|relocat(e|ing))\b/)) {
+      return 'home_services.moving.local.quote';
+    }
+    if (msg.match(/\b(plumber|plumbing|leak|pipe)\b/)) {
+      return 'home_services.plumbing.emergency.quote';
+    }
+    if (msg.match(/\b(electrician|electrical|wiring)\b/)) {
+      return 'home_services.electrical.repair.quote';
+    }
+    if (msg.match(/\b(clean(ing|er)|maid service)\b/)) {
+      return 'home_services.cleaning.regular.book';
+    }
+
+    // Travel
+    if (msg.match(/\b(hotel|lodging|accommodation)\b/)) {
+      return 'travel.hotels.luxury.book';
+    }
+    if (msg.match(/\b(flight|plane ticket|airfare)\b/)) {
+      return 'travel.flights.domestic.book';
+    }
+
+    // Legal
+    if (msg.match(/\b(lawyer|attorney|legal help)\b/)) {
+      return 'legal.general.consultation';
+    }
+
+    // Default fallback for business-related queries
+    return 'business.ecommerce.platform.trial';
+  }
+
+  /**
    * Validate SDK configuration for security
    */
   private validateConfig(config: SDKConfig): void {
@@ -76,7 +144,7 @@ export class AttentionMarketClient {
 
     // Validate API key format (if provided)
     if (config.apiKey) {
-      const apiKeyPattern = /^am_(live|test)_[a-zA-Z0-9]+$/;
+      const apiKeyPattern = /^am_(live|test)_[a-zA-Z0-9_]+$/;
       if (!apiKeyPattern.test(config.apiKey)) {
         console.warn(
           'Warning: API key does not match expected format (am_live_... or am_test_...). ' +
@@ -168,9 +236,8 @@ export class AttentionMarketClient {
     const platform = params.platform || 'web';
     const placementType = params.placement || 'sponsored_suggestion';
 
-    // Build taxonomy from suggestedCategory or use fallback
-    // Backend semantic matching doesn't strictly require valid taxonomy
-    const taxonomy = params.suggestedCategory || 'unknown';
+    // Build taxonomy from suggestedCategory or infer from user message
+    const taxonomy = params.suggestedCategory || this.inferTaxonomy(params.userMessage);
 
     // Build full DecideRequest with semantic context
     const request: DecideRequest = {

@@ -22,14 +22,12 @@ const userMessage = "I need car insurance";
 const ad = await client.decideFromContext({ userMessage });
 
 // Show it to the user
-console.log(ad.creative.title);  // → "Get 20% off car insurance"
-console.log(ad.creative.body);   // → "Compare quotes in minutes"
-console.log(ad.creative.cta);    // → "Get a Quote"
+console.log(ad.creative.title);    // → "Get 20% off car insurance"
+console.log(ad.creative.body);     // → "Compare quotes in minutes"
+console.log(ad.creative.cta);      // → "Get a Quote"
+console.log(ad.click_url);         // → Auto-tracking URL
 
-// Track the click (or share ad.tracking_url)
-await client.trackClickFromAd(ad, {
-  click_context: "What you showed the user"
-});
+// That's it! Clicks track automatically when user follows the link
 ```
 
 **Result:**
@@ -61,7 +59,7 @@ https://progressive.com/quote?ref=am_abc123
 - **$5-$150 per click** - High-value leads (insurance, legal, finance, B2B)
 - **70% revenue share** - You keep most of the earnings
 - **No user friction** - Free for users, monetize without paywalls
-- **4 functions** - Simple API: init, get ads, track clicks
+- **2 functions** - Simple API: init, get ads (clicks track automatically)
 - **Production-ready** - Rate limiting, error handling, retry logic built-in
 
 ---
@@ -94,8 +92,10 @@ if (ad) {
   console.log(ad.creative.title);      // "Get 20% off car insurance"
   console.log(ad.creative.body);       // "Compare quotes in minutes"
   console.log(ad.creative.cta);        // "Get a Quote"
-  console.log(ad.click_url);           // URL to open
-  console.log(ad.tracking_url);        // Self-tracking link
+  console.log(ad.click_url);           // Auto-tracking URL
+
+  // That's it! Share ad.click_url with user
+  // Clicks track automatically, you get paid
 }
 ```
 
@@ -111,58 +111,67 @@ const ad = await client.decideFromContext({
 });
 ```
 
-Returns: `creative.title`, `creative.body`, `creative.cta`, `click_url`, `tracking_url`, `tracking_token`
+Returns: `creative.title`, `creative.body`, `creative.cta`, `click_url`
 
-**What's the difference?**
-- **`click_url`** - Direct URL to advertiser (you call `trackClick()` first, then redirect here)
-- **`tracking_url`** - Self-tracking link (tracks automatically when clicked, then redirects to advertiser)
+**All URLs auto-track clicks** - No manual tracking code needed!
 
-Use `click_url` when you control the click (web/mobile apps). Use `tracking_url` when you don't (chat apps, emails, shared links).
+When user clicks any link, we:
+1. Track the click automatically
+2. Redirect to advertiser
+3. Credit your account
+
+Works in chat apps, emails, SMS, web apps - anywhere users can click links.
 
 ---
 
 ### Track Clicks
 
-**When you control the click** (your app handles the click event):
+**✅ Automatic (Recommended)**
+
+Clicks track automatically - no code needed! Just share the ad URL:
 
 ```typescript
-// Simple method - automatically extracts all fields from ad
-await client.trackClickFromAd(ad, {
-  click_context: "What you actually showed the user"
-});
+const ad = await client.decideFromContext({ userMessage });
 
-// Then redirect/open: ad.click_url
+// Share this with users - clicks track automatically
+const link = ad.click_url;
+
+// Works in: chat apps, email, SMS, web apps, anywhere
+```
+
+**📊 Optional: Track Impressions**
+
+Track when you *show* an ad (before user clicks):
+
+```typescript
+await client.track({
+  agent_id: 'your_agent_id',
+  event_type: 'ad_impression',
+  metadata: {
+    decision_id: ad.offer_id,
+    unit_id: ad.offer_id,
+    surface: 'chat_message'
+  }
+});
 ```
 
 <details>
-<summary>Advanced: Manual tracking with trackClick()</summary>
+<summary>Advanced: Manual click tracking (legacy)</summary>
+
+If you need to track clicks manually (not recommended - auto-tracking is easier):
 
 ```typescript
-// If you need more control, use trackClick() directly
-await client.trackClick({
-  agent_id: 'your_agent_id',
-  request_id: ad.request_id,
-  decision_id: ad.offer_id,  // Both decision_id and unit_id
-  unit_id: ad.offer_id,      // map to ad.offer_id
-  tracking_token: ad.tracking_token,
-  href: ad.click_url,
-  click_context: "What you actually showed the user"
+// Before redirecting to ad.click_url
+await client.trackClickFromAd(ad, {
+  click_context: "What you showed the user"
 });
+
+// Then redirect: window.location.href = ad.click_url
 ```
+
+**Note:** Auto-tracking is simpler and works in more scenarios (email, SMS, etc).
 
 </details>
-
-**When you don't control the click** (shared links, external surfaces):
-
-```typescript
-// Share this link - tracking happens automatically
-const link = ad.tracking_url;
-
-// Use anywhere: chat apps, email, SMS, messages
-// Click tracking works without your code executing
-```
-
-Use `tracking_url` when clicks happen outside your execution environment (chatbots sharing links, message forwarding, etc).
 
 ---
 
@@ -190,23 +199,35 @@ const ad = await client.decideFromContext({
 // Returns: { creative, click_url, tracking_url, tracking_token, ... }
 ```
 
-#### `client.trackClickFromAd(ad, options)`
-Track a click event when user clicks an ad (ultra-simple, recommended)
+#### `ad.click_url` ⭐ NEW: Auto-tracking
+All ad URLs now track clicks automatically via server-side redirects
 
 ```typescript
-await client.trackClickFromAd(ad, {
-  click_context: "What you showed the user"
-});
+const ad = await client.decideFromContext({ userMessage });
+
+// Just share this URL - clicks track automatically!
+const link = ad.click_url;
+
+// When user clicks:
+// 1. We track the click
+// 2. User is redirected to advertiser
+// 3. You get paid
 ```
 
-Automatically extracts all required fields from the ad object. No confusion about `decision_id` vs `unit_id` - it handles everything.
+**No manual tracking code needed.** Works in chat apps, emails, SMS, anywhere.
 
-#### `ad.tracking_url`
-Self-tracking link that records clicks automatically (server-side redirect)
+#### `client.track(event)` (Optional)
+Track impressions or custom events
 
 ```typescript
-const link = ad.tracking_url;
-// Share this link - tracking happens automatically
+await client.track({
+  agent_id: 'your_agent_id',
+  event_type: 'ad_impression',
+  metadata: {
+    decision_id: ad.offer_id,
+    surface: 'chat'
+  }
+});
 ```
 
 ### Testing
