@@ -19,6 +19,10 @@ import type {
   RequestOfferParams,
   RequestOfferFromContextParams,
   OfferResponse,
+  ServiceResultRequest,
+  ServiceResultResponse,
+  GetServiceRequest,
+  ServiceResponse,
 } from './types.js';
 import type { CreateImpressionEventParams, CreateClickEventParams } from './utils.js';
 
@@ -285,10 +289,16 @@ export class AttentionMarketClient {
     }
 
     // TypeScript now knows adUnit is of type sponsored_suggestion
-    // Construct AdResponse with convenient field access
+    // Construct AdResponse with convenient field access and new advertising exchange fields
     const adResponse: import('./types.js').AdResponse = {
       request_id: response.request_id,
       decision_id: response.decision_id,
+
+      // NEW: Advertising exchange fields (v0.8.0+)
+      advertiser_id: (adUnit as any).advertiser_id || 'unknown',
+      ad_type: (adUnit as any).ad_type || 'link', // Default to 'link' for backward compatibility
+      payout: (adUnit as any).payout || 0,
+
       creative: {
         title: adUnit.suggestion.title,
         body: adUnit.suggestion.body,
@@ -299,6 +309,17 @@ export class AttentionMarketClient {
       tracking_token: adUnit.tracking.token,
       disclosure: adUnit.disclosure,
       _ad: adUnit,
+
+      // NEW: Recommendation ad fields (if applicable)
+      ...((adUnit as any).suggestion?.teaser && { teaser: (adUnit as any).suggestion.teaser }),
+      ...((adUnit as any).suggestion?.promo_code && { promo_code: (adUnit as any).suggestion.promo_code }),
+      ...((adUnit as any).suggestion?.message && { message: (adUnit as any).suggestion.message }),
+
+      // NEW: Service ad fields (if applicable)
+      ...((adUnit as any).transaction_id && { transaction_id: (adUnit as any).transaction_id }),
+      ...((adUnit as any).suggestion?.service_endpoint && { service_endpoint: (adUnit as any).suggestion.service_endpoint }),
+      ...((adUnit as any).suggestion?.service_auth && { service_auth: (adUnit as any).suggestion.service_auth }),
+      ...((adUnit as any).suggestion?.service_description && { service_description: (adUnit as any).suggestion.service_description }),
     };
 
     return adResponse;
@@ -821,5 +842,156 @@ export class AttentionMarketClient {
       } : {}),
       ttl_ms: response.ttl_ms
     };
+  }
+
+  // ============================================================================
+  // Advertising Exchange APIs (v0.8.0+)
+  // ============================================================================
+
+  /**
+   * Request an agent-to-agent service for a specific task.
+   *
+   * This API returns service endpoint details for tasks that another agent
+   * can perform (e.g., legal document drafting, data analysis, image generation).
+   *
+   * **Pay-per-completion billing:**
+   * You earn money when the service completes successfully. Call `logServiceResult()`
+   * after the service finishes to trigger payment.
+   *
+   * @example
+   * ```typescript
+   * // User needs a legal document drafted
+   * const service = await client.getService({
+   *   taskDescription: "Draft a non-disclosure agreement for a software contractor",
+   *   geo: { country: 'US', region: 'CA' }
+   * });
+   *
+   * if (service) {
+   *   // Call the service endpoint
+   *   const response = await fetch(service.service_endpoint, {
+   *     method: 'POST',
+   *     headers: {
+   *       'Authorization': `Bearer ${service.service_auth}`,
+   *       'Content-Type': 'application/json',
+   *     },
+   *     body: JSON.stringify({
+   *       task: "Draft NDA",
+   *       details: { ... }
+   *     })
+   *   });
+   *
+   *   const result = await response.json();
+   *
+   *   // Log completion (triggers payment if successful)
+   *   await client.logServiceResult({
+   *     transaction_id: service.transaction_id,
+   *     success: response.ok,
+   *     metadata: { result_summary: result }
+   *   });
+   * }
+   * ```
+   */
+  async getService(
+    params: GetServiceRequest
+  ): Promise<ServiceResponse | null> {
+    // Validate agentId is available
+    if (!this.agentId) {
+      throw new Error(
+        'getService() requires agentId to be set in SDKConfig. ' +
+        'Either provide agentId in the constructor or use decide() directly.'
+      );
+    }
+
+    // Build DecideRequest for service ads
+    const request: DecideRequest = {
+      request_id: generateUUID(),
+      agent_id: this.agentId,
+      placement: {
+        type: 'sponsored_suggestion',
+        surface: 'service_request'
+      },
+      opportunity: {
+        intent: {
+          taxonomy: 'services.agent_to_agent',
+          query: params.taskDescription
+        },
+        context: {
+          country: params.geo?.country || 'US',
+          language: 'en',
+          platform: 'web' as const,
+          ...(params.geo?.region && { region: params.geo.region }),
+          ...(params.geo?.city && { city: params.geo.city }),
+        },
+        constraints: {
+          max_units: 1,
+          allowed_unit_types: ['sponsored_suggestion']
+        },
+        privacy: {
+          data_policy: 'coarse_only'
+        }
+      },
+      context: params.context || params.taskDescription,
+      user_intent: params.taskDescription
+    };
+
+    // Call decide endpoint
+    const response = await this.decideRaw(request);
+
+    if (response.status === 'no_fill' || response.units.length === 0) {
+      return null;
+    }
+
+    const adUnit = response.units[0] as any;
+
+    // Only return if it's a service ad
+    if (adUnit.ad_type !== 'service') {
+      return null;
+    }
+
+    return {
+      transaction_id: adUnit.transaction_id,
+      service_endpoint: adUnit.suggestion?.service_endpoint || '',
+      service_auth: adUnit.suggestion?.service_auth || '',
+      service_description: adUnit.suggestion?.service_description || adUnit.suggestion.body,
+      payout: adUnit.payout || 0,
+      advertiser_id: adUnit.advertiser_id,
+      disclosure: {
+        label: adUnit.disclosure.label,
+        sponsor_name: adUnit.disclosure.sponsor_name,
+      },
+    };
+  }
+
+  /**
+   * Log the result of an agent-to-agent service completion.
+   *
+   * This triggers payment if the service completed successfully.
+   * Part of the pay-per-completion billing model.
+   *
+   * @example
+   * ```typescript
+   * // After calling the service endpoint
+   * const result = await client.logServiceResult({
+   *   transaction_id: service.transaction_id,
+   *   success: true,
+   *   metadata: {
+   *     execution_time_ms: 1500,
+   *     result_summary: "NDA drafted successfully"
+   *   }
+   * });
+   *
+   * if (result.payment_triggered) {
+   *   console.log(`Earned $${result.payment_amount}!`);
+   * }
+   * ```
+   */
+  async logServiceResult(
+    params: ServiceResultRequest
+  ): Promise<ServiceResultResponse> {
+    return await this.http.request<ServiceResultResponse>(
+      'POST',
+      '/v1/service-result',
+      { body: params }
+    );
   }
 }

@@ -503,6 +503,15 @@ export interface AdResponse {
   /** Decision ID for tracking */
   decision_id: string;
 
+  /** NEW: Advertiser ID for attribution */
+  advertiser_id: string;
+
+  /** NEW: Type of ad (link, recommendation, service) */
+  ad_type: AdType;
+
+  /** NEW: Amount earned on conversion (second-price auction clearing price) */
+  payout: number;
+
   /** Creative content */
   creative: {
     title: string;
@@ -524,4 +533,117 @@ export interface AdResponse {
 
   /** Full ad unit (for advanced usage) */
   _ad: AdUnit;
+
+  // ===== Recommendation Ad Fields (when ad_type === 'recommendation') =====
+
+  /** Optional teaser question (e.g., "Interested in 20% off e-commerce?") */
+  teaser?: string;
+
+  /** Promo code to display to user */
+  promo_code?: string;
+
+  /** Recommendation message */
+  message?: string;
+
+  // ===== Service Ad Fields (when ad_type === 'service') =====
+
+  /** Transaction ID for tracking service completion */
+  transaction_id?: string;
+
+  /** Service endpoint URL to call */
+  service_endpoint?: string;
+
+  /** Authentication token for service endpoint */
+  service_auth?: string;
+
+  /** Service description */
+  service_description?: string;
+}
+
+// ============================================================================
+// Advertising Exchange Types (v0.8.0+)
+// ============================================================================
+
+/**
+ * Ad type determines format and UX pattern:
+ * - link: Direct offer (simple click)
+ * - recommendation: Teaser question + promo code + link (conversational)
+ * - service: Agent-to-agent API call (outcome-based payment)
+ */
+export type AdType = 'link' | 'recommendation' | 'service';
+
+/**
+ * Request to log service completion result.
+ * Used for pay-per-completion billing.
+ */
+export interface ServiceResultRequest {
+  /** Transaction ID from AdResponse */
+  transaction_id: string;
+
+  /** Whether service completed successfully */
+  success: boolean;
+
+  /** Optional result metadata */
+  metadata?: Record<string, unknown>;
+}
+
+/**
+ * Response from logServiceResult endpoint.
+ * Indicates whether payment was triggered.
+ */
+export interface ServiceResultResponse {
+  transaction_id: string;
+  success: boolean;
+  payment_triggered: boolean;
+  payment_amount: number;
+  message: string;
+}
+
+/**
+ * Response from getService() method.
+ * Contains service endpoint and authentication details.
+ */
+export interface ServiceResponse {
+  /** Transaction ID for tracking completion */
+  transaction_id: string;
+
+  /** Service endpoint URL to call */
+  service_endpoint: string;
+
+  /** Authentication token for service */
+  service_auth: string;
+
+  /** Service description */
+  service_description: string;
+
+  /** Amount earned on successful completion */
+  payout: number;
+
+  /** Advertiser ID */
+  advertiser_id: string;
+
+  /** Disclosure information */
+  disclosure: {
+    label: string;
+    sponsor_name: string;
+  };
+}
+
+/**
+ * Request parameters for getService() method.
+ * Requests agent-to-agent service for a specific task.
+ */
+export interface GetServiceRequest {
+  /** Task description (what needs to be done) */
+  taskDescription: string;
+
+  /** Optional context for better matching */
+  context?: string;
+
+  /** Geographic context */
+  geo?: {
+    country?: string;
+    city?: string;
+    region?: string;
+  };
 }

@@ -175,6 +175,178 @@ await client.trackClickFromAd(ad, {
 
 ---
 
+## Advertising Exchange (v0.8.0+)
+
+The SDK now supports **3 ad types** optimized for different use cases:
+
+### Ad Types
+
+| Ad Type | Billing Model | Format | Payout |
+|---------|---------------|--------|---------|
+| **Link** | Pay-per-click | Direct offer + link | $5-$150 per click |
+| **Recommendation** | Pay-per-click | Teaser + promo code + link | $8-$75 per click |
+| **Service** | Pay-per-completion | Agent-to-agent API call | $10-$500 per completion |
+
+All ads use **second-price auctions** - you earn the second-highest bid + $0.01, not the winner's full bid. This creates fair market pricing and maximizes your long-term revenue.
+
+---
+
+### 1. Link Ads (Pay-Per-Click)
+
+**Traditional PPC model** - you earn when user clicks the ad.
+
+```typescript
+const ad = await client.decideFromContext({
+  userMessage: "I need car insurance"
+});
+
+if (ad && ad.ad_type === 'link') {
+  console.log(ad.creative.title);      // "Get 20% off car insurance"
+  console.log(ad.payout);              // $15.50 (second-price clearing price)
+  console.log(ad.click_url);           // Auto-tracking URL
+
+  // Share link with user - you earn when they click
+}
+```
+
+**Earnings:** Immediate payment when user clicks the link.
+
+---
+
+### 2. Recommendation Ads (Conversational + Promo Code)
+
+**Click-based billing with conversational UX** - includes optional teaser question to prime user interest.
+
+```typescript
+// Get recommendation ad
+const ad = await client.decideFromContext({
+  userMessage: "I want to sell products online"
+});
+
+if (ad && ad.ad_type === 'recommendation') {
+  // Option A: Conversational (use the teaser)
+  if (ad.teaser) {
+    console.log(ad.teaser);
+    // "Interested in 20% off an e-commerce platform?"
+
+    // User: "Yes!" or "Tell me more"
+  }
+
+  // Show the offer
+  console.log(`${ad.creative.title} - Use code ${ad.promo_code}`);
+  console.log(ad.click_url);
+  // "Try Pietra - Use code STARTUP20"
+  // https://tracking.ai/r/abc123
+
+  // User clicks → You earn $12.50 ✅
+
+  // ─────────────────────────────────────
+
+  // Option B: Direct (skip teaser)
+  console.log(`${ad.creative.title} - ${ad.creative.body}`);
+  console.log(`Code: ${ad.promo_code}`);
+  console.log(ad.click_url);
+
+  // User clicks → You earn $12.50 ✅
+}
+```
+
+**Why teasers work:**
+- Primes user interest with a question
+- User says "yes" → More likely to click
+- Feels conversational, not salesy
+- **Higher click-through rates** (psychology: commitment)
+
+**Earnings:** Payment on click (fraud-proof, no trust issues).
+
+---
+
+### 3. Service Ads (Pay-Per-Completion)
+
+**Outcome-based billing** - you earn when service completes successfully. Perfect for agent-to-agent interactions.
+
+```typescript
+// User needs a task done
+const service = await client.getService({
+  taskDescription: "Draft a non-disclosure agreement",
+  geo: { country: 'US', region: 'CA' }
+});
+
+if (service) {
+  console.log(service.service_description); // "AI-powered legal document drafting"
+  console.log(service.payout);              // $45.00 (second-price clearing price)
+
+  // Call the service endpoint
+  const response = await fetch(service.service_endpoint, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${service.service_auth}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      task: "Draft NDA",
+      parties: ["Company A", "Company B"],
+      jurisdiction: "California"
+    })
+  });
+
+  const result = await response.json();
+
+  // Log completion (triggers payment if successful)
+  const completion = await client.logServiceResult({
+    transaction_id: service.transaction_id,
+    success: response.ok,
+    metadata: {
+      execution_time_ms: 1500,
+      document_length: result.document?.length
+    }
+  });
+
+  if (completion.payment_triggered) {
+    console.log(`Earned $${completion.payment_amount}!`);
+    // → Earned $45.00!
+  }
+}
+```
+
+**Earnings:** Payment triggered only on successful completion (`success: true`).
+
+---
+
+### Understanding Second-Price Auctions
+
+Unlike traditional first-price auctions where winner pays their full bid, **second-price auctions** create fair market pricing:
+
+**Example:**
+- Advertiser A bids $20 (quality score: 1.0) → Auction score: 20.0
+- Advertiser B bids $15 (quality score: 0.9) → Auction score: 13.5
+- Advertiser C bids $10 (quality score: 0.8) → Auction score: 8.0
+
+**Result:**
+- Winner: Advertiser A
+- **You earn:** $13.50 (second-place score ÷ winner's quality) + $0.01 = **$13.51**
+
+This benefits you because:
+1. **Fair pricing** - You earn market rate, not inflated bids
+2. **Higher quality** - Advertisers compete on relevance, not just price
+3. **Long-term revenue** - Sustainable ecosystem keeps advertisers coming back
+
+---
+
+### Quality Scoring
+
+Campaigns start with quality score **0.5** and adjust based on performance:
+
+| Ad Type | Quality Factors | Score Range |
+|---------|----------------|-------------|
+| Link | CTR, conversion rate | 0.1 - 1.0 |
+| Recommendation | Positive response rate | 0.1 - 1.0 |
+| Service | Success rate | 0.1 - 1.0 |
+
+**Higher quality = higher earnings** - Quality score multiplies the bid amount in auction ranking.
+
+---
+
 ## API Reference
 
 ### Essential Functions

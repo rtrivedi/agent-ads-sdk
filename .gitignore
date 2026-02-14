@@ -37,8 +37,10 @@ supabase/.branches/
 supabase/supabase/supabase/
 
 # Test files with real credentials (one-off scripts)
-test-production.ts
-test-live-backend.ts
+test-*.ts
+demo-*.ts
+quick-test.ts
+register-agent.ts
 
 # Internal documentation
 docs/internal/
@@ -55,8 +57,19 @@ docs/internal/
 *TESTING*.md
 *_PLAN.md
 *_CHECKLIST.md
+*_IMPLEMENTATION.md
+*_PRIORITY.md
+*_COMPLETE.md
+*_REPORT.md
+*_CHALLENGE.md
+*_ANALYSIS.md
+ADVERTISING_EXCHANGE_IMPLEMENTATION.md
+AI_AGENT_SETUP_GUIDE.md
 ALL_BUGS_FIXED.md
 BACKEND_REFERENCE.md
+BETTER_SOLUTION_CHALLENGE.md
+IMPLEMENTATION_PRIORITY.md
+NEXT_GEN_ADSENSE_FOR_AGENTS.md
 agent-signup.html
 test-budget-*.ts
 verify-migration.sql
