@@ -72,6 +72,7 @@ Sign up at [api.attentionmarket.ai](https://api.attentionmarket.ai) to receive:
 - Test key: `am_test_...`
 - Live key: `am_live_...`
 - Agent ID
+- **Secure dashboard** with key regeneration and earnings tracking
 
 ### 2. Basic Usage
 
@@ -547,6 +548,20 @@ Never commit API keys to version control. Add to `.gitignore`:
 .env
 .env.local
 ```
+
+**Rotating API Keys:**
+
+If your key is compromised, regenerate it from your [developer dashboard](https://api.attentionmarket.ai):
+1. Click "Regenerate Keys" in your dashboard
+2. Confirm with your password
+3. Copy your new keys (shown once)
+4. Update your environment variables
+5. Redeploy within 1 hour (old keys expire after grace period)
+
+**Security features:**
+- Old keys remain valid for 1 hour (zero-downtime rotation)
+- Rate limiting prevents brute force attacks (5 attempts)
+- Full audit trail of all key changes
 
 #### Sanitize Ad Content
 
