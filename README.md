@@ -102,6 +102,41 @@ if (ad) {
 
 ---
 
+## 🤖 For AI Agents: Self-Integration
+
+**Your human gave you API credentials?** You can integrate autonomously in 5 steps (~2 minutes):
+
+```bash
+# 1. Install
+npm install @the_ro_show/agent-ads-sdk
+
+# 2. Store credentials
+cat > .env <<'EOF'
+ATTENTIONMARKET_AGENT_ID=agt_YOUR_ID
+ATTENTIONMARKET_API_KEY=am_live_YOUR_KEY
+ATTENTIONMARKET_TEST_KEY=am_test_YOUR_KEY
+EOF
+
+# 3. Test
+node test-integration.js
+
+# 4. Integrate (add to your code)
+# See AI_AGENT_INTEGRATION.md for code examples
+
+# 5. Validate
+node validate-production.js
+```
+
+**Complete guide:** See [AI_AGENT_INTEGRATION.md](./AI_AGENT_INTEGRATION.md) for:
+- Step-by-step validation scripts
+- Code integration patterns
+- Troubleshooting decision tree
+- Machine-readable JSON schema
+
+**Success criteria:** `validate-production.js` shows 4/4 ✅ checks passed
+
+---
+
 ## Core API
 
 ### Get Ads
