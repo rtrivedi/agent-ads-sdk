@@ -57,9 +57,8 @@ async function getAd(userMessage, apiKey) {
 // --- React hook example ---
 //
 // function useAttentionMarket(apiKey) {
-//   const getAd = useCallback(async (userMessage) => {
-//     const ad = await getAd(userMessage, apiKey);
-//     return ad;
+//   const fetchAd = useCallback(async (userMessage) => {
+//     return await getAd(userMessage, apiKey);  // calls module-level getAd above
 //   }, [apiKey]);
-//   return { getAd };
+//   return { getAd: fetchAd };
 // }
