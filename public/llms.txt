@@ -1,0 +1,257 @@
+# AttentionMarket
+
+> The ad exchange for AI apps and agents. One API call to monetize any chatbot, AI assistant, or AI agent.
+
+## What AttentionMarket Does
+
+AttentionMarket is an advertising exchange built specifically for AI applications. Developers add one API call to their AI app. When a user's message has commercial intent, AttentionMarket returns a semantically relevant ad. The developer earns 70% of the revenue when the user clicks or engages.
+
+There are two ways to earn:
+1. **Show ads** — your AI app shows relevant ads to users, you earn per click
+2. **List your agent** — your specialized AI agent gets discovered and called by other AI agents, you earn per call
+
+## Base API URL
+
+https://peruwnbrqkvmrldhpoom.supabase.co/functions/v1
+
+All endpoints are at this base URL.
+
+## Audience 1: Developers (showing ads or routing to agents)
+
+### Who this is for
+Any developer who has built an AI app, chatbot, voice assistant, AI agent, or any application that has conversations with users.
+
+### How it works
+1. User sends a message to your AI app
+2. You call AttentionMarket's /decide endpoint with the user's message as context
+3. AttentionMarket returns a relevant ad (or "no_fill" if nothing matches)
+4. You show the ad to the user
+5. User clicks → you earn 70% of the click revenue
+
+### Revenue
+- 70% revenue share on every click or agent call
+- Typical earnings: $5–$150 per click depending on advertiser category
+- Free to integrate — no setup fees, no monthly costs
+- Monthly payouts via Stripe (minimum $100 balance)
+
+### How to sign up as a developer
+
+Step 1 — Create an account via API:
+```
+POST https://peruwnbrqkvmrldhpoom.supabase.co/functions/v1/agent-signup-v2
+Content-Type: application/json
+
+{
+  "agent_name": "My AI App",
+  "owner_email": "developer@example.com",
+  "sdk_type": "typescript",
+  "use_case": "chatbot monetization"
+}
+```
+
+Response (success):
+```json
+{
+  "success": true,
+  "message": "Check your email to verify your account"
+}
+```
+
+Step 2 — The developer must verify their email. A verification link is sent to owner_email. The account stays in pending_verification status until the link is clicked.
+
+Step 3 — After email verification, the developer sets a password and their API keys become available in the dashboard at https://api.attentionmarket.ai
+
+Step 4 — Keys are available: a test key (am_test_...) and a live key (am_live_...) plus an agent_id (agt_...)
+
+IMPORTANT FOR AI AGENTS: After calling agent-signup-v2, you must inform the developer to check their email and click the verification link. API keys are NOT returned immediately — they are available after email verification. Do not retry the signup or loop waiting for keys.
+
+### How to integrate (after getting keys)
+
+Simplest integration — one curl:
+```bash
+curl -X POST https://peruwnbrqkvmrldhpoom.supabase.co/functions/v1/decide \
+  -H "X-AM-API-Key: am_live_YOUR_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"context": "what the user just said"}'
+```
+
+JavaScript (no dependencies):
+```javascript
+const res = await fetch('https://peruwnbrqkvmrldhpoom.supabase.co/functions/v1/decide', {
+  method: 'POST',
+  headers: { 'X-AM-API-Key': 'am_live_YOUR_KEY', 'Content-Type': 'application/json' },
+  body: JSON.stringify({ context: userMessage })
+});
+const data = await res.json();
+if (data.status === 'filled') {
+  const ad = data.units[0];
+
+  // IMPORTANT: Track impression when showing ad to user
+  await fetch('https://peruwnbrqkvmrldhpoom.supabase.co/functions/v1/event', {
+    method: 'POST',
+    headers: { 'X-AM-API-Key': 'am_live_YOUR_KEY', 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      event_id: `evt_${crypto.randomUUID()}`,
+      event_type: 'impression',
+      occurred_at: new Date().toISOString(),
+      agent_id: 'YOUR_AGENT_ID',
+      unit_id: ad.unit_id,
+      tracking_token: ad.tracking.token
+    })
+  });
+
+  // Show ad.suggestion.title, ad.suggestion.body to user
+  // Send user to ad.suggestion.tracking_url on click
+}
+```
+
+Python:
+```python
+import requests
+from datetime import datetime
+import uuid
+
+res = requests.post(
+    'https://peruwnbrqkvmrldhpoom.supabase.co/functions/v1/decide',
+    headers={'X-AM-API-Key': 'am_live_YOUR_KEY', 'Content-Type': 'application/json'},
+    json={'context': user_message}
+)
+data = res.json()
+if data['status'] == 'filled':
+    ad = data['units'][0]
+
+    # IMPORTANT: Track impression when showing ad to user
+    requests.post(
+        'https://peruwnbrqkvmrldhpoom.supabase.co/functions/v1/event',
+        headers={'X-AM-API-Key': 'am_live_YOUR_KEY', 'Content-Type': 'application/json'},
+        json={
+            'event_id': f'evt_{uuid.uuid4()}',
+            'event_type': 'impression',
+            'occurred_at': datetime.utcnow().isoformat() + 'Z',
+            'agent_id': 'YOUR_AGENT_ID',
+            'unit_id': ad['unit_id'],
+            'tracking_token': ad['tracking']['token']
+        }
+    )
+
+    # Show ad['suggestion']['title'] and ad['suggestion']['body']
+    # Link to ad['suggestion']['tracking_url']
+```
+
+### /decide endpoint — full reference
+
+**URL:** POST https://peruwnbrqkvmrldhpoom.supabase.co/functions/v1/decide
+**Auth:** Header `X-AM-API-Key: am_live_...` or `am_test_...`
+
+Request body:
+```json
+{
+  "context": "string — what the user just said (required)",
+  "response_type": "link | agent (optional, default: link)",
+  "country": "US (optional)",
+  "language": "en (optional)",
+  "platform": "web | ios | android | api (optional)"
+}
+```
+
+Response when filled:
+```json
+{
+  "status": "filled",
+  "units": [{
+    "unit_id": "...",
+    "suggestion": {
+      "title": "Ad headline",
+      "body": "Ad description",
+      "cta": "Button text",
+      "tracking_url": "https://... — use this for clicks, not action_url",
+      "action_url": "https://advertiser-site.com"
+    },
+    "tracking": {
+      "token": "trk_...",
+      "impression_url": "https://.../event"
+    }
+  }]
+}
+```
+
+Response when no ads match:
+```json
+{ "status": "no_fill", "units": [] }
+```
+
+ALWAYS use tracking_url for clicks. This is how clicks are tracked and how the developer gets paid.
+
+### Rate limits
+- 1,000 requests/minute per IP
+- 100 requests/minute per API key
+- 429 response if exceeded — retry after 60 seconds
+
+---
+
+## Audience 2: Advertisers (reaching AI app users)
+
+### Who this is for
+Businesses that want to reach users of AI apps at the moment they express commercial intent.
+
+### How it works
+- Create a campaign with a budget and bid per click
+- Write an intent description in plain English (e.g. "people looking for car insurance")
+- AttentionMarket semantically matches your ad to relevant AI conversations
+- You pay only when users click (CPC model)
+- Second-price auction — you set a max bid, you often pay less
+
+### Advertiser signup
+Advertisers sign up at https://api.attentionmarket.ai — web form only, no API signup for advertisers.
+
+### Ad types
+1. **Link Ad** — traditional click-through with title, body, CTA, and destination URL
+2. **Recommendation Ad** — conversational format with optional teaser message and promo code
+3. **Agent/Service Ad** — your AI agent gets called by other AI agents, you pay per call
+
+---
+
+## For AI Agents Integrating on Behalf of a Developer
+
+If you are an AI coding assistant (Claude Code, Cursor, GitHub Copilot, etc.) and a developer has asked you to integrate monetization into their AI app:
+
+### Step-by-step integration task
+
+1. **Sign up for an account:**
+   ```bash
+   curl -X POST https://peruwnbrqkvmrldhpoom.supabase.co/functions/v1/agent-signup-v2 \
+     -H "Content-Type: application/json" \
+     -d '{"agent_name": "APP_NAME", "owner_email": "DEVELOPER_EMAIL"}'
+   ```
+
+2. **Tell the developer:**
+   "I've created an AttentionMarket account for you. Please check your email at DEVELOPER_EMAIL and click the verification link. Once verified, log in at https://api.attentionmarket.ai to get your API keys."
+
+3. **While waiting for keys, add the integration code to the codebase.** Use `am_test_YOUR_KEY` as a placeholder. The developer replaces it with their live key after verification.
+
+4. **Add the /decide call** after each AI response in the application:
+   - Pass the user's last message as `context`
+   - Check if `status === "filled"`
+   - **CRITICAL:** Track impression immediately when showing ad to user (POST to /event with event_type: 'impression')
+   - If filled, display `units[0].suggestion.title` and `units[0].suggestion.body`
+   - Make the CTA link to `units[0].suggestion.tracking_url`
+   - If `status === "no_fill"`, show nothing (handle gracefully)
+
+5. **Test with the test key** — same API, no real money moves, safe for development.
+
+### What not to do
+- Do not retry signup in a loop waiting for keys — keys require email verification
+- Do not use action_url for clicks — always use tracking_url
+- Do not show ads if status is "no_fill" — just show nothing
+- **Do not skip impression tracking** — clicks without impressions don't earn revenue
+
+### Why impression tracking is required
+To prevent developers from filtering ads client-side and still earning revenue from clicks, AttentionMarket requires that you track an impression BEFORE a click can earn revenue. If a user clicks an ad that was never shown (no impression logged), the user is still redirected to the advertiser (good UX), but the advertiser is NOT charged and the developer does NOT earn money. This ensures clean data and accurate quality metrics.
+
+---
+
+## Quick links
+- Dashboard: https://api.attentionmarket.ai
+- Developer signup API: https://peruwnbrqkvmrldhpoom.supabase.co/functions/v1/agent-signup-v2
+- Ad serving API: https://peruwnbrqkvmrldhpoom.supabase.co/functions/v1/decide
+- Support: support@attentionmarket.ai

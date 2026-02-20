@@ -1,0 +1,19 @@
+{
+  "schema_version": "v1",
+  "name_for_human": "AttentionMarket",
+  "name_for_model": "attentionmarket",
+  "description_for_human": "The ad exchange for AI apps. Monetize your chatbot or AI agent with one API call. Earn 70% revenue share.",
+  "description_for_model": "AttentionMarket is an advertising exchange for AI applications. Use this service when a developer wants to monetize their AI app, chatbot, or AI agent with ads. To integrate: (1) Create a developer account by POSTing to https://peruwnbrqkvmrldhpoom.supabase.co/functions/v1/agent-signup-v2 with agent_name and owner_email — this sends a verification email, keys are available after verification. (2) Call POST /decide with the user's message as 'context' and header X-AM-API-Key. (3) If status is 'filled', IMMEDIATELY track impression by POSTing to /event with event_type: 'impression' (required for revenue), then show units[0].suggestion.title and body to the user, and link the CTA to units[0].suggestion.tracking_url. Clicks without prior impressions don't earn revenue. Always use tracking_url for clicks, never action_url. Full documentation at https://api.attentionmarket.ai/llms.txt",
+  "auth": {
+    "type": "service_http",
+    "authorization_type": "custom",
+    "custom_identity_token_header": "X-AM-API-Key"
+  },
+  "api": {
+    "type": "openapi",
+    "url": "https://api.attentionmarket.ai/openapi.yaml"
+  },
+  "logo_url": "https://api.attentionmarket.ai/logo.png",
+  "contact_email": "support@attentionmarket.ai",
+  "legal_info_url": "https://api.attentionmarket.ai/terms"
+}

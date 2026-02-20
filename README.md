@@ -49,6 +49,73 @@ Show `suggestion.title` and `suggestion.body` to your user. When they click, sen
 
 ---
 
+## 🚨 CRITICAL: Impression Tracking Required (v0.9.0+)
+
+**As of v0.9.0, impression tracking is REQUIRED to earn revenue from clicks.**
+
+When you show an ad to a user, you must track an impression. Clicks without prior impressions will:
+- ✅ Still redirect the user to the advertiser (good UX)
+- ❌ NOT charge the advertiser
+- ❌ NOT credit your earnings
+
+### Why This Matters
+
+This prevents developers from filtering ads client-side and still earning revenue from clicks. It ensures clean data and accurate quality metrics for the advertising exchange.
+
+### Using `decideFromContext()` (Recommended)
+
+**Good news:** If you're using the SDK's `decideFromContext()` method, impressions are tracked **automatically**. No changes needed.
+
+```typescript
+// Impressions tracked automatically ✅
+const ad = await client.decideFromContext({
+  userMessage: "I need car insurance",
+  placement: 'sponsored_suggestion'
+});
+
+if (ad) {
+  // Show ad to user
+  displayAd(ad);
+}
+```
+
+### Using Raw HTTP or `decide()` (Manual Tracking Required)
+
+If you're making raw HTTP calls or using the low-level `decide()` method, you **must manually track impressions**:
+
+```typescript
+// Step 1: Get ad
+const response = await fetch('https://peruwnbrqkvmrldhpoom.supabase.co/functions/v1/decide', {
+  method: 'POST',
+  headers: { 'X-AM-API-Key': 'am_live_...' },
+  body: JSON.stringify({ context: 'I need car insurance' })
+});
+const data = await response.json();
+
+if (data.status === 'filled') {
+  const ad = data.units[0];
+
+  // Step 2: Track impression IMMEDIATELY when showing ad ✅
+  await fetch('https://peruwnbrqkvmrldhpoom.supabase.co/functions/v1/event', {
+    method: 'POST',
+    headers: { 'X-AM-API-Key': 'am_live_...' },
+    body: JSON.stringify({
+      event_id: `evt_${crypto.randomUUID()}`,
+      event_type: 'impression',
+      occurred_at: new Date().toISOString(),
+      agent_id: 'YOUR_AGENT_ID',
+      unit_id: ad.unit_id,
+      tracking_token: ad.tracking.token
+    })
+  });
+
+  // Step 3: Now safe to show ad and earn from clicks
+  displayAd(ad);
+}
+```
+
+---
+
 ## Use Case 1: Monetize Your Chatbot or AI Assistant
 
 Any app with conversations can earn revenue. Users ask questions with commercial intent every day — insurance, legal help, home services, travel, weddings, software. When they do, you can surface a relevant offer and earn.

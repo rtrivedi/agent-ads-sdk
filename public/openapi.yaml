@@ -1,0 +1,410 @@
+openapi: 3.1.0
+info:
+  title: AttentionMarket API
+  description: |
+    The ad exchange for AI apps. One API call to monetize any chatbot, AI assistant, or AI agent.
+
+    **Two ways to earn:**
+    - Show ads in your AI app and earn 70% of click revenue
+    - List your AI agent and earn per call from other agents
+
+    **Base URL:** https://peruwnbrqkvmrldhpoom.supabase.co/functions/v1
+
+    **Authentication:** Include `X-AM-API-Key: am_live_...` header on all requests to /decide, /track-click, and /track-call.
+    Signup endpoints require no authentication.
+  version: "1.0.0"
+  contact:
+    email: support@attentionmarket.ai
+
+servers:
+  - url: https://peruwnbrqkvmrldhpoom.supabase.co/functions/v1
+    description: Production API
+
+paths:
+
+  /agent-signup-v2:
+    post:
+      operationId: developerSignup
+      summary: Create a developer account
+      description: |
+        Creates a new developer account and sends a verification email.
+        API keys are NOT returned immediately — they become available after the developer
+        clicks the verification link in their email and sets a password.
+
+        After calling this endpoint, inform the developer to check their email.
+        Once verified, keys are available at https://api.attentionmarket.ai
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - agent_name
+                - owner_email
+              properties:
+                agent_name:
+                  type: string
+                  description: Name of the AI app or agent being registered (1-100 characters)
+                  example: "My Weather Assistant"
+                owner_email:
+                  type: string
+                  format: email
+                  description: Developer's email address — verification link will be sent here
+                  example: "developer@example.com"
+                sdk_type:
+                  type: string
+                  description: Primary language/SDK being used
+                  default: "typescript"
+                  example: "python"
+                use_case:
+                  type: string
+                  description: Brief description of the app's use case
+                  example: "Conversational weather assistant for iOS"
+                company_name:
+                  type: string
+                  description: Optional company or project name
+                  example: "Acme Corp"
+      responses:
+        "201":
+          description: Account created successfully. Verification email sent.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Check your email to verify your account"
+        "400":
+          description: Missing or invalid fields
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "429":
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /decide:
+    post:
+      operationId: decide
+      summary: Get a relevant ad or agent for the current conversation
+      description: |
+        The core monetization endpoint. Pass the user's message (or conversation context)
+        and receive a relevant ad or agent recommendation.
+
+        Returns "filled" with ad units when a match is found, or "no_fill" when nothing matches.
+        When no_fill, show nothing to the user — this is normal and expected.
+
+        **CRITICAL: Track impressions to earn revenue.**
+        When you show an ad to the user, immediately POST to /event with event_type: 'impression'.
+        Clicks without prior impressions will redirect the user but NOT charge the advertiser
+        or credit your earnings. This prevents client-side ad filtering.
+
+        **Always use tracking_url for clicks, not action_url.**
+        tracking_url is how clicks are tracked and how you get paid.
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - context
+              properties:
+                context:
+                  type: string
+                  description: The user's message or current conversation context. More context = better matching.
+                  example: "I need car insurance for my new car"
+                response_type:
+                  type: string
+                  enum: [link, agent]
+                  default: link
+                  description: |
+                    "link" returns a traditional click-through ad.
+                    "agent" returns a specialized AI agent that can be called programmatically.
+                country:
+                  type: string
+                  default: "US"
+                  example: "US"
+                language:
+                  type: string
+                  default: "en"
+                  example: "en"
+                platform:
+                  type: string
+                  enum: [web, ios, android, api]
+                  default: "web"
+      responses:
+        "200":
+          description: Decision made. Check status field — "filled" or "no_fill".
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/FilledResponse"
+                  - $ref: "#/components/schemas/NoFillResponse"
+        "400":
+          description: Missing context field
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Missing or invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "429":
+          description: Rate limit exceeded (1000 req/min per IP, 100 req/min per key)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /track-click/{token}:
+    post:
+      operationId: trackClick
+      summary: Record a user click on an ad
+      description: |
+        Called when a user clicks an ad. This records the click, charges the advertiser,
+        and credits the developer's earnings.
+
+        **IMPORTANT: Requires prior impression tracking.**
+        Clicks without a prior impression event (POST to /event with event_type: 'impression')
+        will redirect the user to the advertiser but will NOT charge the advertiser or credit
+        your earnings. Always track impressions when showing ads to users.
+
+        In most cases you do NOT need to call this directly — using tracking_url from
+        the /decide response automatically handles click tracking via redirect.
+        Only call this endpoint if you need server-side click tracking.
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The tracking token from units[0].tracking.token in the /decide response
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                context:
+                  type: object
+                  description: Optional additional context about the click
+      responses:
+        "200":
+          description: Click recorded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "recorded"
+                  event_id:
+                    type: string
+                    example: "evt_abc123"
+                  earnings_credited:
+                    type: number
+                    description: Amount credited to developer earnings in dollars
+                    example: 0.70
+        "401":
+          description: Invalid or expired tracking token
+        "409":
+          description: Campaign no longer active or budget exhausted
+
+  /track-call/{token}:
+    post:
+      operationId: trackCall
+      summary: Record a completed agent-to-agent call
+      description: |
+        Called after successfully calling a specialized agent returned by /decide
+        with response_type "agent". Records the call, charges the advertiser's campaign,
+        and credits the developer's earnings (70% of the bid).
+
+        Flow:
+        1. Call /decide with response_type "agent"
+        2. Get endpoint and tracking.call_url from the response
+        3. Call the specialized agent's endpoint
+        4. POST to tracking.call_url (which is /track-call/{token}) to confirm the call happened
+        5. Developer earns 70% of the clearing price
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The token from units[0].tracking.call_url in the /decide agent response
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                result:
+                  type: string
+                  description: Optional outcome of the agent call
+                  example: "success"
+                duration_ms:
+                  type: number
+                  description: Optional duration of the agent call in milliseconds
+                  example: 1200
+                context:
+                  type: object
+                  description: Optional additional context about the call
+      responses:
+        "200":
+          description: Call recorded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "recorded"
+                  event_id:
+                    type: string
+                    example: "evt_abc123"
+                  earnings_credited:
+                    type: number
+                    description: Amount credited to developer earnings in dollars
+                    example: 1.05
+        "401":
+          description: Invalid or expired call token
+        "409":
+          description: Campaign no longer active or budget exhausted
+
+components:
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-AM-API-Key
+      description: Developer API key. Starts with am_live_ for production or am_test_ for testing.
+
+  schemas:
+
+    FilledResponse:
+      type: object
+      properties:
+        request_id:
+          type: string
+          example: "req_abc123"
+        decision_id:
+          type: string
+          example: "dec_xyz789"
+        status:
+          type: string
+          enum: [filled]
+        ttl_ms:
+          type: integer
+          description: How long the ad decision is valid in milliseconds
+          example: 300000
+        units:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdUnit"
+
+    NoFillResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [no_fill]
+        units:
+          type: array
+          maxItems: 0
+          example: []
+
+    AdUnit:
+      type: object
+      properties:
+        unit_id:
+          type: string
+        unit_type:
+          type: string
+          example: "sponsored_suggestion"
+        suggestion:
+          type: object
+          description: Present when response_type is "link" (ad content to display)
+          properties:
+            title:
+              type: string
+              description: Ad headline — show this to the user
+              example: "Get 20% off car insurance"
+            body:
+              type: string
+              description: Ad description — show this to the user
+              example: "Compare quotes from top insurers in minutes"
+            cta:
+              type: string
+              description: Call-to-action button text
+              example: "Get a Quote"
+            tracking_url:
+              type: string
+              description: ALWAYS use this for clicks. Tracks the click and redirects to the advertiser.
+              example: "https://.../track-click/eyJ..."
+            action_url:
+              type: string
+              description: Direct advertiser URL. For display only — do not use for clicks.
+              example: "https://advertiser.com/landing"
+        agent_name:
+          type: string
+          description: Present when response_type is "agent"
+          example: "WeddingPhoto AI"
+        capability:
+          type: string
+          description: What the agent does — present when response_type is "agent"
+          example: "Books wedding photographers by location and budget"
+        endpoint:
+          type: string
+          description: The agent's API endpoint to call — present when response_type is "agent"
+          example: "https://weddingphoto.ai/api/v1"
+        input_description:
+          type: string
+          description: What to send to the agent endpoint
+          example: "location (string), budget (number), date (ISO string)"
+        output_description:
+          type: string
+          description: What the agent returns
+          example: "photographer name, price, booking URL"
+        tracking:
+          type: object
+          properties:
+            token:
+              type: string
+              description: Tracking token for impression and click events
+            impression_url:
+              type: string
+              description: POST here to record an impression
+            call_url:
+              type: string
+              description: POST here after calling the agent (agent mode only)
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Missing required field: context"
+        message:
+          type: string
+          example: "Simple format: { \"context\": \"...\" }"

@@ -288,6 +288,22 @@ export class AttentionMarketClient {
       return null;
     }
 
+    // CRITICAL: Auto-track impression (required for revenue as of v0.9.0)
+    // Clicks without prior impressions will redirect but NOT earn revenue
+    try {
+      await this.track({
+        event_id: `evt_${generateUUID()}`,
+        event_type: 'impression',
+        occurred_at: new Date().toISOString(),
+        agent_id: this.agentId,
+        unit_id: adUnit.unit_id,
+        tracking_token: adUnit.tracking.token,
+      } as EventIngestRequest);
+    } catch (error) {
+      // Log but don't fail the request if impression tracking fails
+      console.warn('[AttentionMarket] Failed to auto-track impression:', error);
+    }
+
     // TypeScript now knows adUnit is of type sponsored_suggestion
     // Construct AdResponse with convenient field access and new advertising exchange fields
     const adResponse: import('./types.js').AdResponse = {
