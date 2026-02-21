@@ -315,6 +315,97 @@ Sign up as an advertiser at [api.attentionmarket.ai](https://api.attentionmarket
 
 ---
 
+## 💰 Earn Bonuses with Feedback (v0.10.0+)
+
+Send feedback on ad performance to earn **conversion-validated bonuses**.
+
+### How It Works
+
+1. **Show an ad** to your user (impression tracked automatically in v0.9.0+)
+2. **User clicks** → You earn base click revenue
+3. **Send your prediction** about user sentiment:
+   - `positive` - You think user will convert
+   - `neutral` - No strong signal
+   - `negative` - User didn't like it
+4. **Wait 7 days** → System checks if user actually converted
+5. **Get bonus or penalty:**
+   - ✅ Correct positive prediction → **+15% bonus**
+   - ❌ Wrong positive prediction → **-5% penalty**
+   - 🤷 Neutral/negative → no bonus/penalty (data only)
+
+### Anti-Fraud Design
+
+**Why penalties?** To prevent developers from spamming "positive" on every click.
+
+- Spamming = net loss (most clicks don't convert)
+- Accuracy = net gain (bonus > penalty when right)
+- System rewards honest, confident predictions
+
+### Usage Example
+
+```typescript
+import { AttentionMarketClient } from '@the_ro_show/agent-ads-sdk';
+
+const client = new AttentionMarketClient({
+  apiKey: 'am_live_YOUR_KEY'
+});
+
+// Get and show ad
+const ad = await client.decideFromContext({
+  userMessage: "I need car insurance"
+});
+
+if (ad) {
+  // User clicks and seems very interested
+  await client.sendFeedback({
+    tracking_token: ad.tracking_token,
+    reaction: 'positive',
+    context: 'User asked follow-up questions about coverage'
+  });
+
+  // Potential bonus: +15% if they convert in 7 days
+}
+```
+
+### HTTP Example
+
+```bash
+curl -X POST https://peruwnbrqkvmrldhpoom.supabase.co/functions/v1/feedback \
+  -H "X-AM-API-Key: am_live_YOUR_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "tracking_token": "eyJhbGc...",
+    "reaction": "positive",
+    "context": "User loved the recommendation"
+  }'
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "prediction_recorded": "positive",
+  "potential_bonus": "$1.05",
+  "message": "Feedback recorded! If your prediction is correct (user converts within 7 days), you'll earn a +15% bonus. Wrong predictions incur a -5% penalty.",
+  "resolution_date": "2026-02-28T12:00:00Z"
+}
+```
+
+### When To Send Feedback
+
+**Good times to send positive:**
+- User explicitly asked "how do I sign up?"
+- User clicked and spent >30 seconds on page
+- User added item to cart
+- User asked follow-up questions
+
+**Don't spam:**
+- Only send when you have real signal
+- Wrong predictions cost you money
+- Quality > quantity
+
+---
+
 ## API Reference
 
 ### `POST /v1/decide`

@@ -212,7 +212,7 @@ export interface ToolCall {
 // Events
 // ============================================================================
 
-export type EventType = 'impression' | 'click' | 'action' | 'conversion' | 'dismiss' | 'hide_advertiser' | 'report';
+export type EventType = 'impression' | 'click' | 'action' | 'conversion' | 'dismiss' | 'hide_advertiser' | 'report' | 'feedback';
 
 export interface EventIngestRequest {
   event_id: string;
@@ -228,6 +228,70 @@ export interface EventIngestRequest {
 
 export interface EventIngestResponse {
   accepted: boolean;
+}
+
+// ============================================================================
+// Feedback (Conversion-Validated Bonus System)
+// ============================================================================
+
+/**
+ * Feedback reaction types for conversion-validated bonuses.
+ *
+ * - positive: Predict user will convert (earn +15% if correct, -5% if wrong)
+ * - neutral: No prediction (no bonus/penalty, data collection only)
+ * - negative: User disliked the ad (no penalty, data collection only)
+ */
+export type FeedbackReaction = 'positive' | 'neutral' | 'negative';
+
+/**
+ * Send feedback on an ad after showing it to a user.
+ *
+ * **Anti-Fraud:** Bonuses are deferred and validated against actual conversions.
+ * - Correct positive prediction → +15% bonus after 7 days
+ * - Wrong positive prediction → -5% penalty after 7 days
+ * - Neutral/negative → no bonus/penalty (data only)
+ *
+ * @example
+ * ```typescript
+ * await client.sendFeedback({
+ *   tracking_token: ad.tracking_token,
+ *   reaction: 'positive',
+ *   context: 'User loved the product recommendation!'
+ * });
+ * ```
+ */
+export interface FeedbackRequest {
+  /** Tracking token from the ad you showed */
+  tracking_token: string;
+
+  /** Your prediction about user sentiment/conversion */
+  reaction: FeedbackReaction;
+
+  /** Optional context explaining why you think this (helps with quality scores) */
+  context?: string;
+}
+
+/**
+ * Response from sending feedback.
+ *
+ * The bonus is NOT paid immediately - it's resolved after 7 days
+ * based on whether the user actually converted.
+ */
+export interface FeedbackResponse {
+  /** Whether feedback was recorded successfully */
+  success: boolean;
+
+  /** What prediction was recorded */
+  prediction_recorded: FeedbackReaction;
+
+  /** Potential bonus if prediction is correct (not guaranteed) */
+  potential_bonus: string;
+
+  /** Explanation of the deferred bonus system */
+  message: string;
+
+  /** When the bonus will be resolved (7 days from now) */
+  resolution_date: string;
 }
 
 // ============================================================================

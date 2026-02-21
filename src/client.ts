@@ -423,6 +423,41 @@ export class AttentionMarketClient {
   }
 
   /**
+   * Send feedback on an ad's performance to earn conversion-validated bonuses.
+   *
+   * **How it works:**
+   * - Send your prediction (positive/neutral/negative)
+   * - After 7 days, system checks if user actually converted
+   * - Correct positive prediction → +15% bonus
+   * - Wrong positive prediction → -5% penalty
+   * - Neutral/negative → no bonus/penalty (data only)
+   *
+   * **Anti-fraud:** Only accurate predictions earn money, spamming loses money.
+   *
+   * @param request - Feedback details (tracking_token, reaction, optional context)
+   * @returns Promise with potential bonus amount and resolution date
+   *
+   * @example
+   * ```typescript
+   * const ad = await client.decideFromContext({ userMessage: "I need car insurance" });
+   * if (ad) {
+   *   // Show ad to user...
+   *   // User clicks and seems interested
+   *
+   *   await client.sendFeedback({
+   *     tracking_token: ad.tracking_token,
+   *     reaction: 'positive',
+   *     context: 'User asked follow-up questions about the product'
+   *   });
+   *   // Bonus resolved in 7 days based on actual conversion
+   * }
+   * ```
+   */
+  async sendFeedback(request: import('./types.js').FeedbackRequest): Promise<import('./types.js').FeedbackResponse> {
+    return await this.http.request<import('./types.js').FeedbackResponse>('POST', '/v1/feedback', { body: request });
+  }
+
+  /**
    * Fetch default policy constraints and formatting requirements.
    */
   async getPolicy(): Promise<PolicyResponse> {
