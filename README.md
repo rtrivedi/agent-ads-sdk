@@ -315,31 +315,37 @@ Sign up as an advertiser at [api.attentionmarket.ai](https://api.attentionmarket
 
 ---
 
-## 💰 Earn Bonuses with Feedback (v0.10.0+)
+## 💰 Earn Bonuses with Feedback (v0.11.0+)
 
-Send feedback on ad performance to earn **conversion-validated bonuses**.
+Send feedback on ad performance to earn **AI-validated conversion bonuses**.
 
 ### How It Works
 
 1. **Show an ad** to your user (impression tracked automatically in v0.9.0+)
 2. **User clicks** → You earn base click revenue
-3. **Send your prediction** about user sentiment:
-   - `positive` - You think user will convert
-   - `neutral` - No strong signal
-   - `negative` - User didn't like it
+3. **Send user's actual response** → AI analyzes sentiment automatically
 4. **Wait 7 days** → System checks if user actually converted
-5. **Get bonus or penalty:**
+5. **Get bonus or penalty based on AI prediction:**
    - ✅ Correct positive prediction → **+15% bonus**
    - ❌ Wrong positive prediction → **-5% penalty**
    - 🤷 Neutral/negative → no bonus/penalty (data only)
 
+### What's New in v0.11.0
+
+**Backend now analyzes sentiment for you using AI:**
+- You just send the user's actual response text
+- No need to classify sentiment yourself
+- More consistent quality scores across all developers
+- Harder to game (can't spam "positive" on everything)
+
 ### Anti-Fraud Design
 
-**Why penalties?** To prevent developers from spamming "positive" on every click.
+**Why penalties?** To prevent developers from gaming the system.
 
-- Spamming = net loss (most clicks don't convert)
+- AI analyzes actual user responses (not developer claims)
+- Spamming fake positive responses = net loss
 - Accuracy = net gain (bonus > penalty when right)
-- System rewards honest, confident predictions
+- System rewards honest data collection
 
 ### Usage Example
 
@@ -356,14 +362,17 @@ const ad = await client.decideFromContext({
 });
 
 if (ad) {
-  // User clicks and seems very interested
+  // User responds after clicking
+  const userResponse = "This looks perfect! How do I sign up?";
+
   await client.sendFeedback({
     tracking_token: ad.tracking_token,
-    reaction: 'positive',
-    context: 'User asked follow-up questions about coverage'
+    user_response: userResponse,
+    agent_response: "Here's the signup link...",
+    additional_context: "User spent 2 minutes on offer page"
   });
 
-  // Potential bonus: +15% if they convert in 7 days
+  // AI will detect positive sentiment → +15% bonus if user converts
 }
 ```
 
@@ -375,8 +384,9 @@ curl -X POST https://peruwnbrqkvmrldhpoom.supabase.co/functions/v1/feedback \
   -H "Content-Type: application/json" \
   -d '{
     "tracking_token": "eyJhbGc...",
-    "reaction": "positive",
-    "context": "User loved the recommendation"
+    "user_response": "This looks great! How do I get started?",
+    "agent_response": "Here is the signup process...",
+    "additional_context": "User asked 3 follow-up questions"
   }'
 ```
 
@@ -384,24 +394,26 @@ curl -X POST https://peruwnbrqkvmrldhpoom.supabase.co/functions/v1/feedback \
 ```json
 {
   "success": true,
-  "prediction_recorded": "positive",
+  "sentiment_detected": "positive",
   "potential_bonus": "$1.05",
-  "message": "Feedback recorded! If your prediction is correct (user converts within 7 days), you'll earn a +15% bonus. Wrong predictions incur a -5% penalty.",
+  "potential_penalty": "$0.35",
+  "message": "Feedback recorded! Detected sentiment: positive. If correct (user converts within 7 days), you'll earn a +15% bonus. Wrong predictions incur a -5% penalty.",
   "resolution_date": "2026-02-28T12:00:00Z"
 }
 ```
 
 ### When To Send Feedback
 
-**Good times to send positive:**
-- User explicitly asked "how do I sign up?"
-- User clicked and spent >30 seconds on page
-- User added item to cart
-- User asked follow-up questions
+**Good signals to capture:**
+- User's actual text responses after clicking
+- Your agent's follow-up messages
+- Context about how long user engaged with the offer
+- Any follow-up questions or actions
 
-**Don't spam:**
-- Only send when you have real signal
-- Wrong predictions cost you money
+**Best practices:**
+- Send actual user text, not summaries
+- Include your agent's response for context
+- Only send when you have meaningful interaction data
 - Quality > quantity
 
 ---

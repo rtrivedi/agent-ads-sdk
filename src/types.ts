@@ -231,20 +231,23 @@ export interface EventIngestResponse {
 }
 
 // ============================================================================
-// Feedback (Conversion-Validated Bonus System)
+// Feedback (Conversion-Validated Bonus System with AI Sentiment Analysis)
 // ============================================================================
 
 /**
- * Feedback reaction types for conversion-validated bonuses.
+ * Sentiment types detected by backend AI analysis.
  *
- * - positive: Predict user will convert (earn +15% if correct, -5% if wrong)
- * - neutral: No prediction (no bonus/penalty, data collection only)
- * - negative: User disliked the ad (no penalty, data collection only)
+ * - positive: User is interested/engaged (earn +15% if converts, -5% if not)
+ * - neutral: User is indifferent (no bonus/penalty, data only)
+ * - negative: User disliked the ad (no penalty, data only)
  */
-export type FeedbackReaction = 'positive' | 'neutral' | 'negative';
+export type FeedbackSentiment = 'positive' | 'neutral' | 'negative';
 
 /**
  * Send feedback on an ad after showing it to a user.
+ *
+ * **New in v0.11.0:** Backend analyzes sentiment automatically using AI.
+ * Just send the user's actual response text - no need to classify it yourself.
  *
  * **Anti-Fraud:** Bonuses are deferred and validated against actual conversions.
  * - Correct positive prediction → +15% bonus after 7 days
@@ -255,8 +258,9 @@ export type FeedbackReaction = 'positive' | 'neutral' | 'negative';
  * ```typescript
  * await client.sendFeedback({
  *   tracking_token: ad.tracking_token,
- *   reaction: 'positive',
- *   context: 'User loved the product recommendation!'
+ *   user_response: "This looks perfect! How do I sign up?",
+ *   agent_response: "Here's the signup link...",
+ *   additional_context: "User spent 2 minutes reading the offer"
  * });
  * ```
  */
@@ -264,11 +268,14 @@ export interface FeedbackRequest {
   /** Tracking token from the ad you showed */
   tracking_token: string;
 
-  /** Your prediction about user sentiment/conversion */
-  reaction: FeedbackReaction;
+  /** User's actual response text (required) */
+  user_response: string;
 
-  /** Optional context explaining why you think this (helps with quality scores) */
-  context?: string;
+  /** Your agent's response (optional, helps sentiment analysis) */
+  agent_response?: string;
+
+  /** Additional context about the interaction (optional) */
+  additional_context?: string;
 }
 
 /**
@@ -281,11 +288,14 @@ export interface FeedbackResponse {
   /** Whether feedback was recorded successfully */
   success: boolean;
 
-  /** What prediction was recorded */
-  prediction_recorded: FeedbackReaction;
+  /** AI-detected sentiment from user response */
+  sentiment_detected: FeedbackSentiment;
 
   /** Potential bonus if prediction is correct (not guaranteed) */
   potential_bonus: string;
+
+  /** Potential penalty if prediction is wrong */
+  potential_penalty: string;
 
   /** Explanation of the deferred bonus system */
   message: string;
