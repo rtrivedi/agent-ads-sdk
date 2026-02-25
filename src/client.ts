@@ -270,7 +270,12 @@ export class AttentionMarketClient {
         }
       },
       context,
-      user_intent: params.userMessage
+      user_intent: params.userMessage,
+      // Developer controls (Phase 1: Quality & Brand Safety)
+      ...(params.minQualityScore !== undefined && { minQualityScore: params.minQualityScore }),
+      ...(params.allowedCategories && { allowedCategories: params.allowedCategories }),
+      ...(params.blockedCategories && { blockedCategories: params.blockedCategories }),
+      ...(params.blockedAdvertisers && { blockedAdvertisers: params.blockedAdvertisers }),
     };
 
     // Call decideRaw to get full response with metadata

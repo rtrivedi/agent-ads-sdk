@@ -81,6 +81,45 @@ export interface DecideFromContextRequest {
 
   /** User's platform. Default: 'web' */
   platform?: 'web' | 'ios' | 'android' | 'desktop' | 'voice' | 'other';
+
+  // Quality & Brand Safety Controls
+
+  /**
+   * Minimum quality score threshold (0.0 - 1.0).
+   * Only return ads with quality scores at or above this value.
+   * Higher values = better quality but lower fill rate.
+   *
+   * @example
+   * minQualityScore: 0.8  // Only show ads with 0.8+ quality
+   */
+  minQualityScore?: number;
+
+  /**
+   * Only show ads from these categories.
+   * If set, blockedCategories is ignored.
+   *
+   * @example
+   * allowedCategories: ['wedding', 'photography', 'venues']
+   */
+  allowedCategories?: string[];
+
+  /**
+   * Never show ads from these categories.
+   * Ignored if allowedCategories is set.
+   *
+   * @example
+   * blockedCategories: ['gambling', 'crypto', 'dating']
+   */
+  blockedCategories?: string[];
+
+  /**
+   * Never show ads from these advertisers.
+   * Use advertiser IDs from previous ad responses.
+   *
+   * @example
+   * blockedAdvertisers: ['adv_abc123', 'adv_xyz789']
+   */
+  blockedAdvertisers?: string[];
 }
 
 export interface DecideResponse {

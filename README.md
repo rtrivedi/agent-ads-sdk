@@ -418,6 +418,104 @@ curl -X POST https://peruwnbrqkvmrldhpoom.supabase.co/functions/v1/feedback \
 
 ---
 
+## 🎛️ Developer Controls (v0.12.0+)
+
+Take control of what ads appear in your app with quality, category, and advertiser filters.
+
+### Quality Score Filter
+
+Only show ads that meet your quality standards:
+
+```typescript
+const ad = await client.decideFromContext({
+  userMessage: "I need car insurance",
+  minQualityScore: 0.8  // Only ads with 0.8+ quality
+});
+```
+
+**Use cases:**
+- **Premium apps**: Set 0.9+ for best-in-class ads only
+- **General apps**: Set 0.7+ for good balance
+- **High-volume apps**: Set 0.5+ to maximize fill rate
+
+### Category Controls
+
+Ensure ads match your app's focus:
+
+```typescript
+// Wedding app: Only show wedding-related ads
+const ad = await client.decideFromContext({
+  userMessage: "Help me plan my wedding",
+  allowedCategories: ['wedding', 'photography', 'venues', 'catering']
+});
+
+// Education app: Block inappropriate categories
+const ad = await client.decideFromContext({
+  userMessage: "Help me study",
+  blockedCategories: ['gambling', 'crypto', 'dating', 'alcohol']
+});
+```
+
+**Note:** If `allowedCategories` is set, `blockedCategories` is ignored.
+
+### Advertiser Blocklist
+
+Block specific advertisers based on user feedback:
+
+```typescript
+const ad = await client.decideFromContext({
+  userMessage: "I need legal help",
+  blockedAdvertisers: ['adv_abc123', 'adv_xyz789']
+});
+```
+
+Get advertiser IDs from previous ad responses.
+
+### Combined Controls
+
+Mix and match for precise control:
+
+```typescript
+const ad = await client.decideFromContext({
+  userMessage: "I need car insurance",
+  minQualityScore: 0.8,           // High quality only
+  blockedCategories: ['crypto'],   // No crypto ads
+  allowedCategories: ['insurance', 'finance']  // Relevant only
+});
+```
+
+### HTTP Example
+
+```bash
+curl -X POST https://peruwnbrqkvmrldhpoom.supabase.co/functions/v1/decide \
+  -H "X-AM-API-Key: am_live_YOUR_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "context": "I need car insurance",
+    "minQualityScore": 0.8,
+    "blockedCategories": ["crypto", "gambling"]
+  }'
+```
+
+### Best Practices
+
+**Quality Scores:**
+- Start with no filter, monitor what you get
+- Gradually increase threshold if quality is lacking
+- Higher thresholds = fewer ads but better quality
+
+**Categories:**
+- Use `allowedCategories` for specialized apps (wedding planner, legal assistant)
+- Use `blockedCategories` for general apps with compliance needs (kids apps, healthcare)
+- Categories are set by advertisers during campaign creation
+
+**Advertiser Blocking:**
+- Collect user feedback on specific ads
+- Block advertisers with multiple complaints
+- Use sparingly - too many blocks reduce fill rate
+
+---
+
 ## API Reference
 
 ### `POST /v1/decide`
