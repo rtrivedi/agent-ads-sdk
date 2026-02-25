@@ -1,450 +1,196 @@
-# AttentionMarket
+# AttentionMarket SDK
 
 [![npm version](https://badge.fury.io/js/@the_ro_show%2Fagent-ads-sdk.svg)](https://www.npmjs.com/package/@the_ro_show/agent-ads-sdk)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**The ad exchange for the AI era. Monetize your chatbot, AI assistant, or AI agent with one API call.**
+Monetize your AI application with contextual advertising. AttentionMarket matches user intent with relevant sponsored content, enabling you to generate revenue from every conversation.
 
-Works on every platform — iOS, Android, Web, Voice, Discord, WhatsApp, Node.js, Python, and anything else that can make an HTTP request.
-
----
-
-## Two Ways To Earn
-
-### 1. Show ads in your chatbot or AI assistant
-Your app has conversations. Users ask questions. You send us the context, we return a relevant ad, you earn $5–$150 when the user clicks.
-
-### 2. List your AI agent on the exchange
-You built a specialized AI agent. Other AI agents need what you offer. List it on AttentionMarket and earn every time another agent calls yours.
-
----
-
-## Quick Start — 30 Seconds
-
-Get your API keys at [api.attentionmarket.ai](https://api.attentionmarket.ai), then:
+## Installation
 
 ```bash
-curl -X POST https://peruwnbrqkvmrldhpoom.supabase.co/functions/v1/decide \
-  -H "X-AM-API-Key: am_live_YOUR_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"context": "I need car insurance"}'
+npm install @the_ro_show/agent-ads-sdk
 ```
 
-**Response:**
-```json
-{
-  "status": "filled",
-  "units": [{
-    "suggestion": {
-      "title": "Get 20% off car insurance",
-      "body": "Compare quotes in minutes",
-      "cta": "Get a Quote",
-      "tracking_url": "https://..."
-    }
-  }]
-}
-```
-
-Show `suggestion.title` and `suggestion.body` to your user. When they click, send them to `tracking_url`. That's it — you get paid automatically.
-
----
-
-## 🚨 CRITICAL: Impression Tracking Required (v0.9.0+)
-
-**As of v0.9.0, impression tracking is REQUIRED to earn revenue from clicks.**
-
-When you show an ad to a user, you must track an impression. Clicks without prior impressions will:
-- ✅ Still redirect the user to the advertiser (good UX)
-- ❌ NOT charge the advertiser
-- ❌ NOT credit your earnings
-
-### Why This Matters
-
-This prevents developers from filtering ads client-side and still earning revenue from clicks. It ensures clean data and accurate quality metrics for the advertising exchange.
-
-### Using `decideFromContext()` (Recommended)
-
-**Good news:** If you're using the SDK's `decideFromContext()` method, impressions are tracked **automatically**. No changes needed.
+## Quick Start
 
 ```typescript
-// Impressions tracked automatically ✅
+import { AttentionMarketClient } from '@the_ro_show/agent-ads-sdk';
+
+const client = new AttentionMarketClient({
+  apiKey: 'am_live_YOUR_KEY',
+  agentId: 'agt_YOUR_AGENT_ID'
+});
+
+// Request a contextual ad
 const ad = await client.decideFromContext({
-  userMessage: "I need car insurance",
+  userMessage: "I'm looking for car insurance",
   placement: 'sponsored_suggestion'
 });
 
 if (ad) {
-  // Show ad to user
-  displayAd(ad);
+  console.log(ad.creative.title);  // "Get 20% off car insurance"
+  console.log(ad.creative.body);   // "Compare quotes from top providers"
+  console.log(ad.click_url);       // Auto-tracked click URL
 }
 ```
 
-### Using Raw HTTP or `decide()` (Manual Tracking Required)
+## Authentication
 
-If you're making raw HTTP calls or using the low-level `decide()` method, you **must manually track impressions**:
+All API requests require authentication via an API key. Get your keys at [api.attentionmarket.ai](https://api.attentionmarket.ai).
+
+### API Key Types
+
+- **Test keys** (`am_test_...`) — Use in development. No charges, test data only.
+- **Live keys** (`am_live_...`) — Use in production. Real advertisers, real revenue.
+
+### SDK Configuration
 
 ```typescript
-// Step 1: Get ad
-const response = await fetch('https://peruwnbrqkvmrldhpoom.supabase.co/functions/v1/decide', {
-  method: 'POST',
-  headers: { 'X-AM-API-Key': 'am_live_...' },
-  body: JSON.stringify({ context: 'I need car insurance' })
-});
-const data = await response.json();
-
-if (data.status === 'filled') {
-  const ad = data.units[0];
-
-  // Step 2: Track impression IMMEDIATELY when showing ad ✅
-  await fetch('https://peruwnbrqkvmrldhpoom.supabase.co/functions/v1/event', {
-    method: 'POST',
-    headers: { 'X-AM-API-Key': 'am_live_...' },
-    body: JSON.stringify({
-      event_id: `evt_${crypto.randomUUID()}`,
-      event_type: 'impression',
-      occurred_at: new Date().toISOString(),
-      agent_id: 'YOUR_AGENT_ID',
-      unit_id: ad.unit_id,
-      tracking_token: ad.tracking.token
-    })
-  });
-
-  // Step 3: Now safe to show ad and earn from clicks
-  displayAd(ad);
-}
-```
-
----
-
-## Use Case 1: Monetize Your Chatbot or AI Assistant
-
-Any app with conversations can earn revenue. Users ask questions with commercial intent every day — insurance, legal help, home services, travel, weddings, software. When they do, you can surface a relevant offer and earn.
-
-**Platforms this works on:**
-
-| Type | Examples |
-|------|---------|
-| **AI Assistants** | Mobile AI apps, productivity tools, personal assistants |
-| **Chatbots** | Website chat, customer service bots, FAQ bots |
-| **Messaging Bots** | WhatsApp, Discord, Telegram, Slack |
-| **Voice Assistants** | Alexa Skills, Google Actions, voice apps |
-| **AI Companions** | Coaching bots, tutors, entertainment assistants |
-
-### How It Works
-
-```
-User sends message → You call our API with context → We return a relevant ad
-→ You show it → User clicks → You earn $5–$150
-```
-
-### Platform Examples
-
-**iOS (Swift)** — drop this into your Xcode project:
-```swift
-// Initialize once
-let client = AttentionMarketClient(
-    apiKey: "am_live_YOUR_KEY",
-    agentId: "agt_YOUR_ID"
-)
-
-// Call after your AI responds
-if let ad = await client.getAd(for: userMessage) {
-    showAdInChat(
-        title: ad.suggestion.title,
-        body: ad.suggestion.body,
-        cta: ad.suggestion.cta,
-        url: ad.suggestion.trackingUrl
-    )
-}
-```
-[Full iOS example →](./examples/ios/AttentionMarketClient.swift)
-
----
-
-**Android (Kotlin)**:
-```kotlin
-val client = AttentionMarketClient(
-    apiKey = "am_live_YOUR_KEY",
-    agentId = "agt_YOUR_ID"
-)
-
-client.getAd(context = userMessage)?.let { ad ->
-    showAdInChat(
-        title = ad.suggestion.title,
-        body = ad.suggestion.body,
-        url = ad.suggestion.trackingUrl
-    )
-}
-```
-[Full Android example →](./examples/android/AttentionMarketClient.kt)
-
----
-
-**Web (JavaScript)** — plain fetch, no dependencies:
-```javascript
-const response = await fetch('https://peruwnbrqkvmrldhpoom.supabase.co/functions/v1/decide', {
-  method: 'POST',
-  headers: {
-    'X-AM-API-Key': 'am_live_YOUR_KEY',
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({ context: userMessage })
-});
-
-const data = await response.json();
-
-if (data.status === 'filled') {
-  const ad = data.units[0];
-  showAdInChat(ad.suggestion.title, ad.suggestion.body, ad.suggestion.tracking_url);
-}
-```
-[Full Web example →](./examples/web/attentionmarket.js)
-
----
-
-**Node.js (optional SDK)**:
-```bash
-npm install @the_ro_show/agent-ads-sdk
-```
-```javascript
-import { AttentionMarketClient } from '@the_ro_show/agent-ads-sdk';
-
 const client = new AttentionMarketClient({
-  apiKey: process.env.ATTENTIONMARKET_API_KEY,
-  agentId: process.env.ATTENTIONMARKET_AGENT_ID
+  apiKey: 'am_live_YOUR_KEY',        // Required
+  agentId: 'agt_YOUR_AGENT_ID',      // Required for decideFromContext()
+  baseUrl: 'https://api.attentionmarket.ai/v1',  // Optional: defaults to production
+  timeoutMs: 4000,                   // Optional: request timeout in milliseconds
+  maxRetries: 2                      // Optional: automatic retry count
 });
-
-const ad = await client.decideFromContext({ userMessage });
-if (ad) console.log(ad.creative.title, ad.click_url);
 ```
 
----
+## Core Concepts
 
-## Use Case 2: List Your AI Agent on the Exchange
+### Placements
 
-You built a specialized AI agent — a legal document drafter, a wedding photographer booker, a travel planner, a code reviewer. Other AI assistants encounter users who need exactly what you do every day. List your agent on AttentionMarket and earn every time another agent calls yours.
+A placement defines where ads appear in your application:
 
-**This is the ad exchange for the agentic world.** Instead of humans clicking ads, AI agents discover and call specialized agents. You pay to be discovered. You earn when your agent gets used.
+- `sponsored_suggestion` — Conversational ad in chat flow (most common)
+- `sponsored_block` — Dedicated ad section in UI
+- `sponsored_tool` — AI agent service recommendation
 
-### How It Works
-
-```
-General assistant encounters a task it can't handle well
-→ Calls AttentionMarket with context + response_type: "agent"
-→ Exchange returns the best specialized agent for that task
-→ General assistant calls your agent
-→ You earn per call
-```
-
-### Example
-
-**Developer A** built a general wedding planning AI assistant. A user asks: *"Can you find me a photographer in Austin under $3,000?"*
-
-Developer A's assistant calls AttentionMarket:
-```bash
-curl -X POST https://peruwnbrqkvmrldhpoom.supabase.co/functions/v1/decide \
-  -H "X-AM-API-Key: am_live_DEV_A_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "context": "User needs a wedding photographer in Austin under $3,000",
-    "response_type": "agent"
-  }'
-```
-
-**AttentionMarket returns Developer B's agent:**
-```json
-{
-  "status": "filled",
-  "units": [{
-    "agent_name": "WeddingPhoto AI",
-    "capability": "Book wedding photographers by location and budget",
-    "endpoint": "https://weddingphoto.ai/api/v1",
-    "input_description": "Send: location (string), budget (number), date (string)",
-    "output_description": "Returns: photographer name, price, booking URL",
-    "tracking": {
-      "call_url": "https://.../track-call/token"
-    }
-  }]
-}
-```
-
-**Developer A** calls WeddingPhoto AI, gets a result, passes it back to the user.
-**Developer B** earns per call. **Developer A** earns a routing fee.
-
-### List Your Agent
-
-Sign up as an advertiser at [api.attentionmarket.ai](https://api.attentionmarket.ai) and create an **Agent Ad** campaign:
-
-| Field | Description |
-|-------|-------------|
-| Agent Name | Display name (e.g. "WeddingPhoto AI") |
-| What does your agent do? | Natural language capability description — used for matching |
-| Endpoint URL | Where calling agents send requests |
-| What to send | Input format description |
-| What you return | Output format description |
-| Bid per call | What you pay each time your agent is called |
-
-**Matching is semantic** — describe your agent clearly in plain English and we handle the rest.
-
----
-
-## Revenue Model
-
-### As a Developer (showing ads or routing to agents)
-
-- **70% revenue share** on every click or agent call you facilitate
-- Earn $5–$150 per click for ads
-- Earn a routing fee per agent-to-agent call
-- Monthly payouts via Stripe (minimum $100 balance)
-- Free to integrate — no setup fees, no monthly costs
-
-**Example earnings:**
-
-| Monthly clicks/calls | Avg payout | Monthly revenue |
-|---------------------|------------|-----------------|
-| 50 | $50 | $2,500 |
-| 200 | $50 | $10,000 |
-| 1,000 | $50 | $50,000 |
-
-### As an Agent Advertiser (listing your agent)
-
-- Pay per click (Link Ad) or pay per call (Agent Ad)
-- Second-price auction — you bid a max, you often pay less
-- Full budget controls — set a cap, campaign pauses when spent
-- Track spend and performance in the advertiser dashboard
-
----
-
-## 💰 Earn Bonuses with Feedback (v0.11.0+)
-
-Send feedback on ad performance to earn **AI-validated conversion bonuses**.
-
-### How It Works
-
-1. **Show an ad** to your user (impression tracked automatically in v0.9.0+)
-2. **User clicks** → You earn base click revenue
-3. **Send user's actual response** → AI analyzes sentiment automatically
-4. **Wait 7 days** → System checks if user actually converted
-5. **Get bonus or penalty based on AI prediction:**
-   - ✅ Correct positive prediction → **+15% bonus**
-   - ❌ Wrong positive prediction → **-5% penalty**
-   - 🤷 Neutral/negative → no bonus/penalty (data only)
-
-### What's New in v0.11.0
-
-**Backend now analyzes sentiment for you using AI:**
-- You just send the user's actual response text
-- No need to classify sentiment yourself
-- More consistent quality scores across all developers
-- Harder to game (can't spam "positive" on everything)
-
-### Anti-Fraud Design
-
-**Why penalties?** To prevent developers from gaming the system.
-
-- AI analyzes actual user responses (not developer claims)
-- Spamming fake positive responses = net loss
-- Accuracy = net gain (bonus > penalty when right)
-- System rewards honest data collection
-
-### Usage Example
+### Ad Response Format
 
 ```typescript
-import { AttentionMarketClient } from '@the_ro_show/agent-ads-sdk';
+interface AdResponse {
+  request_id: string;
+  decision_id: string;
+  advertiser_id: string;
+  ad_type: 'link' | 'recommendation' | 'service';
+  payout: number;  // Amount earned on conversion (in cents)
 
-const client = new AttentionMarketClient({
-  apiKey: 'am_live_YOUR_KEY'
-});
+  creative: {
+    title: string;
+    body: string;
+    cta: string;
+  };
 
-// Get and show ad
-const ad = await client.decideFromContext({
-  userMessage: "I need car insurance"
-});
+  click_url: string;        // Tracked click URL (use this)
+  tracking_url?: string;    // Server-side tracking URL
+  tracking_token: string;   // For manual event tracking
 
-if (ad) {
-  // User responds after clicking
-  const userResponse = "This looks perfect! How do I sign up?";
-
-  await client.sendFeedback({
-    tracking_token: ad.tracking_token,
-    user_response: userResponse,
-    agent_response: "Here's the signup link...",
-    additional_context: "User spent 2 minutes on offer page"
-  });
-
-  // AI will detect positive sentiment → +15% bonus if user converts
+  disclosure: {
+    label: string;
+    explanation: string;
+    sponsor_name: string;
+  };
 }
 ```
 
-### HTTP Example
+### Impression Tracking
 
-```bash
-curl -X POST https://peruwnbrqkvmrldhpoom.supabase.co/functions/v1/feedback \
-  -H "X-AM-API-Key: am_live_YOUR_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "tracking_token": "eyJhbGc...",
-    "user_response": "This looks great! How do I get started?",
-    "agent_response": "Here is the signup process...",
-    "additional_context": "User asked 3 follow-up questions"
-  }'
+**Important:** As of v0.9.0, impression tracking is required to earn revenue from clicks.
+
+The SDK automatically tracks impressions when using `decideFromContext()`. Clicks without prior impressions will redirect users but will not generate revenue.
+
+If using the raw `decide()` API, you must manually track impressions:
+
+```typescript
+await client.trackImpression({
+  agent_id: 'agt_YOUR_AGENT_ID',
+  request_id: ad.request_id,
+  decision_id: ad.decision_id,
+  unit_id: ad._ad.unit_id,
+  tracking_token: ad.tracking_token
+});
 ```
 
-**Response:**
-```json
-{
-  "success": true,
-  "sentiment_detected": "positive",
-  "potential_bonus": "$1.05",
-  "potential_penalty": "$0.35",
-  "message": "Feedback recorded! Detected sentiment: positive. If correct (user converts within 7 days), you'll earn a +15% bonus. Wrong predictions incur a -5% penalty.",
-  "resolution_date": "2026-02-28T12:00:00Z"
-}
-```
+## Developer Controls
 
-### When To Send Feedback
+AttentionMarket provides fine-grained controls over ad selection, quality, and revenue optimization.
 
-**Good signals to capture:**
-- User's actual text responses after clicking
-- Your agent's follow-up messages
-- Context about how long user engaged with the offer
-- Any follow-up questions or actions
+### Quality and Brand Safety
 
-**Best practices:**
-- Send actual user text, not summaries
-- Include your agent's response for context
-- Only send when you have meaningful interaction data
-- Quality > quantity
+#### Minimum Quality Score
 
----
-
-## 🎛️ Developer Controls (v0.12.0+)
-
-Take control of what ads appear in your app with quality, category, and advertiser filters.
-
-### Quality Score Filter
-
-Only show ads that meet your quality standards:
+Filter ads based on historical performance metrics. Quality scores range from 0.0 (worst) to 1.0 (best) and are calculated from click-through rates, conversion rates, and user feedback.
 
 ```typescript
 const ad = await client.decideFromContext({
-  userMessage: "I need car insurance",
-  minQualityScore: 0.8  // Only ads with 0.8+ quality
+  userMessage: "I need legal help",
+  minQualityScore: 0.7  // Only show ads with quality >= 0.7
 });
 ```
+
+**Validation:** Must be a number between 0.0 and 1.0.
 
 **Use cases:**
-- **Premium apps**: Set 0.9+ for best-in-class ads only
-- **General apps**: Set 0.7+ for good balance
-- **High-volume apps**: Set 0.5+ to maximize fill rate
+- Premium applications: `0.8+` for high-quality experiences only
+- Brand-sensitive contexts: `0.7+` to avoid low-quality advertisers
+- General applications: `0.5+` for balanced quality and fill rate
 
-### Category Controls (IAB Taxonomy 3.0)
+#### Category Filtering
 
-Filter ads using **IAB Content Taxonomy 3.0** - the industry-standard category system used by Google Ads, Microsoft Ads, and all major ad platforms.
+Control which advertiser categories can appear using the IAB Content Taxonomy 3.0 (704 categories across 38 top-level verticals).
 
-**704 categories** across 38 top-level categories with 4-tier hierarchy.
+##### Allowed Categories
 
-#### Discover Available Categories
+Whitelist specific categories. Only ads from these categories will be shown.
+
+```typescript
+// Insurance comparison app: only show insurance ads
+const ad = await client.decideFromContext({
+  userMessage: "I need car insurance",
+  allowedCategories: [31]  // 31 = Auto Insurance (IAB category)
+});
+
+// Wedding planner: allow wedding + photography + food
+const ad = await client.decideFromContext({
+  userMessage: "Help me plan my wedding",
+  allowedCategories: [
+    603,  // Weddings
+    162,  // Photography
+    190   // Restaurants
+  ]
+});
+```
+
+##### Blocked Categories
+
+Blacklist specific categories. Ads from these categories will never be shown.
+
+```typescript
+// Block all sensitive content (gambling, adult, controversial)
+const ad = await client.decideFromContext({
+  userMessage: "Help me with something",
+  blockedCategories: [601]  // Blocks "Sensitive Topics" + all children
+});
+
+// Legal assistant: block competitor law firms
+const ad = await client.decideFromContext({
+  userMessage: "I need legal help",
+  blockedCategories: [318]  // Block "Legal Services"
+});
+```
+
+**Parent-child relationships:** Blocking a parent category automatically blocks all subcategories. For example, blocking category `1` (Automotive) blocks Auto Insurance, Auto Repair, Auto Parts, etc.
+
+**Precedence:** If `allowedCategories` is set, `blockedCategories` is ignored.
+
+**Validation rules:**
+- `allowedCategories`: Must be a non-empty array of numbers or strings
+- `blockedCategories`: Must be an array of numbers or strings
+- Empty `allowedCategories: []` is rejected (would block all ads)
+
+**Note:** IAB category IDs (numbers) are recommended. Legacy string categories are deprecated and will be removed on 2026-06-01. Use the `getCategories()` API to discover category IDs.
+
+##### Discovering Categories
 
 ```typescript
 // Get all 38 top-level categories
@@ -466,55 +212,9 @@ insurance.categories.forEach(cat => {
 // Output: "Automotive > Auto Insurance", "Personal Finance > Insurance", etc.
 ```
 
-#### Filter by Category
+#### Advertiser Blocklist
 
-Use IAB category IDs for precise control:
-
-```typescript
-// Insurance app: Only show insurance ads (by IAB ID)
-const ad = await client.decideFromContext({
-  userMessage: "I need car insurance",
-  allowedCategories: [31]  // 31 = Auto Insurance
-});
-
-// Block entire "Sensitive Topics" tree (IAB ID: 601)
-// This blocks all gambling, adult content, controversial topics, etc.
-const ad = await client.decideFromContext({
-  userMessage: "Help me with something",
-  blockedCategories: [601]  // Blocks parent + all children
-});
-
-// Wedding planner: Allow wedding + photography + food
-const ad = await client.decideFromContext({
-  userMessage: "Help me plan my wedding",
-  allowedCategories: [
-    603,  // Weddings (Personal Celebrations)
-    162,  // Photography (Hobbies & Interests)
-    190   // Restaurants (Food & Drink)
-  ]
-});
-```
-
-**Parent-Child Relationships:**
-- Blocking a parent category blocks ALL child categories automatically
-- Example: Blocking `1` (Automotive) blocks Auto Insurance, Auto Repair, etc.
-- Great for compliance: Block `601` (Sensitive Topics) to block gambling, adult, controversial in one go
-
-**Important:**
-- If `allowedCategories` is set, `blockedCategories` is ignored
-- IAB category IDs (numbers) are **recommended** - legacy string categories are deprecated (support ends 2026-06-01)
-- Use `getCategories()` API to discover category IDs
-- Empty `allowedCategories: []` is rejected (would block all ads - use `blockedCategories` instead)
-
-**Validation rules:**
-- `minQualityScore`: Must be 0.0-1.0
-- `allowedCategories`: Must be non-empty array of strings or numbers
-- `blockedCategories`: Must be array of strings or numbers
-- `blockedAdvertisers`: Must be array of non-empty strings (advertiser IDs)
-
-### Advertiser Blocklist
-
-Block specific advertisers based on user feedback:
+Block specific advertisers by ID (e.g., based on user feedback or competitive conflicts).
 
 ```typescript
 const ad = await client.decideFromContext({
@@ -523,292 +223,240 @@ const ad = await client.decideFromContext({
 });
 ```
 
-Get advertiser IDs from previous ad responses.
+**Validation:** Must be an array of non-empty strings (advertiser IDs).
 
-## 💰 Revenue Optimization (v0.13.1+)
+Advertiser IDs are included in ad responses as `advertiser_id`.
 
-Control revenue vs. relevance tradeoffs with bid and relevance filters.
+### Revenue Optimization
 
-### Minimum CPC Filter
+#### Minimum CPC Filter
 
-Only show ads above a minimum bid threshold:
+Only show ads with bids at or above a specified cost-per-click threshold (in cents).
 
 ```typescript
 const ad = await client.decideFromContext({
   userMessage: "I need car insurance",
-  minCPC: 100  // Only ads bidding ≥$1.00 per click
+  minCPC: 100  // Only ads bidding >= $1.00 per click
 });
 ```
 
+**Validation:** Must be a non-negative number.
+
 **Use cases:**
-- **Premium apps**: `minCPC: 200` for $2+ ads only
-- **High-value verticals**: Filter out low-budget advertisers
-- **Revenue targets**: Ensure minimum revenue per impression
+- Premium applications: `200+` for $2+ ads only
+- High-value verticals: Filter out low-budget advertisers
+- Revenue targets: Ensure minimum revenue per impression
+- Lower fill rate tolerance: When you'd rather show nothing than a low-value ad
 
-### Minimum Relevance Score
+**Trade-off:** Higher thresholds = higher revenue per ad but lower fill rate.
 
-Only show ads that are semantically relevant:
+#### Minimum Relevance Score
+
+Only show ads with semantic similarity at or above a threshold. Relevance scores range from 0.0 (unrelated) to 1.0 (perfect match) and are calculated using vector embeddings of user context and advertiser intent.
 
 ```typescript
 const ad = await client.decideFromContext({
   userMessage: "Help me plan my wedding",
-  minRelevanceScore: 0.8  // Only highly relevant ads (0.0-1.0)
+  minRelevanceScore: 0.8  // Only highly relevant ads
 });
 ```
 
+**Validation:** Must be a number between 0.0 and 1.0.
+
 **Use cases:**
-- **Niche apps**: Legal assistant = `0.8+` for specialized content only
-- **User experience**: Filter out loosely related ads
-- **Context matching**: Ensure ads match conversation topic
-- **Default threshold**: Backend uses 0.25 minimum
+- Niche applications: `0.8+` for specialized content only (e.g., legal assistant)
+- User experience priority: Filter out loosely related ads
+- Context-sensitive placements: Ensure ads match conversation topic
+- Brand-aligned content: Maintain thematic consistency
 
-### Ranking Strategy
+**Important:** This filter only applies to campaigns with semantic targeting. Keyword and automatic campaigns are not affected.
 
-Choose how ads are ranked:
+**Default threshold:** Backend applies a minimum threshold of 0.25 for all semantic campaigns (ads below this are never shown).
+
+#### Ranking Strategy
+
+Choose how ads are ranked when multiple ads match the request.
 
 ```typescript
-// Default: Revenue-optimized (highest bid wins)
+// Revenue-optimized (default): highest bid wins
 const ad = await client.decideFromContext({
   userMessage: "I need legal help",
   optimizeFor: 'revenue'  // Rank by bid × quality × relevance
 });
 
-// Alternative: Relevance-optimized (best match wins)
+// Relevance-optimized: best match wins
 const ad = await client.decideFromContext({
   userMessage: "I need legal help",
   optimizeFor: 'relevance'  // Rank by semantic similarity only
 });
 ```
 
-**Use cases:**
-- **General apps**: `'revenue'` to maximize earnings
-- **Niche apps**: `'relevance'` to prioritize perfect matches over high bids
-- **Premium experiences**: Combine with high `minRelevanceScore` + `'relevance'` ranking
+**Validation:** Must be either `'revenue'` or `'relevance'`.
 
 **How it works (second-price auction):**
-- **Revenue mode**: Winner ranked by composite score (bid × quality × relevance), pays just enough to beat next ad's composite score + $0.01
-- **Relevance mode**: Winner ranked by semantic similarity, pays just enough to beat next ad in the composite score space + $0.01
-- **Always capped**: Winner never pays more than their max bid (auction integrity guaranteed)
-- **Floor price**: Minimum $0.25 clearing price ensures platform revenue
 
-**Important notes:**
-- `minRelevanceScore` only applies to campaigns with semantic targeting
-- For keyword/automatic campaigns, relevance filter has no effect
-- Validation errors return HTTP 400 with clear messages
+- **Revenue mode:** Winner is ranked by composite score (bid × quality × relevance), pays just enough to beat the next ad's composite score + $0.01
+- **Relevance mode:** Winner is ranked by semantic similarity, pays just enough to beat the next ad in composite score space + $0.01
+- **Price cap:** Winner never pays more than their max bid (auction integrity guaranteed)
+- **Price floor:** Minimum clearing price of $0.25 ensures platform sustainability
 
-### Combined Revenue Controls
+**Use cases:**
+- General applications: `'revenue'` to maximize earnings
+- Niche applications: `'relevance'` to prioritize perfect matches over high bids
+- Premium experiences: Combine with high `minRelevanceScore` + `'relevance'` ranking
+
+#### Combined Controls
+
+Combine multiple controls for precise ad selection:
 
 ```typescript
-// Premium legal assistant: High relevance + high bids
+// Premium legal assistant: high relevance + high bids + category filter
 const ad = await client.decideFromContext({
   userMessage: "I need estate planning help",
-  minRelevanceScore: 0.8,  // Only highly relevant
-  minCPC: 200,             // Only $2+ bids
-  optimizeFor: 'relevance', // Best match wins
-  allowedCategories: [318] // Legal services only (IAB)
-});
-
-// General chatbot: Maximize revenue
-const ad = await client.decideFromContext({
-  userMessage: "Help me with something",
-  optimizeFor: 'revenue',  // Highest bid wins
-  minQualityScore: 0.7     // Decent quality threshold
+  minRelevanceScore: 0.8,    // Only highly relevant
+  minCPC: 200,               // Only $2+ bids
+  minQualityScore: 0.7,      // Only high-quality advertisers
+  optimizeFor: 'relevance',  // Best match wins
+  allowedCategories: [318]   // Legal services only
 });
 ```
 
-### Combined Controls (All Phases)
+## Advanced Features
 
-Mix and match for precise control:
+### Multi-Turn Conversations
+
+Include conversation history for better ad matching:
+
+```typescript
+const ad = await client.decideFromContext({
+  userMessage: "What are my options?",
+  conversationHistory: [
+    "User: My car insurance is too expensive",
+    "Agent: I can help you compare rates",
+    "User: What are my options?"
+  ]
+});
+```
+
+The SDK automatically limits history to the last 5 messages to prevent token overflow.
+
+### Geographic and Platform Targeting
 
 ```typescript
 const ad = await client.decideFromContext({
   userMessage: "I need car insurance",
-  // Phase 1: Quality & Brand Safety
-  minQualityScore: 0.8,           // High quality only
-  allowedCategories: [31, 398],   // Auto + Personal Finance Insurance (IAB)
-  // Phase 2: Revenue Optimization
-  minCPC: 50,                      // $0.50+ bids only
-  minRelevanceScore: 0.7,          // Highly relevant only
-  optimizeFor: 'revenue'           // Highest bid wins
+  country: 'US',
+  language: 'en',
+  platform: 'ios'  // 'web' | 'ios' | 'android' | 'desktop' | 'voice' | 'other'
 });
 ```
 
-### HTTP Example
+### Click Tracking
 
-```bash
-curl -X POST https://peruwnbrqkvmrldhpoom.supabase.co/functions/v1/decide \
-  -H "X-AM-API-Key: am_live_YOUR_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "context": "I need car insurance",
-    "minQualityScore": 0.8,
-    "blockedCategories": ["crypto", "gambling"]
-  }'
+Clicks are automatically tracked when users visit `click_url`. For manual tracking:
+
+```typescript
+await client.trackClick({
+  agent_id: 'agt_YOUR_AGENT_ID',
+  request_id: ad.request_id,
+  decision_id: ad.decision_id,
+  unit_id: ad._ad.unit_id,
+  tracking_token: ad.tracking_token,
+  href: ad.click_url,
+  click_context: "User clicked 'Get a Quote' button"
+});
 ```
 
-### Best Practices
+Simplified tracking from ad object:
 
-**Quality Scores:**
-- Start with no filter, monitor what you get
-- Gradually increase threshold if quality is lacking
-- Higher thresholds = fewer ads but better quality
+```typescript
+await client.trackClickFromAd(ad, {
+  click_context: "User clicked on sponsored suggestion"
+});
+```
 
-**Categories (IAB Taxonomy):**
-- Use `getCategories()` to discover the full 704-category taxonomy
-- Use `allowedCategories` for specialized apps (wedding planner = `[603]`, legal assistant = `[318]`)
-- Use `blockedCategories` for compliance (kids apps = block `[601]` Sensitive Topics)
-- Parent categories block all children automatically (block `[1]` Automotive = blocks all 40+ auto subcategories)
-- Full taxonomy reference: https://github.com/InteractiveAdvertisingBureau/Taxonomies
+### Conversion Tracking
 
-**Advertiser Blocking:**
-- Collect user feedback on specific ads
-- Block advertisers with multiple complaints
-- Use sparingly - too many blocks reduce fill rate
+Track conversions (purchases, signups, etc.) to improve advertiser ROI and your quality score:
 
----
+```typescript
+await client.track({
+  event_id: `evt_${generateUUID()}`,
+  event_type: 'conversion',
+  occurred_at: new Date().toISOString(),
+  agent_id: 'agt_YOUR_AGENT_ID',
+  request_id: ad.request_id,
+  decision_id: ad.decision_id,
+  unit_id: ad._ad.unit_id,
+  tracking_token: ad.tracking_token,
+  metadata: {
+    conversion_value: 99.99,
+    conversion_type: 'purchase'
+  }
+});
+```
 
-## API Reference
+## Error Handling
 
-### `POST /v1/decide`
+The SDK throws errors for invalid configurations and failed requests:
 
-**Base URL:** `https://peruwnbrqkvmrldhpoom.supabase.co/functions/v1/decide`
-
-**Required header:** `X-AM-API-Key: am_live_...` or `am_test_...`
-
-### Simple Request (recommended)
-
-```json
-{
-  "context": "I need car insurance"
+```typescript
+try {
+  const ad = await client.decideFromContext({
+    userMessage: "I need car insurance",
+    minQualityScore: -0.5  // Invalid: must be 0.0-1.0
+  });
+} catch (error) {
+  console.error(error.message);
+  // Output: "minQualityScore must be a number between 0.0 and 1.0"
 }
 ```
 
-### Simple Request with Optional Fields
+### Validation Errors
 
-```json
-{
-  "context": "I need car insurance",
-  "country": "US",
-  "language": "en",
-  "platform": "ios"
-}
-```
+The SDK validates all parameters before making API calls. Common validation errors:
 
-### Request an Agent Instead of an Ad
+- `minQualityScore must be a number between 0.0 and 1.0`
+- `minCPC must be a non-negative number (cost-per-click in cents)`
+- `minRelevanceScore must be a number between 0.0 and 1.0`
+- `optimizeFor must be either "revenue" or "relevance"`
+- `allowedCategories cannot be empty (would block all ads). Use blockedCategories to exclude specific categories, or omit to allow all.`
+- `blockedAdvertisers must contain non-empty strings (advertiser IDs)`
 
-```json
-{
-  "context": "User needs a wedding photographer in Austin",
-  "response_type": "agent"
-}
-```
+### HTTP Errors
 
-### Advanced Request (full control)
+The API returns standard HTTP status codes:
 
-```json
-{
-  "request_id": "req_custom_123",
-  "agent_id": "agt_YOUR_ID",
-  "placement": "chat_inline",
-  "opportunity": {
-    "intent": { "taxonomy": "insurance.auto.quote" },
-    "context": { "country": "US", "language": "en", "platform": "ios" }
-  },
-  "context": "I need car insurance"
-}
-```
+- `400 Bad Request` — Invalid parameters (see error message for details)
+- `401 Unauthorized` — Missing or invalid API key
+- `429 Too Many Requests` — Rate limit exceeded
+- `500 Internal Server Error` — Server error (contact support if persistent)
 
-### Response: Ad Filled
+## Rate Limits
 
-```json
-{
-  "request_id": "req_abc123",
-  "decision_id": "dec_xyz789",
-  "status": "filled",
-  "ttl_ms": 300000,
-  "units": [{
-    "unit_id": "unit_123",
-    "suggestion": {
-      "title": "Get 20% off car insurance",
-      "body": "Compare quotes in minutes",
-      "cta": "Get a Quote",
-      "tracking_url": "https://.../track-click/...",
-      "action_url": "https://progressive.com/quote"
-    },
-    "tracking": {
-      "token": "trk_abc",
-      "impression_url": "https://.../event",
-      "click_url": "https://.../click/trk_abc"
-    }
-  }]
-}
-```
+- **Per IP:** 60 requests per minute
+- **Per API key:** 100 requests per minute
 
-### Response: No Fill
-
-```json
-{
-  "status": "no_fill",
-  "units": []
-}
-```
-
-### Key Response Fields
-
-| Field | Use |
-|-------|-----|
-| `status` | `"filled"` or `"no_fill"` |
-| `suggestion.title` | Ad headline to show |
-| `suggestion.body` | Ad description to show |
-| `suggestion.cta` | Button text |
-| `suggestion.tracking_url` | **Send users here on click** — tracks automatically |
-| `suggestion.action_url` | Direct advertiser URL (display only, no tracking) |
-
-**Always use `tracking_url` for clicks.** This is how clicks are tracked and how you get paid.
-
-### HTTP Status Codes
-
-| Code | Meaning |
-|------|---------|
-| `200` | Success — check `status` field |
-| `400` | Bad request — missing `context` field |
-| `401` | Invalid API key |
-| `429` | Rate limit exceeded (1,000 req/min) — retry after 60s |
-| `500` | Server error — retry with backoff |
-
----
+Rate limits are enforced to prevent abuse and ensure fair resource allocation. If you need higher limits, contact support.
 
 ## Testing
 
-Use your test key (`am_test_...`) during development — same API, no real money moves.
+Use test API keys (`am_test_...`) for development and testing. Test keys:
 
-**Validate your setup:**
-```bash
-node test-integration.js      # Tests connectivity and credentials
-node validate-production.js   # Full production readiness check (4/4 ✅)
-```
+- Return test ads with realistic data
+- Do not charge advertisers
+- Do not generate real revenue
+- Have the same rate limits as live keys
 
-Download: [test-integration.js](./test-integration.js) | [validate-production.js](./validate-production.js)
-
----
-
-## Get Started
-
-1. **Sign up** at [api.attentionmarket.ai](https://api.attentionmarket.ai) — get your test key, live key, and agent ID
-2. **Test it** — run the curl above with your test key
-3. **Integrate** — add 5 lines to your existing chatbot or assistant
-4. **Go live** — swap test key for live key, start earning
-
----
+Switch to live keys (`am_live_...`) when deploying to production.
 
 ## Support
 
-- **Dashboard:** [api.attentionmarket.ai](https://api.attentionmarket.ai)
-- **Issues:** [GitHub Issues](https://github.com/rtrivedi/agent-ads-sdk/issues)
+- **Documentation:** [docs.attentionmarket.ai](https://docs.attentionmarket.ai)
+- **API Reference:** [api.attentionmarket.ai/docs](https://api.attentionmarket.ai/docs)
+- **Issues:** [github.com/rtrivedi/agent-ads-sdk/issues](https://github.com/rtrivedi/agent-ads-sdk/issues)
 - **Email:** support@attentionmarket.ai
-
----
 
 ## License
 
-MIT — see [LICENSE](./LICENSE)
+MIT License. See [LICENSE](LICENSE) for details.
