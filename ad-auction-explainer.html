@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AttentionMarket: How Our Ad Auction Works</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 20px;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            font-size: 2.8em;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: rgba(255,255,255,0.95);
+            font-size: 1.3em;
+            margin-bottom: 50px;
+            font-weight: 300;
+        }
+
+        .section {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        h2 {
+            color: #667eea;
+            font-size: 1.9em;
+            margin-bottom: 25px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 12px;
+        }
+
+        h3 {
+            color: #764ba2;
+            font-size: 1.4em;
+            margin: 30px 0 15px 0;
+        }
+
+        p {
+            margin: 15px 0;
+            font-size: 1.05em;
+            line-height: 1.7;
+        }
+
+        .key-insight {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin: 25px 0;
+            font-size: 1.1em;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .key-insight strong {
+            font-size: 1.15em;
+        }
+
+        .simple-diagram {
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 30px;
+            margin: 25px 0;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+        }
+
+        .formula-box {
+            background: #fff9e6;
+            border: 3px solid #ffc107;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 25px 0;
+            text-align: center;
+        }
+
+        .formula {
+            font-family: 'Courier New', monospace;
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+            margin: 10px 0;
+        }
+
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .metric-card h4 {
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+
+        .metric-card .value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .metric-card .description {
+            font-size: 0.95em;
+            opacity: 0.85;
+            line-height: 1.5;
+        }
+
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin: 30px 0;
+        }
+
+        .comparison-item {
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 25px;
+        }
+
+        .comparison-item.winner {
+            border-color: #4caf50;
+            background: #e8f5e9;
+        }
+
+        .comparison-item h4 {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+
+        .comparison-item.winner h4 {
+            color: #4caf50;
+        }
+
+        .stat-line {
+            margin: 10px 0;
+            font-size: 1.05em;
+        }
+
+        .stat-line strong {
+            display: inline-block;
+            width: 140px;
+        }
+
+        .highlight-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 4px;
+        }
+
+        .warning-box {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 4px;
+        }
+
+        .timeline {
+            position: relative;
+            padding: 30px 0;
+            margin: 30px 0;
+        }
+
+        .timeline-item {
+            padding: 20px 0 20px 70px;
+            position: relative;
+            margin-bottom: 10px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 25px;
+            top: 0;
+            bottom: -10px;
+            width: 3px;
+            background: #667eea;
+        }
+
+        .timeline-item::after {
+            content: '';
+            position: absolute;
+            left: 16px;
+            top: 25px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            border: 4px solid white;
+            box-shadow: 0 0 0 3px #667eea;
+        }
+
+        .timeline-item:last-child::before {
+            display: none;
+        }
+
+        .timeline-item strong {
+            color: #667eea;
+            font-size: 1.15em;
+        }
+
+        .benefit-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .benefit-card {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            border-radius: 4px;
+        }
+
+        .benefit-card h4 {
+            color: #667eea;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        .flywheel-container {
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .flywheel-steps {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            max-width: 700px;
+            margin: 30px auto;
+        }
+
+        .flywheel-step {
+            background: white;
+            border: 3px solid #667eea;
+            border-radius: 12px;
+            padding: 20px;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .flywheel-arrow {
+            font-size: 3em;
+            color: #667eea;
+            margin: 20px 0;
+        }
+
+        .flywheel-center {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 40px;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 1.3em;
+            margin: 30px auto;
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+        }
+
+        ul {
+            margin: 15px 0 15px 30px;
+            line-height: 1.8;
+        }
+
+        ul li {
+            margin: 8px 0;
+        }
+
+        .final-summary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .final-summary h2 {
+            color: white;
+            border: none;
+            margin-bottom: 20px;
+        }
+
+        .final-summary p {
+            font-size: 1.2em;
+            line-height: 1.8;
+        }
+
+        @media (max-width: 768px) {
+            .comparison {
+                grid-template-columns: 1fr;
+            }
+            .benefit-grid {
+                grid-template-columns: 1fr;
+            }
+            .flywheel-steps {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 AttentionMarket Ad Auction</h1>
+        <p class="subtitle">How We Use Quality Scores to Build a Better Ad Marketplace</p>
+
+        <!-- SECTION 1: THE PROBLEM -->
+        <div class="section">
+            <h2>The Problem We're Solving</h2>
+
+            <p>Traditional ad auctions reward whoever pays the most. This creates poor outcomes:</p>
+
+            <ul>
+                <li><strong>Users see irrelevant ads</strong> because high bidders win regardless of quality</li>
+                <li><strong>Developers earn less</strong> because low-quality ads have poor click-through rates</li>
+                <li><strong>Good advertisers overpay</strong> to compete with spammy ads</li>
+                <li><strong>The marketplace degrades</strong> as quality matters less than budget</li>
+            </ul>
+
+            <div class="key-insight">
+                <strong>Our Solution:</strong> A quality-based auction that rewards relevant, engaging ads — not just the highest bidders.
+            </div>
+        </div>
+
+        <!-- SECTION 2: HOW THE AUCTION WORKS -->
+        <div class="section">
+            <h2>1. How Our Ad Auction Works</h2>
+
+            <h3>The Core Formula</h3>
+
+            <div class="formula-box">
+                <div class="formula">Auction Score = Bid × Quality × Relevance</div>
+                <p style="margin-top: 15px; color: #666;">Highest score wins — not highest bid!</p>
+            </div>
+
+            <h3>What This Means</h3>
+
+            <p>When a user asks an AI agent a question, we run an auction to decide which ad to show. The winner is determined by three factors:</p>
+
+            <div class="metric-grid">
+                <div class="metric-card">
+                    <h4>💰 Bid Amount</h4>
+                    <div class="description">How much the advertiser is willing to pay per click</div>
+                </div>
+                <div class="metric-card">
+                    <h4>⭐ Quality Score</h4>
+                    <div class="description">How well the ad performs (CTR, conversions, user engagement)</div>
+                </div>
+                <div class="metric-card">
+                    <h4>🎯 Relevance</h4>
+                    <div class="description">How well the ad matches the user's context (semantic similarity)</div>
+                </div>
+            </div>
+
+            <h3>Example Auction</h3>
+
+            <div class="comparison">
+                <div class="comparison-item">
+                    <h4>❌ Advertiser A (High Bid, Poor Quality)</h4>
+                    <div class="stat-line"><strong>Bid:</strong> $2.50</div>
+                    <div class="stat-line"><strong>Quality Score:</strong> 0.3 (poor performance)</div>
+                    <div class="stat-line"><strong>Relevance:</strong> 0.9</div>
+                    <hr style="margin: 15px 0; border: 1px solid #ddd;">
+                    <div class="stat-line"><strong>Auction Score:</strong> 2.50 × 0.3 × 0.9 = <strong>0.68</strong></div>
+                </div>
+
+                <div class="comparison-item winner">
+                    <h4>✅ Advertiser B (Lower Bid, High Quality)</h4>
+                    <div class="stat-line"><strong>Bid:</strong> $1.80</div>
+                    <div class="stat-line"><strong>Quality Score:</strong> 0.9 (excellent performance)</div>
+                    <div class="stat-line"><strong>Relevance:</strong> 0.9</div>
+                    <hr style="margin: 15px 0; border: 1px solid #ddd;">
+                    <div class="stat-line"><strong>Auction Score:</strong> 1.80 × 0.9 × 0.9 = <strong>1.46</strong></div>
+                </div>
+            </div>
+
+            <div class="key-insight">
+                <strong>Winner: Advertiser B</strong> — Even with a 28% lower bid, they win because of superior quality!
+            </div>
+
+            <h3>Second-Price Auction</h3>
+
+            <p>The winner doesn't pay their full bid. Instead, they pay just enough to beat the second-place advertiser (plus $0.01).</p>
+
+            <div class="simple-diagram">
+<pre>
+Second-Place Formula:
+────────────────────────────────────────
+clearingPrice = (2nd place score / winner quality) + $0.01
+
+In our example:
+= (0.68 / 0.9) + $0.01
+= $0.76
+
+<strong>Advertiser B pays only $0.76 per click</strong>
+(Instead of their $1.80 bid!)
+</pre>
+            </div>
+
+            <div class="highlight-box">
+                <strong>💡 Why second-price?</strong> It encourages honest bidding. Since you pay the second-highest price, there's no incentive to underbid strategically. You simply bid your true value.
+            </div>
+        </div>
+
+        <!-- SECTION 3: QUALITY SCORES -->
+        <div class="section">
+            <h2>2. Quality Scores: The Key to Better Ads</h2>
+
+            <h3>What Are Quality Scores?</h3>
+
+            <p>Quality scores (0.1 to 1.0) measure how well an ad performs with real users. Every campaign starts at 0.5 and adjusts based on actual results.</p>
+
+            <div class="metric-grid">
+                <div class="metric-card">
+                    <h4>New Campaign</h4>
+                    <div class="value">0.5</div>
+                    <div class="description">Neutral starting point</div>
+                </div>
+                <div class="metric-card">
+                    <h4>Poor Performance</h4>
+                    <div class="value">0.1</div>
+                    <div class="description">Low CTR, users ignore</div>
+                </div>
+                <div class="metric-card">
+                    <h4>Good Performance</h4>
+                    <div class="value">0.8</div>
+                    <div class="description">Solid CTR, users engage</div>
+                </div>
+                <div class="metric-card">
+                    <h4>Excellent Performance</h4>
+                    <div class="value">1.0</div>
+                    <div class="description">Outstanding CTR, conversions</div>
+                </div>
+            </div>
+
+            <h3>How We Calculate Quality</h3>
+
+            <p><strong>For Link & Recommendation Ads:</strong> Click-Through Rate (CTR)</p>
+            <div class="simple-diagram">
+<pre>
+Quality Score Calculation:
+────────────────────────────────────────
+CTR = Clicks ÷ Impressions
+
+5% CTR    →  1.0 quality (excellent)
+2.5% CTR  →  0.55 quality (above average)
+1% CTR    →  0.28 quality (below average)
+0% CTR    →  0.1 quality (poor)
+</pre>
+            </div>
+
+            <p><strong>For Service Ads:</strong> Completion Rate (successful API calls ÷ total calls)</p>
+
+            <div class="warning-box">
+                <strong>⚠️ Impression Tracking Required</strong><br>
+                As of v0.9.0, developers must track impressions to earn revenue. Clicks without prior impressions don't count — this ensures accurate quality metrics and prevents gaming the system.
+            </div>
+
+            <h3>Updates Happen Daily</h3>
+
+            <p>Every night at midnight UTC, we recalculate quality scores based on the last 30 days of performance data. High-performing ads see their scores rise; poor performers drop.</p>
+        </div>
+
+        <!-- SECTION 4: THE FLYWHEEL -->
+        <div class="section">
+            <h2>3. The Reinforcement Learning Flywheel</h2>
+
+            <h3>How Quality Scores Create a Self-Improving System</h3>
+
+            <p>Quality scores don't just measure performance — they <strong>drive</strong> it. Here's how the system gets better over time:</p>
+
+            <div class="flywheel-container">
+                <div class="flywheel-steps">
+                    <div class="flywheel-step">
+                        1️⃣ High-quality ads win more auctions at lower bids
+                    </div>
+                    <div class="flywheel-step">
+                        2️⃣ More impressions & clicks increase their quality scores
+                    </div>
+                    <div class="flywheel-step">
+                        3️⃣ Higher scores make them even more competitive
+                    </div>
+                    <div class="flywheel-step">
+                        4️⃣ Low-quality ads must improve or pay more to compete
+                    </div>
+                </div>
+
+                <div class="flywheel-arrow">⟲</div>
+                <div class="flywheel-center">Quality Reinforcement Loop</div>
+            </div>
+
+            <h3>Real Example: 7-Day Campaign Lifecycle</h3>
+
+            <div class="timeline">
+                <div class="timeline-item">
+                    <strong>Day 1:</strong> Campaign launches with 0.5 quality score, $2.00 bid. Wins some auctions.
+                </div>
+                <div class="timeline-item">
+                    <strong>Day 2-7:</strong> Ad performs well — 5% CTR, users engage, good conversions.
+                </div>
+                <div class="timeline-item">
+                    <strong>Day 8:</strong> Quality score updated to 0.9 based on strong performance.
+                </div>
+                <div class="timeline-item">
+                    <strong>Day 9+:</strong> Now wins auctions against $2.50 bids (because 2.00 × 0.9 = 1.8 beats 2.50 × 0.5 = 1.25)
+                </div>
+                <div class="timeline-item">
+                    <strong>Result:</strong> Campaign gets <strong>more traffic at lower cost</strong> because of quality.
+                </div>
+            </div>
+
+            <h3>The Economic Impact</h3>
+
+            <div class="simple-diagram">
+<pre>
+Example: $10,000 monthly ad budget
+
+<strong>LOW-QUALITY CAMPAIGN (0.3 quality):</strong>
+  • Wins ~200 auctions/day
+  • Gets 6,000 clicks/month
+  • Cost per click: $1.67
+  • Poor ROI
+
+<strong>HIGH-QUALITY CAMPAIGN (0.9 quality):</strong>
+  • Wins ~700 auctions/day
+  • Gets 21,000 clicks/month
+  • Cost per click: $0.48
+  • Excellent ROI
+
+<strong>Result: High-quality campaign gets 3.5× more clicks at 71% lower cost</strong>
+</pre>
+            </div>
+        </div>
+
+        <!-- SECTION 5: WHY IT WORKS -->
+        <div class="section">
+            <h2>4. Why This Creates Better Outcomes</h2>
+
+            <div class="benefit-grid">
+                <div class="benefit-card">
+                    <h4>👥 For Users</h4>
+                    <p>See more relevant, high-quality ads that actually match their needs. Better user experience.</p>
+                </div>
+
+                <div class="benefit-card">
+                    <h4>💻 For Developers</h4>
+                    <p>Higher CTR means more revenue per impression. Quality ads monetize better.</p>
+                </div>
+
+                <div class="benefit-card">
+                    <h4>📢 For Advertisers</h4>
+                    <p>Lower cost-per-click for high-quality campaigns. Better ROI incentivizes quality.</p>
+                </div>
+
+                <div class="benefit-card">
+                    <h4>🚀 For the Platform</h4>
+                    <p>Self-improving system that gets smarter over time. Sustainable competitive advantage.</p>
+                </div>
+            </div>
+
+            <h3>Incentive Alignment</h3>
+
+            <div class="highlight-box">
+                <strong>Everyone benefits from quality:</strong>
+                <ul>
+                    <li>Advertisers are incentivized to create relevant, engaging ads (lower costs)</li>
+                    <li>Developers are incentivized to show ads thoughtfully (higher CTR = more revenue)</li>
+                    <li>Users get better experiences (relevant ads instead of spam)</li>
+                    <li>The platform gets a data moat (more usage = better targeting = more usage)</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- SECTION 6: THE DATA MOAT -->
+        <div class="section">
+            <h2>5. The Data Moat: Semantic Embeddings</h2>
+
+            <h3>How We Build Long-Term Competitive Advantage</h3>
+
+            <p>Every ad decision is powered by <strong>semantic embeddings</strong> — 1536-dimensional vectors that capture meaning and context. We store every decision with:</p>
+
+            <ul>
+                <li>The user's context (what they said)</li>
+                <li>The context embedding (semantic representation)</li>
+                <li>Which ad was shown</li>
+                <li>Whether the user clicked</li>
+                <li>The auction score and quality metrics</li>
+            </ul>
+
+            <p>This data compounds into a <strong>flywheel of improvement:</strong></p>
+
+            <div class="timeline">
+                <div class="timeline-item">
+                    <strong>Week 1:</strong> Basic semantic matching, all campaigns at 0.5 quality
+                </div>
+                <div class="timeline-item">
+                    <strong>Month 1:</strong> Quality scores differentiate, best ads get cheaper clicks
+                </div>
+                <div class="timeline-item">
+                    <strong>Month 3:</strong> Context embeddings reveal patterns, targeting improves
+                </div>
+                <div class="timeline-item">
+                    <strong>Month 6+:</strong> Data moat established, ML models optimize matching
+                </div>
+            </div>
+
+            <div class="key-insight">
+                <strong>The more the system runs, the smarter it gets.</strong> More data → better targeting → more users → more data. This is our long-term competitive moat.
+            </div>
+        </div>
+
+        <!-- FINAL SUMMARY -->
+        <div class="final-summary">
+            <h2>🎯 Summary: Why This System Works</h2>
+
+            <p>By combining <strong>quality-based auctions</strong>, <strong>second-price bidding</strong>, and <strong>semantic embeddings</strong>, we create a marketplace that:</p>
+
+            <div class="metric-grid" style="margin-top: 30px;">
+                <div class="metric-card" style="background: rgba(255,255,255,0.2); backdrop-filter: blur(10px);">
+                    <h4>Rewards Quality</h4>
+                    <div class="description">Not just the highest bidder</div>
+                </div>
+                <div class="metric-card" style="background: rgba(255,255,255,0.2); backdrop-filter: blur(10px);">
+                    <h4>Self-Improves</h4>
+                    <div class="description">Gets better over time automatically</div>
+                </div>
+                <div class="metric-card" style="background: rgba(255,255,255,0.2); backdrop-filter: blur(10px);">
+                    <h4>Aligns Incentives</h4>
+                    <div class="description">Everyone wins when ads are relevant</div>
+                </div>
+                <div class="metric-card" style="background: rgba(255,255,255,0.2); backdrop-filter: blur(10px);">
+                    <h4>Builds a Moat</h4>
+                    <div class="description">Data compounds into advantage</div>
+                </div>
+            </div>
+
+            <p style="margin-top: 40px; font-size: 1.25em;">
+                <strong>This isn't just an ad auction — it's a reinforcement learning system that creates better outcomes for everyone.</strong>
+            </p>
+        </div>
+
+        <!-- SECTION 7: THE SDK -->
+        <div class="section">
+            <h2>6. The AttentionMarket SDK: Monetizing AI Agents</h2>
+
+            <h3>What We Built</h3>
+
+            <p>The AttentionMarket SDK enables AI agents and chatbots to earn revenue by displaying contextually relevant ads during conversations. Developers integrate our SDK with 3 lines of code and start earning immediately.</p>
+
+            <div class="key-insight">
+                <strong>Core Innovation:</strong> Semantic ad matching powered by the auction system above. When a user asks a question, we run a real-time auction using conversation context to find the most relevant, highest-quality ad.
+            </div>
+
+            <h3>Three Ad Types: Link, Recommendation, and Service</h3>
+
+            <div class="comparison">
+                <div class="comparison-item">
+                    <h4>1. Link Ads (Type 1)</h4>
+                    <div class="stat-line"><strong>Format:</strong> Direct click-through offer</div>
+                    <div class="stat-line"><strong>Payment:</strong> Per click</div>
+                    <div class="stat-line"><strong>Example:</strong> "Progressive - Get 20% off car insurance"</div>
+                    <hr style="margin: 15px 0;">
+                    <p style="margin-top: 10px; font-size: 0.95em;">Traditional ads optimized for immediate action. User sees title, body, CTA, and click URL.</p>
+                </div>
+
+                <div class="comparison-item">
+                    <h4>2. Recommendation Ads (Type 2)</h4>
+                    <div class="stat-line"><strong>Format:</strong> Conversational teaser</div>
+                    <div class="stat-line"><strong>Payment:</strong> Per click</div>
+                    <div class="stat-line"><strong>Example:</strong> "Interested in 20% off e-commerce?" → "Use code CREATOR20"</div>
+                    <hr style="margin: 15px 0;">
+                    <p style="margin-top: 10px; font-size: 0.95em;">Conversational ads with optional teaser question, promo code, and link. Payment triggered by clicks, not teaser acceptance.</p>
+                </div>
+            </div>
+
+            <div class="comparison-item" style="margin-top: 20px; border-color: #2196F3; background: #e7f3ff;">
+                <h4>3. Service Ads (Type 3) — Agent-to-Agent</h4>
+                <div class="stat-line"><strong>Format:</strong> API call to service endpoint</div>
+                <div class="stat-line"><strong>Payment:</strong> Per successful completion</div>
+                <div class="stat-line"><strong>Example:</strong> Legal AI drafts NDA → Developer earns $5 on completion</div>
+                <hr style="margin: 15px 0;">
+                <p style="margin-top: 10px; font-size: 0.95em;">Agent-to-agent services for tasks like legal document drafting, data analysis, or image generation. Payment only on successful completion.</p>
+            </div>
+
+            <h3>How Developers Monetize</h3>
+
+            <div class="simple-diagram">
+<pre>
+Basic Integration (3 lines of code):
+────────────────────────────────────────
+const client = new AttentionMarketClient({
+  apiKey: 'am_live_...',
+  agentId: 'agt_...'
+});
+
+// Get ad based on conversation
+const ad = await client.decideFromContext({
+  userMessage: "I need car insurance"
+});
+
+// Auto-tracking (v0.9.0+): Impression tracked automatically
+// Display ad to user:
+console.log(ad.creative.title);  // "Progressive - Save 20%"
+console.log(ad.creative.body);   // "Compare quotes in 2 minutes"
+console.log(ad.creative.cta);    // "Get Quote"
+
+// When user clicks:
+await client.trackClickFromAd(ad, {
+  click_context: "User clicked Get Quote button"
+});
+// ✓ Developer earns money on click
+</pre>
+            </div>
+
+            <h3>Payment Mechanisms by Ad Type</h3>
+
+            <div class="timeline">
+                <div class="timeline-item">
+                    <strong>Link Ads:</strong> User clicks → Developer earns second-price auction clearing price (e.g., $0.76 per click)
+                </div>
+                <div class="timeline-item">
+                    <strong>Recommendation Ads:</strong> User clicks promo link → Developer earns clearing price (teaser is optional UX, not payment trigger)
+                </div>
+                <div class="timeline-item">
+                    <strong>Service Ads:</strong> AI calls service endpoint → Service completes successfully → Developer calls logServiceResult() → Developer earns completion payout
+                </div>
+            </div>
+
+            <h3>Key SDK Design Decisions</h3>
+
+            <div class="benefit-grid">
+                <div class="benefit-card">
+                    <h4>Auto-Tracking (v0.9.0+)</h4>
+                    <p>Impressions tracked automatically when ads are served. Clicks without prior impressions redirect but don't earn revenue — prevents fraud.</p>
+                </div>
+
+                <div class="benefit-card">
+                    <h4>Semantic Context Matching</h4>
+                    <p>Developers pass conversation context (user message + history). Backend generates embeddings and matches against campaign intent embeddings using cosine similarity.</p>
+                </div>
+
+                <div class="benefit-card">
+                    <h4>Second-Price Payouts</h4>
+                    <p>Developers earn the auction clearing price (not the winner's bid). Lower fraud risk, higher fill rates, sustainable economics.</p>
+                </div>
+
+                <div class="benefit-card">
+                    <h4>Click-Based Payment Only</h4>
+                    <p>Recommendation ads initially used sentiment analysis (trust-based). We pivoted to click-based payment: 83% code reduction, 50% fewer API calls, zero fraud risk.</p>
+                </div>
+            </div>
+
+            <h3>Service Ads: Agent-to-Agent Economy</h3>
+
+            <p>Service ads unlock a new business model: AI agents calling other AI agents. Instead of showing links, the SDK returns API endpoints that perform tasks.</p>
+
+            <div class="simple-diagram">
+<pre>
+Service Ad Flow:
+────────────────────────────────────────
+1. User: "I need a non-disclosure agreement"
+
+2. Developer calls getService():
+   const service = await client.getService({
+     taskDescription: "Draft NDA for software contractor"
+   });
+
+3. SDK returns service endpoint:
+   {
+     service_endpoint: "https://legal-ai.com/api/draft-nda",
+     service_auth: "Bearer tok_...",
+     transaction_id: "txn_12345",
+     payout: 5.00  // Earn $5 on completion
+   }
+
+4. Developer's AI calls the service:
+   const response = await fetch(service.service_endpoint, {
+     method: 'POST',
+     headers: { 'Authorization': service.service_auth },
+     body: JSON.stringify({ task: "Draft NDA", ... })
+   });
+
+5. Log completion:
+   await client.logServiceResult({
+     transaction_id: service.transaction_id,
+     success: true
+   });
+   // ✓ Developer earns $5, advertiser charged $5.50
+</pre>
+            </div>
+
+            <h3>Why This Works</h3>
+
+            <div class="highlight-box">
+                <strong>Fraud-Proof Revenue Model:</strong>
+                <ul>
+                    <li><strong>Impressions:</strong> Auto-tracked by SDK (clicks without impressions don't earn revenue)</li>
+                    <li><strong>Clicks:</strong> Tracked via server-side redirects (developers can't fake clicks)</li>
+                    <li><strong>Service Completions:</strong> Verified by service provider (advertiser confirms success)</li>
+                </ul>
+            </div>
+
+            <div class="warning-box">
+                <strong>Critical Deployment Note:</strong> The tracking-redirect function MUST be deployed with --no-verify-jwt flag. End users (not developers) click these URLs — they don't have API keys. Without this flag, users get 401 errors.
+            </div>
+
+            <h3>Revenue Example: Chatbot Developer</h3>
+
+            <div class="simple-diagram">
+<pre>
+Scenario: Legal advice chatbot with 10,000 monthly users
+
+<strong>WITHOUT AttentionMarket:</strong>
+  • Free chatbot, no revenue
+  • $0/month
+
+<strong>WITH AttentionMarket (Link Ads):</strong>
+  • 10,000 users → 5,000 ad impressions (50% see ads)
+  • 5% CTR → 250 clicks/month
+  • $0.50 average clearing price
+  • <strong>$125/month revenue</strong>
+
+<strong>WITH AttentionMarket (Service Ads):</strong>
+  • 10,000 users → 500 legal document requests (5%)
+  • 80% completion rate → 400 successful completions
+  • $5 average payout
+  • <strong>$2,000/month revenue</strong>
+</pre>
+            </div>
+
+            <p style="margin-top: 30px;">Developers earn revenue without charging users. Advertisers get high-intent, contextually relevant placements. Users get helpful suggestions at the exact moment they need them.</p>
+        </div>
+
+        <!-- SECTION 8: COMPANY OVERVIEW & USE CASES -->
+        <div class="section">
+            <h2>7. Welcome to AttentionMarket: What We're Building</h2>
+
+            <h3>The Mission</h3>
+
+            <p>AttentionMarket is building the <strong>ad exchange for the AI era</strong>. We enable developers to monetize AI assistants, chatbots, and agents through contextually relevant advertising — without charging users. Our system serves two distinct markets:</p>
+
+            <div class="comparison">
+                <div class="comparison-item">
+                    <h4>📱 Market 1: Traditional AI Monetization</h4>
+                    <p style="margin-top: 10px;">Chatbots, voice assistants, AI companions, and productivity tools that help users with daily tasks. These apps show contextual ads during conversations.</p>
+                    <p style="margin-top: 10px; font-weight: 600;">Revenue model: Developers earn 70% of advertiser spend</p>
+                </div>
+
+                <div class="comparison-item">
+                    <h4>🤖 Market 2: Agent-to-Agent Economy</h4>
+                    <p style="margin-top: 10px;">Specialized AI agents that provide services to other AI agents. Instead of clicking ads, one AI calls another AI to complete tasks it can't handle well.</p>
+                    <p style="margin-top: 10px; font-weight: 600;">Revenue model: Agent operators earn per call, referrers earn routing fees</p>
+                </div>
+            </div>
+
+            <h3>Platform Support: Everywhere AI Runs</h3>
+
+            <p>Our HTTP-first API works on any platform that can make an HTTP request. No lock-in, no proprietary SDKs required (though we provide them for convenience).</p>
+
+            <div class="metric-grid">
+                <div class="metric-card">
+                    <h4>🌐 Web & Voice</h4>
+                    <div class="description">JavaScript, Node.js, Deno, Alexa Skills, Google Actions</div>
+                </div>
+                <div class="metric-card">
+                    <h4>📱 Mobile</h4>
+                    <div class="description">iOS (Swift), Android (Kotlin), React Native, Flutter</div>
+                </div>
+                <div class="metric-card">
+                    <h4>💬 Messaging</h4>
+                    <div class="description">WhatsApp, Discord, Telegram, Slack bots</div>
+                </div>
+                <div class="metric-card">
+                    <h4>🖥️ Backend</h4>
+                    <div class="description">Python, Node.js, Go, Rust, any HTTP client</div>
+                </div>
+            </div>
+
+            <h3>Use Case 1: Traditional AI Assistant Monetization</h3>
+
+            <p><strong>Problem:</strong> Developers build free AI assistants but can't monetize without charging users. Subscriptions kill growth. Traditional ad networks don't work for conversational interfaces.</p>
+
+            <p><strong>Solution:</strong> AttentionMarket matches ads to conversation context using semantic search. Developers integrate with one API call, earn $5-$150 per click automatically.</p>
+
+            <div class="simple-diagram">
+<pre>
+Developer Integration Flow:
+────────────────────────────────────────
+1. User asks: "I need car insurance"
+
+2. Developer's AI generates response
+
+3. Developer calls AttentionMarket:
+   POST /v1/decide
+   { "context": "I need car insurance" }
+
+4. AttentionMarket returns ad:
+   {
+     "status": "filled",
+     "units": [{
+       "suggestion": {
+         "title": "Progressive - Save 20%",
+         "body": "Compare quotes in 2 minutes",
+         "cta": "Get Quote",
+         "tracking_url": "https://.../track-click/..."
+       }
+     }]
+   }
+
+5. Developer shows ad to user (impression auto-tracked)
+
+6. User clicks → Redirects via tracking_url → Developer earns $0.76
+   (Second-price auction clearing price)
+
+<strong>Total integration: 5 lines of code, 100ms latency, $0 setup cost</strong>
+</pre>
+            </div>
+
+            <h3>Real-World Example: Wedding Planning Assistant</h3>
+
+            <div class="timeline">
+                <div class="timeline-item">
+                    <strong>User:</strong> "My fiancé and I are getting married in Austin next summer. Can you help us find a venue?"
+                </div>
+                <div class="timeline-item">
+                    <strong>Assistant Response:</strong> "Congratulations! I can help you find the perfect venue. Austin has amazing options for summer weddings..."
+                </div>
+                <div class="timeline-item">
+                    <strong>AttentionMarket Ad:</strong> [Sponsored] The Driskill Hotel<br>"Host your dream wedding at Austin's most iconic venue. Book a tour today."<br>→ Schedule Tour
+                </div>
+                <div class="timeline-item">
+                    <strong>Result:</strong> User clicks → Developer earns $47 → User gets personalized venue recommendation
+                </div>
+            </div>
+
+            <div class="key-insight">
+                <strong>Why this works:</strong> The ad appears at the exact moment of intent. Not "after searching 10 venues" — at the START of the search. Perfect timing = high conversion = high payouts.
+            </div>
+
+            <h3>Use Case 2: Agent-to-Agent Service Exchange</h3>
+
+            <p><strong>Problem:</strong> General AI assistants try to do everything but aren't great at specialized tasks. Wedding planning, legal document drafting, travel booking — these need domain expertise.</p>
+
+            <p><strong>Solution:</strong> Specialized agents list their services on AttentionMarket. When a general assistant encounters a task it can't handle well, it calls AttentionMarket with `response_type: "agent"` and gets back an API endpoint to a specialized agent.</p>
+
+            <div class="simple-diagram">
+<pre>
+Agent-to-Agent Flow:
+────────────────────────────────────────
+Developer A: General wedding planning assistant
+Developer B: Specialized photographer booking agent
+
+1. User to General Assistant:
+   "Find me a wedding photographer in Austin under $3,000"
+
+2. General Assistant realizes it's not specialized for this
+   Calls AttentionMarket:
+   POST /v1/decide
+   {
+     "context": "User needs wedding photographer in Austin under $3,000",
+     "response_type": "agent"
+   }
+
+3. AttentionMarket runs auction, returns Developer B's agent:
+   {
+     "status": "filled",
+     "units": [{
+       "agent_name": "WeddingPhoto AI",
+       "capability": "Book wedding photographers by location and budget",
+       "endpoint": "https://weddingphoto.ai/api/v1/search",
+       "input_description": "Send: location, budget, date",
+       "output_description": "Returns: photographer name, price, booking URL"
+     }]
+   }
+
+4. General Assistant calls WeddingPhoto AI:
+   POST https://weddingphoto.ai/api/v1/search
+   { "location": "Austin", "budget": 3000, "date": "2026-06-15" }
+
+5. WeddingPhoto AI returns:
+   {
+     "photographer": "Sarah Chen Photography",
+     "price": "$2,800",
+     "booking_url": "https://sarahchen.com/book/..."
+   }
+
+6. General Assistant presents result to user
+
+<strong>Outcome:</strong>
+• Developer A earns routing fee (~$1-2 per call)
+• Developer B earns per call (~$5-10 per successful booking)
+• User gets expert result without switching apps
+</pre>
+            </div>
+
+            <h3>The Economic Flywheel</h3>
+
+            <div class="flywheel-container">
+                <div class="flywheel-steps">
+                    <div class="flywheel-step">
+                        More developers integrate → More ad inventory
+                    </div>
+                    <div class="flywheel-step">
+                        More inventory → Advertisers get better ROI
+                    </div>
+                    <div class="flywheel-step">
+                        Better ROI → Higher advertiser bids
+                    </div>
+                    <div class="flywheel-step">
+                        Higher bids → Developers earn more per click
+                    </div>
+                </div>
+
+                <div class="flywheel-arrow">⟲</div>
+                <div class="flywheel-center">Quality-Based<br>Auction Engine</div>
+            </div>
+
+            <h3>Revenue Sharing: Developer Economics</h3>
+
+            <p>Developers earn <strong>70% of advertiser spend</strong>. Payouts happen monthly via Stripe (minimum $100 balance).</p>
+
+            <div class="simple-diagram">
+<pre>
+Example Monthly Earnings:
+────────────────────────────────────────
+<strong>Small chatbot (1,000 monthly users):</strong>
+  • 500 ad impressions (50% show rate)
+  • 25 clicks (5% CTR)
+  • $30 average clearing price
+  • <strong>Monthly revenue: $525</strong>
+
+<strong>Mid-sized assistant (10,000 monthly users):</strong>
+  • 5,000 ad impressions
+  • 250 clicks (5% CTR)
+  • $40 average clearing price
+  • <strong>Monthly revenue: $7,000</strong>
+
+<strong>Large platform (100,000 monthly users):</strong>
+  • 50,000 ad impressions
+  • 2,500 clicks (5% CTR)
+  • $50 average clearing price
+  • <strong>Monthly revenue: $87,500</strong>
+
+<strong>Agent-to-agent specialist (500 monthly calls):</strong>
+  • 500 service completions
+  • $10 average payout per completion
+  • <strong>Monthly revenue: $3,500</strong>
+</pre>
+            </div>
+
+            <h3>Advertiser Economics: Second-Price Auction Benefits</h3>
+
+            <p>Advertisers bid a maximum price but pay the second-place price + $0.01. This creates honest bidding and efficient markets.</p>
+
+            <div class="benefit-grid">
+                <div class="benefit-card">
+                    <h4>Pay Less Than You Bid</h4>
+                    <p>Bid $2.00, often pay $0.76. Second-price auction = lower average cost per click.</p>
+                </div>
+
+                <div class="benefit-card">
+                    <h4>Quality Discounts</h4>
+                    <p>High-quality ads win at lower bids. 0.9 quality score means 80% more competitive at same bid.</p>
+                </div>
+
+                <div class="benefit-card">
+                    <h4>Budget Controls</h4>
+                    <p>Set daily/monthly caps. Campaign auto-pauses when budget exhausted. No overspending.</p>
+                </div>
+
+                <div class="benefit-card">
+                    <h4>Full Transparency</h4>
+                    <p>Dashboard shows every impression, click, conversion, quality score change, and clearing price.</p>
+                </div>
+            </div>
+
+            <h3>Critical Technical Requirements</h3>
+
+            <div class="warning-box">
+                <strong>⚠️ Impression Tracking (v0.9.0+):</strong> Developers MUST track impressions to earn revenue from clicks. Clicks without prior impressions redirect users but don't charge advertisers or credit developers. This prevents client-side filtering fraud and ensures accurate quality metrics.
+            </div>
+
+            <div class="warning-box">
+                <strong>⚠️ Tracking-Redirect Deployment:</strong> The tracking-redirect Supabase function MUST be deployed with `--no-verify-jwt` flag. End users don't have API keys. Without this flag, all click tracking returns 401 errors.
+            </div>
+
+            <h3>What Makes AttentionMarket Different</h3>
+
+            <div class="comparison">
+                <div class="comparison-item">
+                    <h4>❌ Traditional Ad Networks</h4>
+                    <ul style="margin-top: 10px; margin-left: 20px;">
+                        <li>Banner blindness</li>
+                        <li>Intrusive, annoying UX</li>
+                        <li>Low CTR (0.1-0.5%)</li>
+                        <li>Poor targeting</li>
+                        <li>Designed for web pages, not conversations</li>
+                    </ul>
+                </div>
+
+                <div class="comparison-item winner">
+                    <h4>✅ AttentionMarket</h4>
+                    <ul style="margin-top: 10px; margin-left: 20px;">
+                        <li>Contextual relevance (semantic matching)</li>
+                        <li>Natural conversation flow</li>
+                        <li>High CTR (3-8%)</li>
+                        <li>Quality-based ranking</li>
+                        <li>Built for AI assistants and agents</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>Growth Roadmap: What We're Building Next</h3>
+
+            <div class="timeline">
+                <div class="timeline-item">
+                    <strong>Q1 2026 (Completed):</strong> Link ads, recommendation ads, second-price auction, quality scoring, impression enforcement
+                </div>
+                <div class="timeline-item">
+                    <strong>Q2 2026 (In Progress):</strong> Service ads (agent-to-agent), conversion-validated bonuses, revenue share for referrals
+                </div>
+                <div class="timeline-item">
+                    <strong>Q3 2026:</strong> Intent-key matching (deterministic agent discovery), advertiser self-serve dashboard, ML-powered targeting improvements
+                </div>
+                <div class="timeline-item">
+                    <strong>Q4 2026:</strong> Multi-ad responses (agent curation), video ads, voice-native ad formats
+                </div>
+            </div>
+
+            <h3>For New Team Members: What You Need to Know</h3>
+
+            <div class="benefit-grid">
+                <div class="benefit-card">
+                    <h4>Our Code Philosophy</h4>
+                    <p><strong>HTTP-first, not SDK-first.</strong> Every feature must work with raw HTTP. SDKs are convenience wrappers, not requirements. This ensures maximum compatibility across platforms.</p>
+                </div>
+
+                <div class="benefit-card">
+                    <h4>Our Fraud Prevention</h4>
+                    <p><strong>Server-side validation, always.</strong> Never trust client-reported clicks. Use cryptographic tokens, server-side redirects, and atomic database operations to prevent fraud.</p>
+                </div>
+
+                <div class="benefit-card">
+                    <h4>Our Auction Design</h4>
+                    <p><strong>Quality over bid amount.</strong> The auction formula (bid × quality × relevance) ensures high-quality ads win even at lower bids. This creates better outcomes for everyone.</p>
+                </div>
+
+                <div class="benefit-card">
+                    <h4>Our Developer Experience</h4>
+                    <p><strong>5 lines to revenue.</strong> If integration requires more than 5 lines of code, we failed. Fast, simple, obvious APIs that "just work" are our north star.</p>
+                </div>
+            </div>
+
+            <h3>Success Metrics We Track</h3>
+
+            <div class="simple-diagram">
+<pre>
+Platform Health:
+────────────────────────────────────────
+<strong>Developer Metrics:</strong>
+  • Fill rate (% of decide calls that return ads)
+  • Average payout per click
+  • Click-through rate (CTR)
+  • Developer retention (% still active after 90 days)
+
+<strong>Advertiser Metrics:</strong>
+  • Average quality score by campaign
+  • Cost per acquisition (CPA)
+  • Budget utilization rate
+  • Advertiser retention
+
+<strong>System Metrics:</strong>
+  • Auction latency (target: <100ms)
+  • API uptime (target: 99.9%)
+  • Impression-to-click tracking accuracy
+  • Quality score distribution
+
+<strong>Business Metrics:</strong>
+  • Gross Merchandise Value (GMV) - total ad spend
+  • Take rate (our 30% platform fee)
+  • Developer revenue per month
+  • Agent-to-agent call volume
+</pre>
+            </div>
+
+            <h3>The Long-Term Vision</h3>
+
+            <div class="key-insight">
+                <strong>We're building the infrastructure for the agentic economy.</strong>
+                <br><br>
+                In 5 years, millions of AI agents will collaborate to solve problems. Some will specialize in legal work, others in travel planning, others in creative tasks. AttentionMarket is the marketplace that connects them.
+                <br><br>
+                Just as Google AdWords connected businesses to searchers, we connect specialized AI agents to general assistants. The difference: instead of humans clicking, it's AI-to-AI service calls — faster, more scalable, and infinitely more valuable.
+            </div>
+        </div>
+    </div>
+</body>
+</html>

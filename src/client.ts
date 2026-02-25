@@ -23,6 +23,8 @@ import type {
   ServiceResultResponse,
   GetServiceRequest,
   ServiceResponse,
+  GetCategoriesParams,
+  CategoryTaxonomyResponse,
 } from './types.js';
 import type { CreateImpressionEventParams, CreateClickEventParams } from './utils.js';
 
@@ -1048,6 +1050,61 @@ export class AttentionMarketClient {
       'POST',
       '/v1/service-result',
       { body: params }
+    );
+  }
+
+  /**
+   * Get IAB Content Taxonomy categories.
+   *
+   * Returns the complete IAB Content Taxonomy 3.0 (704 categories across 38 top-level categories).
+   * Supports filtering by tier level, parent category, or search term.
+   *
+   * Use this to discover available categories for `allowedCategories` and `blockedCategories` parameters.
+   *
+   * @param params - Optional filters (tier, parent_id, search)
+   * @returns The IAB Content Taxonomy with categories
+   *
+   * @example Get all Tier 1 categories (38 top-level categories)
+   * ```typescript
+   * const tier1 = await client.getCategories({ tier: 1 });
+   * console.log(`${tier1.total} top-level categories`);
+   * tier1.categories.forEach(cat => console.log(`${cat.id}: ${cat.name}`));
+   * ```
+   *
+   * @example Get all subcategories of "Automotive" (ID: 1)
+   * ```typescript
+   * const automotiveCategories = await client.getCategories({ parent_id: 1 });
+   * console.log(`Found ${automotiveCategories.total} automotive subcategories`);
+   * ```
+   *
+   * @example Search for insurance-related categories
+   * ```typescript
+   * const insuranceCategories = await client.getCategories({ search: 'insurance' });
+   * insuranceCategories.categories.forEach(cat => {
+   *   console.log(`${cat.id}: ${cat.full_path}`);
+   * });
+   * ```
+   */
+  async getCategories(
+    params?: GetCategoriesParams
+  ): Promise<CategoryTaxonomyResponse> {
+    const queryParams = new URLSearchParams();
+
+    if (params?.tier) {
+      queryParams.append('tier', params.tier.toString());
+    }
+    if (params?.parent_id) {
+      queryParams.append('parent_id', params.parent_id.toString());
+    }
+    if (params?.search) {
+      queryParams.append('search', params.search);
+    }
+
+    const url = `/v1/categories${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+
+    return await this.http.request<CategoryTaxonomyResponse>(
+      'GET',
+      url
     );
   }
 }

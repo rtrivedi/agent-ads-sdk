@@ -438,23 +438,67 @@ const ad = await client.decideFromContext({
 - **General apps**: Set 0.7+ for good balance
 - **High-volume apps**: Set 0.5+ to maximize fill rate
 
-### Category Controls
+### Category Controls (IAB Taxonomy 3.0)
 
-Ensure ads match your app's focus:
+Filter ads using **IAB Content Taxonomy 3.0** - the industry-standard category system used by Google Ads, Microsoft Ads, and all major ad platforms.
+
+**704 categories** across 38 top-level categories with 4-tier hierarchy.
+
+#### Discover Available Categories
 
 ```typescript
-// Wedding app: Only show wedding-related ads
+// Get all 38 top-level categories
+const tier1 = await client.getCategories({ tier: 1 });
+tier1.categories.forEach(cat => {
+  console.log(`${cat.id}: ${cat.name}`);
+});
+// Output: 1: Automotive, 31: Insurance, 150: Attractions, etc.
+
+// Get all subcategories of "Automotive" (ID: 1)
+const automotive = await client.getCategories({ parent_id: 1 });
+// Returns: Auto Insurance (31), Auto Repair (34), Auto Buying (30), etc.
+
+// Search for insurance-related categories
+const insurance = await client.getCategories({ search: 'insurance' });
+insurance.categories.forEach(cat => {
+  console.log(cat.full_path);
+});
+// Output: "Automotive > Auto Insurance", "Personal Finance > Insurance", etc.
+```
+
+#### Filter by Category
+
+Use IAB category IDs for precise control:
+
+```typescript
+// Insurance app: Only show insurance ads (by IAB ID)
 const ad = await client.decideFromContext({
-  userMessage: "Help me plan my wedding",
-  allowedCategories: ['wedding', 'photography', 'venues', 'catering']
+  userMessage: "I need car insurance",
+  allowedCategories: [31]  // 31 = Auto Insurance
 });
 
-// Education app: Block inappropriate categories
+// Block entire "Sensitive Topics" tree (IAB ID: 601)
+// This blocks all gambling, adult content, controversial topics, etc.
 const ad = await client.decideFromContext({
-  userMessage: "Help me study",
-  blockedCategories: ['gambling', 'crypto', 'dating', 'alcohol']
+  userMessage: "Help me with something",
+  blockedCategories: [601]  // Blocks parent + all children
+});
+
+// Wedding planner: Allow wedding + photography + food
+const ad = await client.decideFromContext({
+  userMessage: "Help me plan my wedding",
+  allowedCategories: [
+    603,  // Weddings (Personal Celebrations)
+    162,  // Photography (Hobbies & Interests)
+    190   // Restaurants (Food & Drink)
+  ]
 });
 ```
+
+**Parent-Child Relationships:**
+- Blocking a parent category blocks ALL child categories automatically
+- Example: Blocking `1` (Automotive) blocks Auto Insurance, Auto Repair, etc.
+- Great for compliance: Block `601` (Sensitive Topics) to block gambling, adult, controversial in one go
 
 **Note:** If `allowedCategories` is set, `blockedCategories` is ignored.
 
@@ -504,10 +548,12 @@ curl -X POST https://peruwnbrqkvmrldhpoom.supabase.co/functions/v1/decide \
 - Gradually increase threshold if quality is lacking
 - Higher thresholds = fewer ads but better quality
 
-**Categories:**
-- Use `allowedCategories` for specialized apps (wedding planner, legal assistant)
-- Use `blockedCategories` for general apps with compliance needs (kids apps, healthcare)
-- Categories are set by advertisers during campaign creation
+**Categories (IAB Taxonomy):**
+- Use `getCategories()` to discover the full 704-category taxonomy
+- Use `allowedCategories` for specialized apps (wedding planner = `[603]`, legal assistant = `[318]`)
+- Use `blockedCategories` for compliance (kids apps = block `[601]` Sensitive Topics)
+- Parent categories block all children automatically (block `[1]` Automotive = blocks all 40+ auto subcategories)
+- Full taxonomy reference: https://github.com/InteractiveAdvertisingBureau/Taxonomies
 
 **Advertiser Blocking:**
 - Collect user feedback on specific ads

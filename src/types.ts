@@ -760,3 +760,61 @@ export interface GetServiceRequest {
     region?: string;
   };
 }
+
+// ============================================================================
+// IAB Content Taxonomy (v3.0)
+// ============================================================================
+
+export interface IABCategory {
+  /** Unique IAB category ID */
+  id: number;
+
+  /** Parent category ID (null for tier 1 categories) */
+  parent_id: number | null;
+
+  /** Category name */
+  name: string;
+
+  /** Tier 1 category (top level) */
+  tier_1: string | null;
+
+  /** Tier 2 category (sub-category) */
+  tier_2: string | null;
+
+  /** Tier 3 category (sub-sub-category) */
+  tier_3: string | null;
+
+  /** Tier 4 category (deepest level) */
+  tier_4: string | null;
+
+  /** Full hierarchical path (e.g., "Automotive > Auto Insurance") */
+  full_path: string;
+}
+
+export interface CategoryTaxonomyResponse {
+  /** Taxonomy version */
+  version: string;
+
+  /** Source organization */
+  source: string;
+
+  /** Reference URL */
+  url: string;
+
+  /** Total number of categories returned (after filtering) */
+  total: number;
+
+  /** Array of categories */
+  categories: IABCategory[];
+}
+
+export interface GetCategoriesParams {
+  /** Filter by tier level (1-4) */
+  tier?: 1 | 2 | 3 | 4;
+
+  /** Filter by parent category ID */
+  parent_id?: number;
+
+  /** Search by name or path (case-insensitive) */
+  search?: string;
+}
