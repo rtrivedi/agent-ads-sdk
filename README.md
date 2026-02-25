@@ -515,16 +515,100 @@ const ad = await client.decideFromContext({
 
 Get advertiser IDs from previous ad responses.
 
-### Combined Controls
+## 💰 Revenue Optimization (v0.13.1+)
+
+Control revenue vs. relevance tradeoffs with bid and relevance filters.
+
+### Minimum CPC Filter
+
+Only show ads above a minimum bid threshold:
+
+```typescript
+const ad = await client.decideFromContext({
+  userMessage: "I need car insurance",
+  minCPC: 100  // Only ads bidding ≥$1.00 per click
+});
+```
+
+**Use cases:**
+- **Premium apps**: `minCPC: 200` for $2+ ads only
+- **High-value verticals**: Filter out low-budget advertisers
+- **Revenue targets**: Ensure minimum revenue per impression
+
+### Minimum Relevance Score
+
+Only show ads that are semantically relevant:
+
+```typescript
+const ad = await client.decideFromContext({
+  userMessage: "Help me plan my wedding",
+  minRelevanceScore: 0.8  // Only highly relevant ads (0.0-1.0)
+});
+```
+
+**Use cases:**
+- **Niche apps**: Legal assistant = `0.8+` for specialized content only
+- **User experience**: Filter out loosely related ads
+- **Context matching**: Ensure ads match conversation topic
+- **Default threshold**: Backend uses 0.25 minimum
+
+### Ranking Strategy
+
+Choose how ads are ranked:
+
+```typescript
+// Default: Revenue-optimized (highest bid wins)
+const ad = await client.decideFromContext({
+  userMessage: "I need legal help",
+  optimizeFor: 'revenue'  // Rank by bid × quality × relevance
+});
+
+// Alternative: Relevance-optimized (best match wins)
+const ad = await client.decideFromContext({
+  userMessage: "I need legal help",
+  optimizeFor: 'relevance'  // Rank by semantic similarity only
+});
+```
+
+**Use cases:**
+- **General apps**: `'revenue'` to maximize earnings
+- **Niche apps**: `'relevance'` to prioritize perfect matches over high bids
+- **Premium experiences**: Combine with high `minRelevanceScore` + `'relevance'` ranking
+
+### Combined Revenue Controls
+
+```typescript
+// Premium legal assistant: High relevance + high bids
+const ad = await client.decideFromContext({
+  userMessage: "I need estate planning help",
+  minRelevanceScore: 0.8,  // Only highly relevant
+  minCPC: 200,             // Only $2+ bids
+  optimizeFor: 'relevance', // Best match wins
+  allowedCategories: [318] // Legal services only (IAB)
+});
+
+// General chatbot: Maximize revenue
+const ad = await client.decideFromContext({
+  userMessage: "Help me with something",
+  optimizeFor: 'revenue',  // Highest bid wins
+  minQualityScore: 0.7     // Decent quality threshold
+});
+```
+
+### Combined Controls (All Phases)
 
 Mix and match for precise control:
 
 ```typescript
 const ad = await client.decideFromContext({
   userMessage: "I need car insurance",
+  // Phase 1: Quality & Brand Safety
   minQualityScore: 0.8,           // High quality only
-  blockedCategories: ['crypto'],   // No crypto ads
-  allowedCategories: ['insurance', 'finance']  // Relevant only
+  allowedCategories: [31, 398],   // Auto + Personal Finance Insurance (IAB)
+  // Phase 2: Revenue Optimization
+  minCPC: 50,                      // $0.50+ bids only
+  minRelevanceScore: 0.7,          // Highly relevant only
+  optimizeFor: 'revenue'           // Highest bid wins
 });
 ```
 

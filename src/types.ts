@@ -120,6 +120,40 @@ export interface DecideFromContextRequest {
    * blockedAdvertisers: ['adv_abc123', 'adv_xyz789']
    */
   blockedAdvertisers?: string[];
+
+  // Phase 2: Revenue Optimization Controls
+
+  /**
+   * Minimum cost-per-click threshold in cents.
+   * Only return ads with bids at or above this value.
+   * Higher values = more revenue per ad but lower fill rate.
+   *
+   * @example
+   * minCPC: 50  // Only show ads bidding $0.50 or more per click
+   */
+  minCPC?: number;
+
+  /**
+   * Minimum semantic relevance score threshold (0.0 - 1.0).
+   * Only return ads with relevance scores at or above this value.
+   * Higher values = more relevant ads but lower fill rate.
+   * Default backend threshold: 0.25
+   *
+   * @example
+   * minRelevanceScore: 0.8  // Only show highly relevant ads
+   */
+  minRelevanceScore?: number;
+
+  /**
+   * Ad ranking strategy.
+   * - 'revenue': Rank by bid amount (highest bid wins)
+   * - 'relevance': Rank by semantic similarity (best match wins)
+   * Default: 'revenue'
+   *
+   * @example
+   * optimizeFor: 'relevance'  // Prioritize best semantic match over highest bid
+   */
+  optimizeFor?: 'revenue' | 'relevance';
 }
 
 export interface DecideResponse {

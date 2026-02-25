@@ -278,6 +278,10 @@ export class AttentionMarketClient {
       ...(params.allowedCategories && { allowedCategories: params.allowedCategories }),
       ...(params.blockedCategories && { blockedCategories: params.blockedCategories }),
       ...(params.blockedAdvertisers && { blockedAdvertisers: params.blockedAdvertisers }),
+      // Developer controls (Phase 2: Revenue Optimization)
+      ...(params.minCPC !== undefined && { minCPC: params.minCPC }),
+      ...(params.minRelevanceScore !== undefined && { minRelevanceScore: params.minRelevanceScore }),
+      ...(params.optimizeFor && { optimizeFor: params.optimizeFor }),
     };
 
     // Call decideRaw to get full response with metadata
