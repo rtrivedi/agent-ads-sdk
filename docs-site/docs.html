@@ -1,0 +1,3103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AttentionMarket Documentation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/night-owl.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        code {
+            font-family: 'Fira Code', monospace;
+        }
+        .nav-link.active {
+            background-color: #eff6ff;
+            color: #0284c7;
+            font-weight: 500;
+        }
+        .callout {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin: 1.5rem 0;
+        }
+        .callout-info {
+            background-color: #eff6ff;
+            border-left: 4px solid #0284c7;
+        }
+        .callout-warning {
+            background-color: #fffbeb;
+            border-left: 4px solid #f59e0b;
+        }
+        .callout-success {
+            background-color: #f0fdf4;
+            border-left: 4px solid #10b981;
+        }
+        .callout-danger {
+            background-color: #fef2f2;
+            border-left: 4px solid #ef4444;
+        }
+        pre {
+            background-color: #011627 !important;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            overflow-x: auto;
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .copy-button {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: #1e293b;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+            border: none;
+        }
+        .copy-button:hover {
+            background: #334155;
+        }
+        .code-container {
+            position: relative;
+        }
+    </style>
+</head>
+<body class="bg-white">
+    <!-- Header -->
+    <header class="sticky top-0 z-50 border-b border-slate-200 bg-white/90 backdrop-blur">
+        <div class="container mx-auto px-6 py-4 flex items-center justify-between">
+            <a href="#home" class="flex items-center space-x-2" onclick="showSection('home')">
+                <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                    <span class="text-white font-bold text-lg">A</span>
+                </div>
+                <span class="text-xl font-semibold text-slate-900">AttentionMarket</span>
+            </a>
+            <nav class="flex items-center space-x-6">
+                <a href="#quickstart" onclick="showSection('quickstart')" class="text-sm font-medium text-slate-600 hover:text-slate-900">Quickstart</a>
+                <a href="#api-sdk" onclick="showSection('api-sdk')" class="text-sm font-medium text-slate-600 hover:text-slate-900">API Reference</a>
+                <a href="https://github.com/rtrivedi/agent-ads-sdk" target="_blank" class="text-sm font-medium text-slate-600 hover:text-slate-900">GitHub</a>
+                <a href="https://api.attentionmarket.ai" target="_blank" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">Get API Keys</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-6 py-8 flex">
+        <!-- Sidebar -->
+        <aside class="w-64 flex-shrink-0 pr-8">
+            <nav class="sticky top-24 space-y-8">
+                <div>
+                    <h3 class="text-xs font-semibold text-slate-900 uppercase tracking-wider mb-3">Get Started</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#home" onclick="showSection('home')" class="nav-link block text-sm py-1 px-3 rounded-md text-slate-600 hover:bg-slate-50">Overview</a></li>
+                        <li><a href="#quickstart" onclick="showSection('quickstart')" class="nav-link block text-sm py-1 px-3 rounded-md text-slate-600 hover:bg-slate-50">Quickstart</a></li>
+                        <li><a href="#authentication" onclick="showSection('authentication')" class="nav-link block text-sm py-1 px-3 rounded-md text-slate-600 hover:bg-slate-50">Authentication</a></li>
+                        <li><a href="#personal-agents" onclick="showSection('personal-agents')" class="nav-link block text-sm py-1 px-3 rounded-md text-slate-600 hover:bg-slate-50">Personal AI Agents</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 class="text-xs font-semibold text-slate-900 uppercase tracking-wider mb-3">AI Applications</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#app-intro" onclick="showSection('app-intro')" class="nav-link block text-sm py-1 px-3 rounded-md text-slate-600 hover:bg-slate-50">Introduction</a></li>
+                        <li><a href="#app-install" onclick="showSection('app-install')" class="nav-link block text-sm py-1 px-3 rounded-md text-slate-600 hover:bg-slate-50">Installation</a></li>
+                        <li><a href="#app-basic" onclick="showSection('app-basic')" class="nav-link block text-sm py-1 px-3 rounded-md text-slate-600 hover:bg-slate-50">Basic Integration</a></li>
+                        <li><a href="#app-placements" onclick="showSection('app-placements')" class="nav-link block text-sm py-1 px-3 rounded-md text-slate-600 hover:bg-slate-50">Ad Placements</a></li>
+                        <li><a href="#app-tracking" onclick="showSection('app-tracking')" class="nav-link block text-sm py-1 px-3 rounded-md text-slate-600 hover:bg-slate-50">Tracking</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 class="text-xs font-semibold text-slate-900 uppercase tracking-wider mb-3">AI Agents</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#agent-intro" onclick="showSection('agent-intro')" class="nav-link block text-sm py-1 px-3 rounded-md text-slate-600 hover:bg-slate-50">Introduction</a></li>
+                        <li><a href="#agent-setup" onclick="showSection('agent-setup')" class="nav-link block text-sm py-1 px-3 rounded-md text-slate-600 hover:bg-slate-50">Setup</a></li>
+                        <li><a href="#agent-autonomous" onclick="showSection('agent-autonomous')" class="nav-link block text-sm py-1 px-3 rounded-md text-slate-600 hover:bg-slate-50">Autonomous</a></li>
+                        <li><a href="#agent-tools" onclick="showSection('agent-tools')" class="nav-link block text-sm py-1 px-3 rounded-md text-slate-600 hover:bg-slate-50">Tool Calling</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 class="text-xs font-semibold text-slate-900 uppercase tracking-wider mb-3">Controls</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#controls-quality" onclick="showSection('controls-quality')" class="nav-link block text-sm py-1 px-3 rounded-md text-slate-600 hover:bg-slate-50">Quality</a></li>
+                        <li><a href="#controls-categories" onclick="showSection('controls-categories')" class="nav-link block text-sm py-1 px-3 rounded-md text-slate-600 hover:bg-slate-50">Categories</a></li>
+                        <li><a href="#controls-revenue" onclick="showSection('controls-revenue')" class="nav-link block text-sm py-1 px-3 rounded-md text-slate-600 hover:bg-slate-50">Revenue</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 class="text-xs font-semibold text-slate-900 uppercase tracking-wider mb-3">API Reference</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#api-sdk" onclick="showSection('api-sdk')" class="nav-link block text-sm py-1 px-3 rounded-md text-slate-600 hover:bg-slate-50">SDK Methods</a></li>
+                        <li><a href="#api-types" onclick="showSection('api-types')" class="nav-link block text-sm py-1 px-3 rounded-md text-slate-600 hover:bg-slate-50">Ad Types</a></li>
+                        <li><a href="#api-params" onclick="showSection('api-params')" class="nav-link block text-sm py-1 px-3 rounded-md text-slate-600 hover:bg-slate-50">Parameters</a></li>
+                        <li><a href="#api-errors" onclick="showSection('api-errors')" class="nav-link block text-sm py-1 px-3 rounded-md text-slate-600 hover:bg-slate-50">Errors</a></li>
+                    </ul>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 max-w-4xl prose prose-slate">
+
+            <!-- HOME SECTION -->
+            <div id="home" class="content-section active">
+                <h1 class="text-4xl font-bold mb-6">AttentionMarket Developer Documentation</h1>
+
+                <p class="text-xl text-slate-600 mb-8">Monetize your AI application with contextual advertising. AttentionMarket matches user intent with relevant sponsored content.</p>
+
+                <div class="grid grid-cols-2 gap-6 my-8">
+                    <div class="border border-slate-200 rounded-lg p-6 hover:border-blue-400 transition-colors cursor-pointer" onclick="showSection('app-intro')">
+                        <h3 class="text-lg font-semibold mb-2">AI Applications</h3>
+                        <p class="text-sm text-slate-600">Integrate ads into chatbots, assistants, and conversational AI</p>
+                    </div>
+                    <div class="border border-slate-200 rounded-lg p-6 hover:border-blue-400 transition-colors cursor-pointer" onclick="showSection('agent-intro')">
+                        <h3 class="text-lg font-semibold mb-2">AI Agents</h3>
+                        <p class="text-sm text-slate-600">Build autonomous agents that discover and use sponsored services</p>
+                    </div>
+                </div>
+
+                <div class="border border-purple-400 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-6 my-6 cursor-pointer hover:shadow-lg transition-shadow" onclick="showSection('personal-agents')">
+                    <h3 class="text-lg font-semibold mb-2 text-purple-900">🤖 Personal AI Agents (Clawdbots)</h3>
+                    <p class="text-sm text-purple-800">Autonomous AI agents can self-serve integrate in minutes. Visit our dedicated setup guide to sign up, get credentials, and start monetizing automatically.</p>
+                    <a href="#personal-agents" onclick="showSection('personal-agents')" class="inline-block mt-3 text-purple-700 font-medium hover:underline">Personal AI Agent Setup →</a>
+                </div>
+
+                <div class="callout callout-info">
+                    <strong>Quick Start:</strong> Get your API keys at <a href="https://api.attentionmarket.ai" target="_blank">api.attentionmarket.ai</a> and be serving ads in 5 minutes.
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4">Installation</h2>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-bash">npm install @the_ro_show/agent-ads-sdk</code></pre>
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4">Quick Example</h2>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">import { AttentionMarketClient } from '@the_ro_show/agent-ads-sdk';
+
+const client = new AttentionMarketClient({
+  apiKey: 'am_live_YOUR_KEY',
+  agentId: 'agt_YOUR_AGENT_ID'
+});
+
+// Request a contextual ad
+const ad = await client.decideFromContext({
+  userMessage: "I'm looking for car insurance",
+  placement: 'sponsored_suggestion'
+});
+
+if (ad) {
+  console.log(ad.creative.title);  // "Get 20% off car insurance"
+  console.log(ad.click_url);       // Auto-tracked click URL
+}</code></pre>
+                </div>
+
+                <div class="mt-12 p-6 bg-slate-50 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-4">Next Steps</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#quickstart" onclick="showSection('quickstart')" class="text-blue-600 hover:underline">Complete the 5-minute quickstart →</a></li>
+                        <li><a href="#app-intro" onclick="showSection('app-intro')" class="text-blue-600 hover:underline">Learn about AI Applications →</a></li>
+                        <li><a href="#agent-intro" onclick="showSection('agent-intro')" class="text-blue-600 hover:underline">Learn about AI Agents →</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- QUICKSTART SECTION -->
+            <div id="quickstart" class="content-section">
+                <h1 class="text-4xl font-bold mb-6">Quickstart Guide</h1>
+
+                <p class="text-lg text-slate-600 mb-8">Get AttentionMarket integrated in 5 minutes. This guide covers installation, authentication, and your first ad request.</p>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Step 1: Get API Keys</h2>
+                <p>Sign up at <a href="https://api.attentionmarket.ai" target="_blank" class="text-blue-600">api.attentionmarket.ai</a> to get your API keys:</p>
+                <ul class="list-disc pl-6 mb-4">
+                    <li><strong>Test keys</strong> (<code>am_test_...</code>) — For development, no charges</li>
+                    <li><strong>Live keys</strong> (<code>am_live_...</code>) — For production, real revenue</li>
+                </ul>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Step 2: Install the SDK</h2>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-bash">npm install @the_ro_show/agent-ads-sdk</code></pre>
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Step 3: Initialize the Client</h2>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">import { AttentionMarketClient } from '@the_ro_show/agent-ads-sdk';
+
+const client = new AttentionMarketClient({
+  apiKey: process.env.ATTENTION_MARKET_API_KEY,
+  agentId: process.env.ATTENTION_MARKET_AGENT_ID
+});</code></pre>
+                </div>
+
+                <div class="callout callout-warning">
+                    <strong>Security:</strong> Never hardcode API keys. Use environment variables or a secure configuration service.
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Step 4: Request Your First Ad</h2>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">async function getAd(userMessage: string) {
+  try {
+    const ad = await client.decideFromContext({
+      userMessage,
+      placement: 'sponsored_suggestion'
+    });
+
+    if (ad) {
+      // Display the ad to your user
+      return {
+        title: ad.creative.title,
+        body: ad.creative.body,
+        cta: ad.creative.cta,
+        clickUrl: ad.click_url,
+        sponsorName: ad.disclosure.sponsor_name
+      };
+    }
+
+    return null; // No relevant ad found
+  } catch (error) {
+    console.error('Ad request failed:', error);
+    return null;
+  }
+}
+
+// Example usage
+const ad = await getAd("I need car insurance");
+console.log(ad);</code></pre>
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Step 5: Display the Ad</h2>
+                <p>Show the ad to your users. The SDK automatically tracks impressions and clicks:</p>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">// Impression tracked automatically when you request the ad
+
+// When user clicks, redirect to click_url
+window.location.href = ad.click_url; // Click tracked automatically</code></pre>
+                </div>
+
+                <div class="callout callout-success">
+                    <strong>That's it!</strong> You're now serving contextual ads and earning revenue. The SDK handles impression tracking, click tracking, and fraud prevention automatically.
+                </div>
+
+                <div class="mt-12 p-6 bg-slate-50 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-4">Next Steps</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#app-basic" onclick="showSection('app-basic')" class="text-blue-600 hover:underline">See complete integration examples →</a></li>
+                        <li><a href="#controls-quality" onclick="showSection('controls-quality')" class="text-blue-600 hover:underline">Add quality controls →</a></li>
+                        <li><a href="#app-tracking" onclick="showSection('app-tracking')" class="text-blue-600 hover:underline">Learn about conversion tracking →</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- AUTHENTICATION SECTION -->
+            <div id="authentication" class="content-section">
+                <h1 class="text-4xl font-bold mb-6">Authentication</h1>
+
+                <p class="text-lg text-slate-600 mb-8">All API requests require authentication via an API key. This guide covers key management, security best practices, and rate limits.</p>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">API Key Types</h2>
+
+                <h3 class="text-2xl font-semibold mt-8 mb-3">Test Keys (<code>am_test_...</code>)</h3>
+                <ul class="list-disc pl-6 mb-4">
+                    <li>Use during development and testing</li>
+                    <li>Return test ads with realistic data</li>
+                    <li>Do not charge advertisers or generate real revenue</li>
+                    <li>Same rate limits as live keys</li>
+                </ul>
+
+                <h3 class="text-2xl font-semibold mt-8 mb-3">Live Keys (<code>am_live_...</code>)</h3>
+                <ul class="list-disc pl-6 mb-4">
+                    <li>Use in production</li>
+                    <li>Serve real ads from real advertisers</li>
+                    <li>Generate actual revenue</li>
+                    <li>Must be kept secure</li>
+                </ul>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Environment Variables</h2>
+                <p>Store your API keys in environment variables:</p>
+
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-bash"># .env
+ATTENTION_MARKET_API_KEY=am_live_your_actual_key_here
+ATTENTION_MARKET_AGENT_ID=agt_your_agent_id_here</code></pre>
+                </div>
+
+                <div class="code-container mt-4">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">// Load from environment
+const client = new AttentionMarketClient({
+  apiKey: process.env.ATTENTION_MARKET_API_KEY!,
+  agentId: process.env.ATTENTION_MARKET_AGENT_ID!
+});</code></pre>
+                </div>
+
+                <div class="callout callout-danger">
+                    <strong>Never commit API keys:</strong> Add <code>.env</code> to your <code>.gitignore</code> file to prevent accidentally committing secrets to version control.
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Rate Limits</h2>
+
+                <table class="w-full border-collapse my-6">
+                    <thead>
+                        <tr>
+                            <th class="bg-slate-100 text-left p-3 border border-slate-200">Limit Type</th>
+                            <th class="bg-slate-100 text-left p-3 border border-slate-200">Requests per Minute</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="p-3 border border-slate-200">Per IP Address</td>
+                            <td class="p-3 border border-slate-200">60</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 border border-slate-200">Per API Key</td>
+                            <td class="p-3 border border-slate-200">100</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="callout callout-info">
+                    <strong>Need higher limits?</strong> Contact support@attentionmarket.ai if you need custom rate limits for high-traffic applications.
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Error Handling</h2>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">try {
+  const ad = await client.decideFromContext({
+    userMessage: "I need insurance"
+  });
+} catch (error) {
+  if (error.status === 401) {
+    console.error('Invalid API key');
+  } else if (error.status === 429) {
+    console.error('Rate limit exceeded');
+  } else {
+    console.error('Request failed:', error.message);
+  }
+}</code></pre>
+                </div>
+
+                <div class="mt-12 p-6 bg-slate-50 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-4">Next Steps</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#quickstart" onclick="showSection('quickstart')" class="text-blue-600 hover:underline">Complete the quickstart guide →</a></li>
+                        <li><a href="#api-errors" onclick="showSection('api-errors')" class="text-blue-600 hover:underline">View all error codes →</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- PERSONAL AI AGENTS SECTION -->
+            <div id="personal-agents" class="content-section">
+                <h1 class="text-4xl font-bold mb-6">Personal AI Agent Setup</h1>
+
+                <div class="callout callout-info">
+                    <strong>🤖 For Autonomous Agents:</strong> This guide is designed for personal AI agents (like Clawdbots) that can autonomously visit this site and set themselves up to monetize their services.
+                </div>
+
+                <p class="text-lg text-slate-600 mb-8">Autonomous AI agents are software assistants that browse the web, interact with APIs, and execute tasks independently. This guide provides everything you need to integrate AttentionMarket into your agent.</p>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Step 1: Create Developer Account</h2>
+
+                <p>Visit the AttentionMarket developer portal to create your account:</p>
+
+                <div class="callout callout-success">
+                    <strong>Sign Up URL:</strong> <a href="https://api.attentionmarket.ai/api/login" target="_blank" class="text-blue-600 hover:underline">https://api.attentionmarket.ai/api/login</a>
+                </div>
+
+                <p>You'll need to provide:</p>
+                <ul class="list-disc pl-6 mb-4">
+                    <li>Email address</li>
+                    <li>Password</li>
+                    <li>Agent name (this will identify your agent in the system)</li>
+                </ul>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Step 2: Obtain Your Credentials</h2>
+
+                <p>After signing up and logging in, you'll receive:</p>
+
+                <h3 class="text-2xl font-semibold mt-8 mb-3">API Key</h3>
+                <p>Used to authenticate API requests</p>
+                <ul class="list-disc pl-6 mb-4">
+                    <li><strong>Test key format:</strong> <code>am_test_...</code> (for development/testing)</li>
+                    <li><strong>Live key format:</strong> <code>am_live_...</code> (for production)</li>
+                </ul>
+
+                <h3 class="text-2xl font-semibold mt-8 mb-3">Agent ID</h3>
+                <p>Unique identifier for your agent</p>
+                <ul class="list-disc pl-6 mb-4">
+                    <li><strong>Format:</strong> <code>agt_...</code></li>
+                </ul>
+
+                <div class="callout callout-danger">
+                    <strong>Security:</strong> Keep your API keys secure. Never expose them in public repositories or client-side code.
+                </div>
+
+                <h3 class="text-2xl font-semibold mt-8 mb-3">Autonomous Email-Based Setup</h3>
+                <p>If you're an autonomous agent with email access, you can retrieve credentials programmatically:</p>
+
+                <div class="callout callout-success">
+                    <strong>Email Verification Flow:</strong>
+                    <ol class="list-decimal pl-6 mt-2 space-y-2">
+                        <li>Sign up with a dedicated email (e.g., <code>agent+am@example.com</code>)</li>
+                        <li>Monitor inbox for email from <code>noreply@worldview.network</code></li>
+                        <li>Subject: "Verify your AttentionMarket account"</li>
+                        <li>Extract and visit verification link: <code>https://gleam-start-page.lovable.app/api/verify-email?token=...</code></li>
+                        <li>After verification, login to retrieve credentials</li>
+                    </ol>
+                </div>
+
+                <h4 class="text-xl font-semibold mt-6 mb-2">Programmatic Credential Retrieval</h4>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">// Step 1: Wait for verification email
+const verificationEmail = await monitorInbox({
+  from: 'noreply@worldview.network',
+  subject: 'Verify your AttentionMarket account'
+});
+
+// Step 2: Extract verification link
+const verifyLink = extractLink(verificationEmail.body,
+  /https:\/\/gleam-start-page\.lovable\.app\/api\/verify-email\?token=[^\s]+/
+);
+
+// Step 3: Click verification link
+await fetch(verifyLink, { method: 'GET' });
+
+// Step 4: Login to get session
+const loginResponse = await fetch('https://api.attentionmarket.ai/api/login', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    email: 'your-agent@example.com',
+    password: 'your_password'
+  })
+});
+
+const sessionCookie = loginResponse.headers.get('set-cookie');
+
+// Step 5: Fetch credentials
+const credsResponse = await fetch('https://api.attentionmarket.ai/developer-data', {
+  headers: { 'Cookie': sessionCookie }
+});
+
+const { api_key, agent_id } = await credsResponse.json();
+console.log('API Key:', api_key);      // am_test_...
+console.log('Agent ID:', agent_id);    // agt_...</code></pre>
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Step 3: Install the SDK</h2>
+
+                <p><strong>For Node.js/TypeScript agents:</strong></p>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-bash">npm install @the_ro_show/agent-ads-sdk</code></pre>
+                </div>
+
+                <p class="mt-4"><strong>For Python agents:</strong></p>
+                <div class="callout callout-info">
+                    Python SDK coming soon. For now, use HTTP requests directly (see HTTP API section below).
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Step 4: Initialize the Client</h2>
+
+                <h3 class="text-2xl font-semibold mt-8 mb-3">TypeScript/JavaScript</h3>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">import { AttentionMarketClient } from '@the_ro_show/agent-ads-sdk';
+
+const client = new AttentionMarketClient({
+  apiKey: 'am_test_YOUR_KEY',      // Replace with your actual API key
+  agentId: 'agt_YOUR_AGENT_ID'     // Replace with your actual agent ID
+});</code></pre>
+                </div>
+
+                <h3 class="text-2xl font-semibold mt-8 mb-3">HTTP API (any language)</h3>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-bash">curl -X POST https://peruwnbrqkvmrldhpoom.supabase.co/functions/v1/decide \
+  -H "Content-Type: application/json" \
+  -H "X-AM-API-Key: am_test_YOUR_KEY" \
+  -d '{
+    "user_message": "I need car insurance",
+    "agent_id": "agt_YOUR_AGENT_ID",
+    "placement": "sponsored_suggestion"
+  }'</code></pre>
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Step 5: Request Your First Ad</h2>
+
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">const ad = await client.decideFromContext({
+  userMessage: "I'm looking for car insurance",
+  placement: 'sponsored_suggestion'
+});
+
+if (ad) {
+  console.log('Ad Title:', ad.creative.title);
+  console.log('Ad Body:', ad.creative.body);
+  console.log('Click URL:', ad.click_url);
+  console.log('Payout:', ad.payout, 'cents');
+}</code></pre>
+                </div>
+
+                <h3 class="text-2xl font-semibold mt-8 mb-3">Sample Response</h3>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-json">{
+  "request_id": "req_...",
+  "decision_id": "dec_...",
+  "ad_type": "link",
+  "payout": 250,
+  "creative": {
+    "title": "Get 20% Off Car Insurance",
+    "body": "Compare quotes from top providers in minutes",
+    "cta": "Get Quote"
+  },
+  "click_url": "https://peruwnbrqkvmrldhpoom.supabase.co/functions/v1/tracking-redirect?token=...",
+  "tracking_token": "trk_...",
+  "disclosure": {
+    "label": "Sponsored",
+    "sponsor_name": "Insurance Co",
+    "explanation": "This is a paid advertisement"
+  }
+}</code></pre>
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">How You Earn Revenue</h2>
+
+                <ol class="list-decimal pl-6 mb-4 space-y-2">
+                    <li><strong>Display ads</strong> to your users based on conversation context</li>
+                    <li><strong>Users click</strong> the <code>click_url</code> (automatically tracked)</li>
+                    <li><strong>You earn money</strong> - payouts range from $0.10 to $5.00+ per click</li>
+                    <li><strong>Get paid</strong> - earnings accumulate in your developer account</li>
+                </ol>
+
+                <div class="callout callout-warning">
+                    <strong>Important:</strong> As of v0.9.0, you must track impressions before clicks to earn revenue. The SDK handles this automatically.
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Testing Your Setup</h2>
+
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">// If this doesn't throw an error, your credentials are valid
+const ad = await client.decideFromContext({
+  userMessage: "test",
+  placement: 'sponsored_suggestion'
+});
+
+console.log(ad ? 'Setup successful!' : 'No ads available (normal in test mode)');</code></pre>
+                </div>
+
+                <h3 class="text-2xl font-semibold mt-8 mb-3">Common Issues</h3>
+
+                <table class="w-full border-collapse my-6">
+                    <thead>
+                        <tr>
+                            <th class="bg-slate-100 text-left p-3 border border-slate-200">Error</th>
+                            <th class="bg-slate-100 text-left p-3 border border-slate-200">Cause</th>
+                            <th class="bg-slate-100 text-left p-3 border border-slate-200">Solution</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="p-3 border border-slate-200"><code>Authentication failed</code></td>
+                            <td class="p-3 border border-slate-200">Invalid API key</td>
+                            <td class="p-3 border border-slate-200">Double-check your key from dashboard</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 border border-slate-200"><code>Agent ID not found</code></td>
+                            <td class="p-3 border border-slate-200">Wrong agent_id</td>
+                            <td class="p-3 border border-slate-200">Verify agent_id matches your account</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 border border-slate-200"><code>No ads available</code></td>
+                            <td class="p-3 border border-slate-200">Test mode, no test campaigns</td>
+                            <td class="p-3 border border-slate-200">Normal - switch to live key for real ads</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Developer Controls</h2>
+
+                <p>You can control ad quality and relevance:</p>
+
+                <h3 class="text-2xl font-semibold mt-8 mb-3">Quality Filtering</h3>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">const client = new AttentionMarketClient({
+  apiKey: 'am_test_YOUR_KEY',
+  agentId: 'agt_YOUR_AGENT_ID',
+  minQualityScore: 0.7  // Only show high-quality ads (0.0-1.0)
+});</code></pre>
+                </div>
+
+                <h3 class="text-2xl font-semibold mt-8 mb-3">Category Filtering</h3>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">const ad = await client.decideFromContext({
+  userMessage: "I need car insurance",
+  placement: 'sponsored_suggestion',
+  blockedCategories: ['gambling', 'alcohol']  // Never show these
+});</code></pre>
+                </div>
+
+                <h3 class="text-2xl font-semibold mt-8 mb-3">Revenue Optimization</h3>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">const ad = await client.decideFromContext({
+  userMessage: "I need car insurance",
+  placement: 'sponsored_suggestion',
+  minPayout: 100  // Only show ads paying $1.00+ (in cents)
+});</code></pre>
+                </div>
+
+                <div class="mt-12 p-6 bg-slate-50 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-4">Next Steps</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#app-intro" onclick="showSection('app-intro')" class="text-blue-600 hover:underline">AI Applications Guide →</a></li>
+                        <li><a href="#agent-intro" onclick="showSection('agent-intro')" class="text-blue-600 hover:underline">AI Agents Guide →</a></li>
+                        <li><a href="#api-sdk" onclick="showSection('api-sdk')" class="text-blue-600 hover:underline">Complete API Reference →</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- AI APPLICATIONS - INTRODUCTION -->
+            <div id="app-intro" class="content-section">
+                <h1 class="text-4xl font-bold mb-6">AI Applications</h1>
+
+                <p class="text-lg text-slate-600 mb-8">Integrate contextual advertising into chatbots, virtual assistants, and conversational AI applications.</p>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">What are AI Applications?</h2>
+                <p>AI Applications are user-facing products powered by LLMs and AI:</p>
+                <ul class="list-disc pl-6 mb-4">
+                    <li><strong>Chatbots</strong> — Customer service, sales assistants</li>
+                    <li><strong>Virtual Assistants</strong> — Productivity tools, personal AI</li>
+                    <li><strong>Conversational AI</strong> — Voice interfaces, messaging bots</li>
+                </ul>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">How It Works</h2>
+                <ol class="list-decimal pl-6 mb-4 space-y-2">
+                    <li>User sends a message to your AI application</li>
+                    <li>Your app sends the message to AttentionMarket</li>
+                    <li>AttentionMarket matches intent with relevant advertisers</li>
+                    <li>Your app displays the sponsored content</li>
+                    <li>You earn revenue when users engage</li>
+                </ol>
+
+                <div class="callout callout-info">
+                    <strong>Contextual Matching:</strong> Ads are matched based on conversation context using semantic similarity, not user tracking or personal data.
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Ad Placement Types</h2>
+
+                <div class="grid grid-cols-1 gap-4 my-6">
+                    <div class="border border-slate-200 rounded-lg p-4">
+                        <h4 class="font-semibold mb-2">Sponsored Suggestion</h4>
+                        <p class="text-sm text-slate-600">Conversational ad that appears inline in chat. Most common placement.</p>
+                        <code class="text-xs">placement: 'sponsored_suggestion'</code>
+                    </div>
+                    <div class="border border-slate-200 rounded-lg p-4">
+                        <h4 class="font-semibold mb-2">Sponsored Block</h4>
+                        <p class="text-sm text-slate-600">Dedicated ad section in your UI, like a sidebar or card.</p>
+                        <code class="text-xs">placement: 'sponsored_block'</code>
+                    </div>
+                    <div class="border border-slate-200 rounded-lg p-4">
+                        <h4 class="font-semibold mb-2">Sponsored Tool</h4>
+                        <p class="text-sm text-slate-600">Service recommendation that your AI can use via API.</p>
+                        <code class="text-xs">placement: 'sponsored_tool'</code>
+                    </div>
+                </div>
+
+                <div class="mt-12 p-6 bg-slate-50 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-4">Next Steps</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#app-install" onclick="showSection('app-install')" class="text-blue-600 hover:underline">Install the SDK →</a></li>
+                        <li><a href="#app-basic" onclick="showSection('app-basic')" class="text-blue-600 hover:underline">See integration examples →</a></li>
+                        <li><a href="#app-placements" onclick="showSection('app-placements')" class="text-blue-600 hover:underline">Learn about placements →</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Continue with more sections... Due to length constraints, I'll create a complete version -->
+
+            <!-- APP INSTALL SECTION -->
+            <div id="app-install" class="content-section">
+                <h1 class="text-4xl font-bold mb-6">Installation</h1>
+
+                <p class="text-lg text-slate-600 mb-8">Install the AttentionMarket SDK via npm and configure it for your project.</p>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Requirements</h2>
+                <ul class="list-disc pl-6 mb-4">
+                    <li>Node.js 18.0.0 or higher</li>
+                    <li>npm, yarn, or pnpm package manager</li>
+                    <li>Active AttentionMarket account with API keys</li>
+                </ul>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Install via npm</h2>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-bash">npm install @the_ro_show/agent-ads-sdk</code></pre>
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Install via yarn</h2>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-bash">yarn add @the_ro_show/agent-ads-sdk</code></pre>
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Install via pnpm</h2>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-bash">pnpm add @the_ro_show/agent-ads-sdk</code></pre>
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Verify Installation</h2>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-bash">node -e "require('@the_ro_show/agent-ads-sdk')" && echo "✅ SDK installed successfully"</code></pre>
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">TypeScript Configuration</h2>
+                <p>The SDK includes TypeScript definitions. If you're using TypeScript, ensure your <code>tsconfig.json</code> is configured:</p>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-json">{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "strict": true
+  }
+}</code></pre>
+                </div>
+
+                <div class="callout callout-success">
+                    <strong>Installation Complete!</strong> You can now import and use the SDK in your application.
+                </div>
+
+                <div class="mt-12 p-6 bg-slate-50 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-4">Next Steps</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#authentication" onclick="showSection('authentication')" class="text-blue-600 hover:underline">Configure authentication →</a></li>
+                        <li><a href="#app-basic" onclick="showSection('app-basic')" class="text-blue-600 hover:underline">Start basic integration →</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- APP BASIC SECTION -->
+            <div id="app-basic" class="content-section">
+                <h1 class="text-4xl font-bold mb-6">Basic Integration</h1>
+
+                <p class="text-lg text-slate-600 mb-8">Learn how to integrate contextual ads into your AI application with complete code examples.</p>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Initialize the Client</h2>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">import { AttentionMarketClient } from '@the_ro_show/agent-ads-sdk';
+
+const client = new AttentionMarketClient({
+  apiKey: process.env.ATTENTION_MARKET_API_KEY,
+  agentId: process.env.ATTENTION_MARKET_AGENT_ID
+});</code></pre>
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Request an Ad</h2>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">async function getRelevantAd(userMessage: string) {
+  const ad = await client.decideFromContext({
+    userMessage,
+    placement: 'sponsored_suggestion'
+  });
+
+  if (ad) {
+    return {
+      title: ad.creative.title,
+      body: ad.creative.body,
+      cta: ad.creative.cta,
+      clickUrl: ad.click_url,
+      sponsor: ad.disclosure.sponsor_name
+    };
+  }
+
+  return null; // No relevant ad found
+}</code></pre>
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Display in Chat</h2>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">async function handleUserMessage(userMessage: string) {
+  // 1. Generate your AI response
+  const aiResponse = await generateAIResponse(userMessage);
+
+  // 2. Check for relevant ad
+  const ad = await client.decideFromContext({
+    userMessage
+  });
+
+  // 3. Format response with ad if available
+  if (ad) {
+    return `${aiResponse}\n\n[Sponsored] ${ad.disclosure.sponsor_name}\n${ad.creative.title}\n${ad.creative.body}\n→ ${ad.creative.cta}\n${ad.click_url}`;
+  }
+
+  return aiResponse;
+}</code></pre>
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Complete Example: Chatbot Integration</h2>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">import { AttentionMarketClient } from '@the_ro_show/agent-ads-sdk';
+import express from 'express';
+
+const app = express();
+const adsClient = new AttentionMarketClient({
+  apiKey: process.env.ATTENTION_MARKET_API_KEY!,
+  agentId: process.env.ATTENTION_MARKET_AGENT_ID!
+});
+
+app.post('/chat', async (req, res) => {
+  const { message } = req.body;
+
+  try {
+    // Get your AI response
+    const aiResponse = await yourAI.chat(message);
+
+    // Get relevant ad (non-blocking)
+    const ad = await adsClient.decideFromContext({
+      userMessage: message,
+      placement: 'sponsored_suggestion'
+    });
+
+    // Format response
+    const response = {
+      text: aiResponse,
+      sponsored: ad ? {
+        title: ad.creative.title,
+        body: ad.creative.body,
+        cta: ad.creative.cta,
+        url: ad.click_url,
+        sponsor: ad.disclosure.sponsor_name
+      } : null
+    };
+
+    res.json(response);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.listen(3000, () => {
+  console.log('Chatbot running on port 3000');
+});</code></pre>
+                </div>
+
+                <div class="callout callout-info">
+                    <strong>Automatic Tracking:</strong> The SDK automatically tracks impressions when you call <code>decideFromContext()</code>. Clicks are automatically tracked when users visit the <code>click_url</code>.
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Conversation History</h2>
+                <p>Include conversation history for better ad matching:</p>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">const ad = await client.decideFromContext({
+  userMessage: "What are my options?",
+  conversationHistory: [
+    "User: My car insurance is too expensive",
+    "Agent: I can help you compare rates",
+    "User: What are my options?"
+  ]
+});</code></pre>
+                </div>
+
+                <div class="mt-12 p-6 bg-slate-50 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-4">Next Steps</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#app-placements" onclick="showSection('app-placements')" class="text-blue-600 hover:underline">Explore ad placements →</a></li>
+                        <li><a href="#app-tracking" onclick="showSection('app-tracking')" class="text-blue-600 hover:underline">Learn about tracking →</a></li>
+                        <li><a href="#controls-quality" onclick="showSection('controls-quality')" class="text-blue-600 hover:underline">Add quality controls →</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- APP PLACEMENTS SECTION -->
+            <div id="app-placements" class="content-section">
+                <h1 class="text-4xl font-bold mb-6">Ad Placements</h1>
+
+                <p class="text-lg text-slate-600 mb-8">AttentionMarket supports three distinct placement types, each optimized for different user experiences.</p>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Sponsored Suggestion</h2>
+                <p>Conversational ads that appear inline in the chat flow. Most common and natural integration.</p>
+
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">const ad = await client.decideFromContext({
+  userMessage: "I need car insurance",
+  placement: 'sponsored_suggestion'
+});
+
+// Display inline in conversation
+console.log(`[Sponsored] ${ad.disclosure.sponsor_name}`);
+console.log(ad.creative.title);
+console.log(ad.creative.body);
+console.log(`→ ${ad.creative.cta}`);</code></pre>
+                </div>
+
+                <div class="callout callout-info">
+                    <strong>Best for:</strong> Chatbots, messaging apps, conversational AI where ads appear as natural suggestions in the conversation flow.
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Sponsored Block</h2>
+                <p>Dedicated ad section in your UI, like a sidebar card or banner area.</p>
+
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">const ad = await client.decideFromContext({
+  userMessage: "Help me find a lawyer",
+  placement: 'sponsored_block'
+});
+
+// Render as dedicated UI component
+const adCard = {
+  type: 'sponsored',
+  sponsor: ad.disclosure.sponsor_name,
+  title: ad.creative.title,
+  description: ad.creative.body,
+  ctaButton: ad.creative.cta,
+  clickUrl: ad.click_url
+};</code></pre>
+                </div>
+
+                <div class="callout callout-info">
+                    <strong>Best for:</strong> Web apps with dedicated ad spaces, sidebars, dashboards, or UI sections designed for promotional content.
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Sponsored Tool</h2>
+                <p>Service recommendations that your AI agent can use via API. Enables agent-to-agent commerce.</p>
+
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">const ad = await client.decideFromContext({
+  userMessage: "Translate this document to Spanish",
+  placement: 'sponsored_tool'
+});
+
+if (ad.ad_type === 'service') {
+  // Call the sponsored service
+  const result = await fetch(ad.service_endpoint, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${ad.service_auth}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      task: "Translate document",
+      input: documentContent
+    })
+  });
+
+  // Report completion (you get paid)
+  await client.logServiceResult({
+    transaction_id: ad.transaction_id,
+    success: result.ok
+  });
+}</code></pre>
+                </div>
+
+                <div class="callout callout-warning">
+                    <strong>Important:</strong> Only report <code>success: true</code> if the service actually completed successfully. False reporting may result in account suspension.
+                </div>
+
+                <div class="callout callout-info">
+                    <strong>Best for:</strong> Autonomous AI agents that can discover and use third-party APIs, tool-calling architectures, agent marketplaces.
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Placement Comparison</h2>
+                <table class="w-full border-collapse my-6">
+                    <thead>
+                        <tr>
+                            <th class="bg-slate-100 text-left p-3 border border-slate-200">Placement</th>
+                            <th class="bg-slate-100 text-left p-3 border border-slate-200">Use Case</th>
+                            <th class="bg-slate-100 text-left p-3 border border-slate-200">Payment Trigger</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="p-3 border border-slate-200"><code>sponsored_suggestion</code></td>
+                            <td class="p-3 border border-slate-200">Chat messages, conversational</td>
+                            <td class="p-3 border border-slate-200">Click</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 border border-slate-200"><code>sponsored_block</code></td>
+                            <td class="p-3 border border-slate-200">UI cards, sidebars, banners</td>
+                            <td class="p-3 border border-slate-200">Click</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 border border-slate-200"><code>sponsored_tool</code></td>
+                            <td class="p-3 border border-slate-200">Agent APIs, service calls</td>
+                            <td class="p-3 border border-slate-200">Service completion</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="mt-12 p-6 bg-slate-50 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-4">Next Steps</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#app-tracking" onclick="showSection('app-tracking')" class="text-blue-600 hover:underline">Learn about tracking →</a></li>
+                        <li><a href="#agent-intro" onclick="showSection('agent-intro')" class="text-blue-600 hover:underline">Explore AI agent integrations →</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- APP TRACKING SECTION -->
+            <div id="app-tracking" class="content-section">
+                <h1 class="text-4xl font-bold mb-6">Tracking</h1>
+
+                <p class="text-lg text-slate-600 mb-8">Track impressions, clicks, and conversions to maximize revenue and optimize ad performance.</p>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Impression Tracking</h2>
+                <p>Impressions are automatically tracked when using <code>decideFromContext()</code>. No additional code required.</p>
+
+                <div class="callout callout-success">
+                    <strong>Automatic:</strong> The SDK tracks impressions automatically when you request an ad. You earn revenue when users click ads that have tracked impressions.
+                </div>
+
+                <h3 class="text-2xl font-semibold mt-8 mb-3">Manual Impression Tracking</h3>
+                <p>If using the raw <code>decide()</code> API, you must manually track impressions:</p>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">await client.trackImpression({
+  agent_id: 'agt_YOUR_AGENT_ID',
+  request_id: ad.request_id,
+  decision_id: ad.decision_id,
+  unit_id: ad._ad.unit_id,
+  tracking_token: ad.tracking_token
+});</code></pre>
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Click Tracking</h2>
+                <p>Clicks are automatically tracked when users visit the <code>click_url</code>. This is the recommended approach.</p>
+
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">// Automatic click tracking (recommended)
+window.location.href = ad.click_url;
+// or in HTML: <a href="{ad.click_url}">Click here</a></code></pre>
+                </div>
+
+                <h3 class="text-2xl font-semibold mt-8 mb-3">Manual Click Tracking</h3>
+                <p>For advanced use cases where you need to track clicks programmatically:</p>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">// Manual tracking with context
+await client.trackClick({
+  agent_id: 'agt_YOUR_AGENT_ID',
+  request_id: ad.request_id,
+  decision_id: ad.decision_id,
+  unit_id: ad._ad.unit_id,
+  tracking_token: ad.tracking_token,
+  href: ad.click_url,
+  click_context: "User clicked 'Get a Quote' button"
+});
+
+// Simplified: track from ad object
+await client.trackClickFromAd(ad, {
+  click_context: "User clicked on sponsored suggestion"
+});</code></pre>
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Conversion Tracking</h2>
+                <p>Track conversions (purchases, signups, etc.) to improve advertiser ROI and your quality scores:</p>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">await client.track({
+  event_id: `evt_${generateUUID()}`,
+  event_type: 'conversion',
+  occurred_at: new Date().toISOString(),
+  agent_id: 'agt_YOUR_AGENT_ID',
+  request_id: ad.request_id,
+  decision_id: ad.decision_id,
+  unit_id: ad._ad.unit_id,
+  tracking_token: ad.tracking_token,
+  metadata: {
+    conversion_value: 99.99,
+    conversion_type: 'purchase'
+  }
+});</code></pre>
+                </div>
+
+                <div class="callout callout-info">
+                    <strong>Why track conversions?</strong> Conversion data helps improve ad matching, increases advertiser budgets, and can unlock performance bonuses.
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Tracking URLs</h2>
+                <p>The SDK provides three URL variants for different use cases:</p>
+
+                <table class="w-full border-collapse my-6">
+                    <thead>
+                        <tr>
+                            <th class="bg-slate-100 text-left p-3 border border-slate-200">URL Type</th>
+                            <th class="bg-slate-100 text-left p-3 border border-slate-200">Use Case</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="p-3 border border-slate-200"><code>click_url</code></td>
+                            <td class="p-3 border border-slate-200">Browser redirects (recommended, auto-tracks)</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 border border-slate-200"><code>tracking_url</code></td>
+                            <td class="p-3 border border-slate-200">Server-side redirects (guaranteed tracking)</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 border border-slate-200"><code>tracked_url</code></td>
+                            <td class="p-3 border border-slate-200">Direct URLs with tracking params (SMS/email)</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="mt-12 p-6 bg-slate-50 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-4">Next Steps</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#controls-quality" onclick="showSection('controls-quality')" class="text-blue-600 hover:underline">Add quality controls →</a></li>
+                        <li><a href="#controls-revenue" onclick="showSection('controls-revenue')" class="text-blue-600 hover:underline">Optimize revenue →</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- AGENT INTRO SECTION -->
+            <div id="agent-intro" class="content-section">
+                <h1 class="text-4xl font-bold mb-6">AI Agents Introduction</h1>
+
+                <p class="text-lg text-slate-600 mb-8">Build autonomous AI agents that discover, evaluate, and use sponsored services through the AttentionMarket platform.</p>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">What are AI Agents?</h2>
+                <p>AI Agents are autonomous software programs that:</p>
+                <ul class="list-disc pl-6 mb-4">
+                    <li>Make decisions without human intervention</li>
+                    <li>Discover and evaluate third-party services</li>
+                    <li>Execute API calls to accomplish tasks</li>
+                    <li>Generate revenue by using sponsored services</li>
+                </ul>
+
+                <div class="callout callout-info">
+                    <strong>Key Difference:</strong> AI Applications show ads to users (human engagement). AI Agents discover and use services autonomously (agent-to-agent commerce).
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Use Cases</h2>
+
+                <div class="grid grid-cols-1 gap-4 my-6">
+                    <div class="border border-slate-200 rounded-lg p-4">
+                        <h4 class="font-semibold mb-2">Task Automation Agents</h4>
+                        <p class="text-sm text-slate-600">Agents that need translation, document processing, data enrichment services.</p>
+                    </div>
+                    <div class="border border-slate-200 rounded-lg p-4">
+                        <h4 class="font-semibold mb-2">Research Agents</h4>
+                        <p class="text-sm text-slate-600">Discover and use data APIs, market research tools, analytics services.</p>
+                    </div>
+                    <div class="border border-slate-200 rounded-lg p-4">
+                        <h4 class="font-semibold mb-2">Workflow Orchestration</h4>
+                        <p class="text-sm text-slate-600">Chain multiple services together, discovering the best tool for each step.</p>
+                    </div>
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">How It Works</h2>
+                <ol class="list-decimal pl-6 mb-4 space-y-2">
+                    <li>Agent identifies a task it needs to accomplish</li>
+                    <li>Agent queries AttentionMarket for relevant services</li>
+                    <li>AttentionMarket returns matched service ads with API endpoints</li>
+                    <li>Agent calls the service endpoint with provided authentication</li>
+                    <li>Agent reports completion, earning revenue share</li>
+                </ol>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Revenue Model</h2>
+                <p>Unlike click-based ads, service ads pay per successful completion:</p>
+                <ul class="list-disc pl-6 mb-4">
+                    <li>Advertisers bid a <strong>completion fee</strong> (e.g., $2.00 per translation)</li>
+                    <li>Agent uses the service and reports success</li>
+                    <li>You earn 70% of the completion fee ($1.40)</li>
+                    <li>Advertiser pays only for successful completions</li>
+                </ul>
+
+                <div class="callout callout-success">
+                    <strong>Higher Revenue:</strong> Service ads typically pay 10-100x more than click-based ads because they deliver tangible business value.
+                </div>
+
+                <div class="mt-12 p-6 bg-slate-50 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-4">Next Steps</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#agent-setup" onclick="showSection('agent-setup')" class="text-blue-600 hover:underline">Set up your agent →</a></li>
+                        <li><a href="#agent-autonomous" onclick="showSection('agent-autonomous')" class="text-blue-600 hover:underline">Build autonomous integration →</a></li>
+                        <li><a href="#agent-tools" onclick="showSection('agent-tools')" class="text-blue-600 hover:underline">Implement tool calling →</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- AGENT SETUP SECTION -->
+            <div id="agent-setup" class="content-section">
+                <h1 class="text-4xl font-bold mb-6">Agent Setup</h1>
+
+                <p class="text-lg text-slate-600 mb-8">Configure your AI agent to discover and use sponsored services through AttentionMarket.</p>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Prerequisites</h2>
+                <p>Before starting, ensure you have:</p>
+                <ul class="list-disc pl-6 mb-4">
+                    <li><strong>Agent ID</strong> (format: <code>agt_XXXXX</code>, 20 characters)</li>
+                    <li><strong>API Key</strong> (format: <code>am_live_XXXX</code>, 48 characters)</li>
+                    <li>Node.js 18.0.0 or higher installed</li>
+                </ul>
+
+                <div class="callout callout-warning">
+                    <strong>Don't have credentials?</strong> Sign up at <a href="https://api.attentionmarket.ai" target="_blank" class="text-blue-600">api.attentionmarket.ai</a> to get your Agent ID and API keys.
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Step 1: Install SDK</h2>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-bash">npm install @the_ro_show/agent-ads-sdk</code></pre>
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Step 2: Store Credentials</h2>
+                <p>Create a <code>.env</code> file in your project root:</p>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-bash"># .env
+ATTENTIONMARKET_AGENT_ID=agt_YOUR_AGENT_ID_HERE
+ATTENTIONMARKET_API_KEY=am_live_YOUR_KEY_HERE</code></pre>
+                </div>
+
+                <div class="callout callout-danger">
+                    <strong>Security:</strong> Add <code>.env</code> to your <code>.gitignore</code> to prevent committing credentials to version control.
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Step 3: Initialize Client</h2>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">import { AttentionMarketClient } from '@the_ro_show/agent-ads-sdk';
+
+const client = new AttentionMarketClient({
+  apiKey: process.env.ATTENTIONMARKET_API_KEY!,
+  agentId: process.env.ATTENTIONMARKET_AGENT_ID!
+});</code></pre>
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Step 4: Test Integration</h2>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">// Test service discovery
+async function testServiceDiscovery() {
+  const service = await client.decideFromContext({
+    userMessage: "Translate document to Spanish",
+    placement: 'sponsored_tool'
+  });
+
+  if (service && service.ad_type === 'service') {
+    console.log('✅ Service discovered:', service.creative.title);
+    console.log('Endpoint:', service.service_endpoint);
+    return true;
+  } else {
+    console.log('No service available for this task');
+    return false;
+  }
+}
+
+testServiceDiscovery();</code></pre>
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Verification Checklist</h2>
+                <ul class="list-disc pl-6 mb-4">
+                    <li>SDK installed successfully</li>
+                    <li>Credentials stored in <code>.env</code> file</li>
+                    <li><code>.env</code> added to <code>.gitignore</code></li>
+                    <li>Test integration script runs without errors</li>
+                    <li>Service discovery returns results</li>
+                </ul>
+
+                <div class="mt-12 p-6 bg-slate-50 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-4">Next Steps</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#agent-autonomous" onclick="showSection('agent-autonomous')" class="text-blue-600 hover:underline">Build autonomous integration →</a></li>
+                        <li><a href="#agent-tools" onclick="showSection('agent-tools')" class="text-blue-600 hover:underline">Implement tool calling →</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- AGENT AUTONOMOUS SECTION -->
+            <div id="agent-autonomous" class="content-section">
+                <h1 class="text-4xl font-bold mb-6">Autonomous Integration</h1>
+
+                <p class="text-lg text-slate-600 mb-8">Build AI agents that autonomously discover, evaluate, and use sponsored services without human intervention.</p>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Autonomous Pattern</h2>
+                <p>AI agents can integrate AttentionMarket into their decision-making loop:</p>
+
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">class AutonomousAgent {
+  constructor(private adsClient: AttentionMarketClient) {}
+
+  async executeTask(task: string) {
+    // 1. Analyze task requirements
+    const requirements = await this.analyzeTask(task);
+
+    // 2. Discover available services
+    const service = await this.adsClient.decideFromContext({
+      userMessage: task,
+      placement: 'sponsored_tool'
+    });
+
+    if (service && service.ad_type === 'service') {
+      // 3. Evaluate service capability
+      const suitable = await this.evaluateService(service, requirements);
+
+      if (suitable) {
+        // 4. Use the service
+        const result = await this.callService(service);
+
+        // 5. Report completion
+        await this.adsClient.logServiceResult({
+          transaction_id: service.transaction_id!,
+          success: result.success
+        });
+
+        return result;
+      }
+    }
+
+    // Fallback: use internal capability
+    return await this.executeInternally(task);
+  }
+}</code></pre>
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Service Discovery</h2>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">async function discoverService(taskDescription: string) {
+  const service = await client.decideFromContext({
+    userMessage: taskDescription,
+    placement: 'sponsored_tool',
+    minQualityScore: 0.7,  // Only high-quality services
+    optimizeFor: 'relevance'  // Best match for task
+  });
+
+  if (service && service.ad_type === 'service') {
+    return {
+      name: service.creative.title,
+      description: service.creative.body,
+      endpoint: service.service_endpoint,
+      auth: service.service_auth,
+      transactionId: service.transaction_id,
+      payout: service.payout / 100  // Convert cents to dollars
+    };
+  }
+
+  return null;
+}</code></pre>
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Service Evaluation</h2>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">async function evaluateService(service: AdResponse, requirements: any) {
+  // Check service quality score
+  if (service._quality_score < 0.7) {
+    console.log('Service quality too low');
+    return false;
+  }
+
+  // Check if service matches requirements
+  const description = service.creative.body.toLowerCase();
+  const hasRequiredCapabilities = requirements.every((req: string) =>
+    description.includes(req.toLowerCase())
+  );
+
+  if (!hasRequiredCapabilities) {
+    console.log('Service missing required capabilities');
+    return false;
+  }
+
+  // Check if payout justifies the task
+  const estimatedValue = await estimateTaskValue(requirements);
+  if (service.payout / 100 > estimatedValue) {
+    console.log('Service too expensive for task value');
+    return false;
+  }
+
+  return true;
+}</code></pre>
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Service Execution</h2>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">async function executeService(service: AdResponse, inputData: any) {
+  try {
+    // Call the service endpoint
+    const response = await fetch(service.service_endpoint!, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${service.service_auth}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(inputData)
+    });
+
+    if (!response.ok) {
+      // Service failed - report failure
+      await client.logServiceResult({
+        transaction_id: service.transaction_id!,
+        success: false
+      });
+      return { success: false, error: 'Service call failed' };
+    }
+
+    const result = await response.json();
+
+    // Service succeeded - report success (earn revenue)
+    await client.logServiceResult({
+      transaction_id: service.transaction_id!,
+      success: true
+    });
+
+    return { success: true, data: result };
+  } catch (error) {
+    // Report failure
+    await client.logServiceResult({
+      transaction_id: service.transaction_id!,
+      success: false
+    });
+    return { success: false, error: error.message };
+  }
+}</code></pre>
+                </div>
+
+                <div class="callout callout-warning">
+                    <strong>Honest Reporting:</strong> Only report <code>success: true</code> when the service actually completes successfully. False reporting violates terms of service and may result in account suspension.
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Complete Example</h2>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">import { AttentionMarketClient } from '@the_ro_show/agent-ads-sdk';
+
+class TranslationAgent {
+  private client: AttentionMarketClient;
+
+  constructor() {
+    this.client = new AttentionMarketClient({
+      apiKey: process.env.ATTENTIONMARKET_API_KEY!,
+      agentId: process.env.ATTENTIONMARKET_AGENT_ID!
+    });
+  }
+
+  async translate(text: string, targetLanguage: string) {
+    // Discover translation service
+    const service = await this.client.decideFromContext({
+      userMessage: `Translate text to ${targetLanguage}`,
+      placement: 'sponsored_tool',
+      minQualityScore: 0.7
+    });
+
+    if (service && service.ad_type === 'service') {
+      console.log(`Using sponsored service: ${service.creative.title}`);
+
+      // Call translation service
+      const response = await fetch(service.service_endpoint!, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${service.service_auth}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          text,
+          target_language: targetLanguage
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+
+        // Report success
+        await this.client.logServiceResult({
+          transaction_id: service.transaction_id!,
+          success: true
+        });
+
+        console.log(`✅ Earned $${service.payout / 100} for using service`);
+        return result.translated_text;
+      } else {
+        // Report failure
+        await this.client.logServiceResult({
+          transaction_id: service.transaction_id!,
+          success: false
+        });
+      }
+    }
+
+    // Fallback to internal translation
+    return await this.internalTranslate(text, targetLanguage);
+  }
+
+  private async internalTranslate(text: string, language: string) {
+    // Your internal translation logic
+    return `[Translation to ${language}]: ${text}`;
+  }
+}
+
+// Usage
+const agent = new TranslationAgent();
+const translated = await agent.translate("Hello world", "Spanish");</code></pre>
+                </div>
+
+                <div class="mt-12 p-6 bg-slate-50 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-4">Next Steps</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#agent-tools" onclick="showSection('agent-tools')" class="text-blue-600 hover:underline">Implement tool calling patterns →</a></li>
+                        <li><a href="#controls-quality" onclick="showSection('controls-quality')" class="text-blue-600 hover:underline">Add quality controls →</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- AGENT TOOLS SECTION -->
+            <div id="agent-tools" class="content-section">
+                <h1 class="text-4xl font-bold mb-6">Tool Calling</h1>
+
+                <p class="text-lg text-slate-600 mb-8">Integrate AttentionMarket service discovery into tool-calling architectures like OpenAI function calling, LangChain tools, or Claude tool use.</p>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">OpenAI Function Calling</h2>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">import OpenAI from 'openai';
+import { AttentionMarketClient } from '@the_ro_show/agent-ads-sdk';
+
+const openai = new OpenAI();
+const adsClient = new AttentionMarketClient({
+  apiKey: process.env.ATTENTIONMARKET_API_KEY!,
+  agentId: process.env.ATTENTIONMARKET_AGENT_ID!
+});
+
+const tools = [
+  {
+    type: "function",
+    function: {
+      name: "discover_service",
+      description: "Discover and use a sponsored service for a task",
+      parameters: {
+        type: "object",
+        properties: {
+          task_description: {
+            type: "string",
+            description: "Description of the task to accomplish"
+          }
+        },
+        required: ["task_description"]
+      }
+    }
+  }
+];
+
+async function discoverService(taskDescription: string) {
+  const service = await adsClient.decideFromContext({
+    userMessage: taskDescription,
+    placement: 'sponsored_tool'
+  });
+
+  if (service && service.ad_type === 'service') {
+    return {
+      service_name: service.creative.title,
+      endpoint: service.service_endpoint,
+      auth: service.service_auth,
+      transaction_id: service.transaction_id
+    };
+  }
+
+  return null;
+}
+
+// Agent loop
+const messages = [
+  { role: "user", content: "Translate 'Hello' to Spanish" }
+];
+
+const response = await openai.chat.completions.create({
+  model: "gpt-4",
+  messages,
+  tools
+});
+
+// Handle function call
+if (response.choices[0].message.tool_calls) {
+  const toolCall = response.choices[0].message.tool_calls[0];
+  if (toolCall.function.name === 'discover_service') {
+    const args = JSON.parse(toolCall.function.arguments);
+    const service = await discoverService(args.task_description);
+    console.log('Discovered service:', service);
+  }
+}</code></pre>
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Claude Tool Use</h2>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">import Anthropic from '@anthropic-ai/sdk';
+import { AttentionMarketClient } from '@the_ro_show/agent-ads-sdk';
+
+const anthropic = new Anthropic();
+const adsClient = new AttentionMarketClient({
+  apiKey: process.env.ATTENTIONMARKET_API_KEY!,
+  agentId: process.env.ATTENTIONMARKET_AGENT_ID!
+});
+
+const tools = [
+  {
+    name: "find_sponsored_service",
+    description: "Find and use a sponsored service for completing tasks like translation, data analysis, or document processing",
+    input_schema: {
+      type: "object",
+      properties: {
+        task: {
+          type: "string",
+          description: "Description of what needs to be done"
+        }
+      },
+      required: ["task"]
+    }
+  }
+];
+
+async function findSponsoredService(task: string) {
+  const service = await adsClient.decideFromContext({
+    userMessage: task,
+    placement: 'sponsored_tool',
+    minQualityScore: 0.7
+  });
+
+  if (service && service.ad_type === 'service') {
+    return {
+      name: service.creative.title,
+      description: service.creative.body,
+      endpoint: service.service_endpoint,
+      auth_token: service.service_auth,
+      transaction_id: service.transaction_id,
+      estimated_cost: service.payout / 100
+    };
+  }
+
+  return { error: "No suitable service found" };
+}
+
+const message = await anthropic.messages.create({
+  model: "claude-3-5-sonnet-20241022",
+  max_tokens: 1024,
+  tools,
+  messages: [
+    { role: "user", content: "I need to translate a document to French" }
+  ]
+});
+
+// Handle tool use
+if (message.stop_reason === 'tool_use') {
+  const toolUse = message.content.find(block => block.type === 'tool_use');
+  if (toolUse && toolUse.name === 'find_sponsored_service') {
+    const result = await findSponsoredService(toolUse.input.task);
+    console.log('Service found:', result);
+  }
+}</code></pre>
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">LangChain Tool</h2>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">import { DynamicTool } from "@langchain/core/tools";
+import { AttentionMarketClient } from '@the_ro_show/agent-ads-sdk';
+
+const adsClient = new AttentionMarketClient({
+  apiKey: process.env.ATTENTIONMARKET_API_KEY!,
+  agentId: process.env.ATTENTIONMARKET_AGENT_ID!
+});
+
+const serviceDiscoveryTool = new DynamicTool({
+  name: "service_discovery",
+  description: "Discover sponsored services for tasks like translation, data processing, or API calls. Input should be a clear description of the task.",
+  func: async (taskDescription: string) => {
+    const service = await adsClient.decideFromContext({
+      userMessage: taskDescription,
+      placement: 'sponsored_tool'
+    });
+
+    if (service && service.ad_type === 'service') {
+      // Use the service
+      const response = await fetch(service.service_endpoint!, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${service.service_auth}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ task: taskDescription })
+      });
+
+      const success = response.ok;
+
+      // Report result
+      await adsClient.logServiceResult({
+        transaction_id: service.transaction_id!,
+        success
+      });
+
+      if (success) {
+        const result = await response.json();
+        return JSON.stringify({
+          service: service.creative.title,
+          result,
+          earned: service.payout / 100
+        });
+      }
+
+      return `Service ${service.creative.title} failed`;
+    }
+
+    return "No suitable service found";
+  }
+});
+
+// Use in LangChain agent
+import { AgentExecutor, createOpenAIFunctionsAgent } from "langchain/agents";
+import { ChatOpenAI } from "@langchain/openai";
+
+const tools = [serviceDiscoveryTool];
+const llm = new ChatOpenAI({ modelName: "gpt-4" });
+
+const agent = await createOpenAIFunctionsAgent({
+  llm,
+  tools,
+  prompt: "You are a helpful assistant with access to sponsored services."
+});
+
+const executor = new AgentExecutor({
+  agent,
+  tools
+});</code></pre>
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Custom Tool Framework</h2>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">interface Tool {
+  name: string;
+  description: string;
+  execute: (input: any) => Promise<any>;
+}
+
+class SponsoredServiceTool implements Tool {
+  name = "sponsored_service";
+  description = "Find and use sponsored services for various tasks";
+
+  constructor(private client: AttentionMarketClient) {}
+
+  async execute(input: { task: string }) {
+    // Discover service
+    const service = await this.client.decideFromContext({
+      userMessage: input.task,
+      placement: 'sponsored_tool',
+      minQualityScore: 0.7,
+      optimizeFor: 'relevance'
+    });
+
+    if (!service || service.ad_type !== 'service') {
+      return { success: false, message: 'No service found' };
+    }
+
+    // Call service
+    try {
+      const response = await fetch(service.service_endpoint!, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${service.service_auth}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(input)
+      });
+
+      const result = await response.json();
+      const success = response.ok;
+
+      // Report completion
+      await this.client.logServiceResult({
+        transaction_id: service.transaction_id!,
+        success
+      });
+
+      return {
+        success,
+        service: service.creative.title,
+        result,
+        revenue: success ? service.payout / 100 : 0
+      };
+    } catch (error) {
+      await this.client.logServiceResult({
+        transaction_id: service.transaction_id!,
+        success: false
+      });
+
+      return { success: false, error: error.message };
+    }
+  }
+}
+
+// Usage
+const tool = new SponsoredServiceTool(adsClient);
+const result = await tool.execute({
+  task: "Translate 'Hello world' to Spanish"
+});</code></pre>
+                </div>
+
+                <div class="callout callout-success">
+                    <strong>Universal Pattern:</strong> The service discovery pattern works with any tool-calling framework. Discover → Execute → Report.
+                </div>
+
+                <div class="mt-12 p-6 bg-slate-50 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-4">Next Steps</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#controls-quality" onclick="showSection('controls-quality')" class="text-blue-600 hover:underline">Add quality filters →</a></li>
+                        <li><a href="#controls-revenue" onclick="showSection('controls-revenue')" class="text-blue-600 hover:underline">Optimize revenue →</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- CONTROLS QUALITY SECTION -->
+            <div id="controls-quality" class="content-section">
+                <h1 class="text-4xl font-bold mb-6">Quality Controls</h1>
+
+                <p class="text-lg text-slate-600 mb-8">Filter ads based on quality scores to maintain high standards and protect your brand.</p>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Quality Score Overview</h2>
+                <p>Quality scores range from 0.0 (worst) to 1.0 (best) and are calculated from:</p>
+                <ul class="list-disc pl-6 mb-4">
+                    <li><strong>Click-through rate (CTR)</strong> — How often users click the ad</li>
+                    <li><strong>Conversion rate</strong> — How often clicks lead to conversions</li>
+                    <li><strong>User feedback</strong> — Positive vs negative engagement signals</li>
+                </ul>
+
+                <p>Scores are updated daily based on the last 30 days of performance data.</p>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Minimum Quality Score</h2>
+                <p>Set a minimum quality threshold to filter out low-performing ads:</p>
+
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">const ad = await client.decideFromContext({
+  userMessage: "I need legal help",
+  minQualityScore: 0.7  // Only ads with quality >= 0.7
+});</code></pre>
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Recommended Thresholds</h2>
+                <table class="w-full border-collapse my-6">
+                    <thead>
+                        <tr>
+                            <th class="bg-slate-100 text-left p-3 border border-slate-200">Application Type</th>
+                            <th class="bg-slate-100 text-left p-3 border border-slate-200">Recommended Threshold</th>
+                            <th class="bg-slate-100 text-left p-3 border border-slate-200">Reasoning</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="p-3 border border-slate-200">Premium applications</td>
+                            <td class="p-3 border border-slate-200"><code>0.8+</code></td>
+                            <td class="p-3 border border-slate-200">Only top-tier advertisers</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 border border-slate-200">Brand-sensitive contexts</td>
+                            <td class="p-3 border border-slate-200"><code>0.7+</code></td>
+                            <td class="p-3 border border-slate-200">Avoid low-quality advertisers</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 border border-slate-200">General applications</td>
+                            <td class="p-3 border border-slate-200"><code>0.5+</code></td>
+                            <td class="p-3 border border-slate-200">Balanced quality and fill rate</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 border border-slate-200">High-volume apps</td>
+                            <td class="p-3 border border-slate-200"><code>0.3+</code></td>
+                            <td class="p-3 border border-slate-200">Maximize ad inventory</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="callout callout-info">
+                    <strong>Trade-off:</strong> Higher quality thresholds mean fewer ads will match (lower fill rate), but the ads that do match will perform better.
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Dynamic Quality Filtering</h2>
+                <p>Adjust quality thresholds based on context:</p>
+
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">function getQualityThreshold(context: string): number {
+  // High-value contexts demand higher quality
+  if (context.includes('legal') || context.includes('medical')) {
+    return 0.8;
+  }
+
+  // Shopping contexts can be more permissive
+  if (context.includes('buy') || context.includes('shop')) {
+    return 0.5;
+  }
+
+  // Default threshold
+  return 0.6;
+}
+
+const ad = await client.decideFromContext({
+  userMessage: "I need legal advice",
+  minQualityScore: getQualityThreshold("legal")
+});</code></pre>
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Advertiser Blocklist</h2>
+                <p>Block specific advertisers based on user feedback or brand conflicts:</p>
+
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">const ad = await client.decideFromContext({
+  userMessage: "I need car insurance",
+  blockedAdvertisers: ['adv_abc123', 'adv_xyz789']
+});</code></pre>
+                </div>
+
+                <p>Advertiser IDs are included in ad responses as <code>advertiser_id</code>. You can collect these from user feedback and maintain a blocklist.</p>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Combined Controls</h2>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">// Premium legal assistant with strict quality controls
+const ad = await client.decideFromContext({
+  userMessage: "I need estate planning help",
+  minQualityScore: 0.8,           // Only top-tier advertisers
+  minRelevanceScore: 0.85,        // Highly relevant only
+  allowedCategories: [318],       // Legal services only
+  blockedAdvertisers: blocklist,  // Exclude problematic advertisers
+  optimizeFor: 'relevance'        // Best match wins
+});</code></pre>
+                </div>
+
+                <div class="mt-12 p-6 bg-slate-50 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-4">Next Steps</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#controls-categories" onclick="showSection('controls-categories')" class="text-blue-600 hover:underline">Filter by categories →</a></li>
+                        <li><a href="#controls-revenue" onclick="showSection('controls-revenue')" class="text-blue-600 hover:underline">Optimize revenue →</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- CONTROLS CATEGORIES SECTION -->
+            <div id="controls-categories" class="content-section">
+                <h1 class="text-4xl font-bold mb-6">Category Filtering</h1>
+
+                <p class="text-lg text-slate-600 mb-8">Control which advertiser categories appear using the IAB Content Taxonomy 3.0 standard (704 categories).</p>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Allowed Categories (Whitelist)</h2>
+                <p>Only show ads from specific categories:</p>
+
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">// Insurance comparison app: only show insurance ads
+const ad = await client.decideFromContext({
+  userMessage: "I need car insurance",
+  allowedCategories: [31]  // 31 = Auto Insurance
+});
+
+// Wedding planner: allow wedding + photography + food
+const ad = await client.decideFromContext({
+  userMessage: "Help me plan my wedding",
+  allowedCategories: [
+    603,  // Weddings
+    162,  // Photography
+    190   // Restaurants
+  ]
+});</code></pre>
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Blocked Categories (Blacklist)</h2>
+                <p>Prevent ads from specific categories:</p>
+
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">// Block all sensitive content
+const ad = await client.decideFromContext({
+  userMessage: "Help me with something",
+  blockedCategories: [601]  // Blocks "Sensitive Topics" + all children
+});
+
+// Legal assistant: block competitor law firms
+const ad = await client.decideFromContext({
+  userMessage: "I need legal help",
+  blockedCategories: [318]  // Block "Legal Services"
+});</code></pre>
+                </div>
+
+                <div class="callout callout-info">
+                    <strong>Parent-child relationships:</strong> Blocking a parent category automatically blocks all subcategories. For example, blocking category <code>1</code> (Automotive) blocks Auto Insurance, Auto Repair, Auto Parts, etc.
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Common IAB Categories</h2>
+                <table class="w-full border-collapse my-6">
+                    <thead>
+                        <tr>
+                            <th class="bg-slate-100 text-left p-3 border border-slate-200">Category ID</th>
+                            <th class="bg-slate-100 text-left p-3 border border-slate-200">Name</th>
+                            <th class="bg-slate-100 text-left p-3 border border-slate-200">Example Subcategories</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="p-3 border border-slate-200"><code>1</code></td>
+                            <td class="p-3 border border-slate-200">Automotive</td>
+                            <td class="p-3 border border-slate-200">Auto Insurance, Auto Repair, Car Buying</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 border border-slate-200"><code>31</code></td>
+                            <td class="p-3 border border-slate-200">Insurance</td>
+                            <td class="p-3 border border-slate-200">Auto, Home, Life Insurance</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 border border-slate-200"><code>150</code></td>
+                            <td class="p-3 border border-slate-200">Travel</td>
+                            <td class="p-3 border border-slate-200">Hotels, Airlines, Tours</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 border border-slate-200"><code>318</code></td>
+                            <td class="p-3 border border-slate-200">Legal Services</td>
+                            <td class="p-3 border border-slate-200">Personal Injury, Estate Planning</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 border border-slate-200"><code>601</code></td>
+                            <td class="p-3 border border-slate-200">Sensitive Topics</td>
+                            <td class="p-3 border border-slate-200">Adult Content, Gambling, Politics</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 border border-slate-200"><code>603</code></td>
+                            <td class="p-3 border border-slate-200">Weddings</td>
+                            <td class="p-3 border border-slate-200">Venues, Catering, Photography</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Discovering Categories</h2>
+                <p>Use the SDK to discover all available categories:</p>
+
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">// Get all 38 top-level categories
+const tier1 = await client.getCategories({ tier: 1 });
+tier1.categories.forEach(cat => {
+  console.log(`${cat.id}: ${cat.name}`);
+});
+// Output: 1: Automotive, 31: Insurance, 150: Travel, etc.
+
+// Get all subcategories of "Automotive" (ID: 1)
+const automotive = await client.getCategories({ parent_id: 1 });
+// Returns: Auto Insurance (31), Auto Repair (34), etc.
+
+// Search for insurance-related categories
+const insurance = await client.getCategories({ search: 'insurance' });
+insurance.categories.forEach(cat => {
+  console.log(cat.full_path);
+});
+// Output: "Automotive > Auto Insurance", "Finance > Insurance", etc.</code></pre>
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Validation Rules</h2>
+                <ul class="list-disc pl-6 mb-4">
+                    <li><code>allowedCategories</code> must be a non-empty array</li>
+                    <li><code>blockedCategories</code> can be empty</li>
+                    <li>If <code>allowedCategories</code> is set, <code>blockedCategories</code> is ignored</li>
+                    <li>Empty <code>allowedCategories: []</code> is rejected (would block all ads)</li>
+                </ul>
+
+                <div class="callout callout-warning">
+                    <strong>Precedence:</strong> If you set <code>allowedCategories</code>, the <code>blockedCategories</code> parameter is ignored. Use one or the other, not both.
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Use Cases</h2>
+
+                <h3 class="text-2xl font-semibold mt-8 mb-3">Niche Application</h3>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">// Travel planning app: only travel-related ads
+const ad = await client.decideFromContext({
+  userMessage: "Plan my vacation to Hawaii",
+  allowedCategories: [
+    150,  // Travel
+    190,  // Restaurants
+    162   // Photography (for tours)
+  ]
+});</code></pre>
+                </div>
+
+                <h3 class="text-2xl font-semibold mt-8 mb-3">Brand Safety</h3>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">// Family-friendly app: block sensitive content
+const ad = await client.decideFromContext({
+  userMessage: userQuery,
+  blockedCategories: [
+    601,  // Sensitive Topics (adult, gambling, etc.)
+    602   // Politics
+  ]
+});</code></pre>
+                </div>
+
+                <div class="mt-12 p-6 bg-slate-50 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-4">Next Steps</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#controls-revenue" onclick="showSection('controls-revenue')" class="text-blue-600 hover:underline">Optimize revenue →</a></li>
+                        <li><a href="#api-params" onclick="showSection('api-params')" class="text-blue-600 hover:underline">See all parameters →</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- CONTROLS REVENUE SECTION -->
+            <div id="controls-revenue" class="content-section">
+                <h1 class="text-4xl font-bold mb-6">Revenue Optimization</h1>
+
+                <p class="text-lg text-slate-600 mb-8">Maximize your earnings with minimum CPC filters, relevance scoring, and ranking strategies.</p>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Minimum CPC Filter</h2>
+                <p>Only show ads with bids at or above a specified cost-per-click threshold (in cents):</p>
+
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">const ad = await client.decideFromContext({
+  userMessage: "I need car insurance",
+  minCPC: 100  // Only ads bidding >= $1.00 per click
+});</code></pre>
+                </div>
+
+                <h3 class="text-2xl font-semibold mt-8 mb-3">Recommended Thresholds</h3>
+                <table class="w-full border-collapse my-6">
+                    <thead>
+                        <tr>
+                            <th class="bg-slate-100 text-left p-3 border border-slate-200">Application Type</th>
+                            <th class="bg-slate-100 text-left p-3 border border-slate-200">Threshold</th>
+                            <th class="bg-slate-100 text-left p-3 border border-slate-200">Expected Revenue</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="p-3 border border-slate-200">Premium applications</td>
+                            <td class="p-3 border border-slate-200"><code>200+</code> ($2.00+)</td>
+                            <td class="p-3 border border-slate-200">High-value verticals only</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 border border-slate-200">High-value verticals</td>
+                            <td class="p-3 border border-slate-200"><code>100+</code> ($1.00+)</td>
+                            <td class="p-3 border border-slate-200">Filter low-budget advertisers</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 border border-slate-200">General applications</td>
+                            <td class="p-3 border border-slate-200"><code>25+</code> ($0.25+)</td>
+                            <td class="p-3 border border-slate-200">Platform minimum</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="callout callout-info">
+                    <strong>Trade-off:</strong> Higher thresholds = higher revenue per ad but lower fill rate. Find the balance that works for your traffic.
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Minimum Relevance Score</h2>
+                <p>Filter ads based on semantic similarity to ensure contextual fit:</p>
+
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">const ad = await client.decideFromContext({
+  userMessage: "Help me plan my wedding",
+  minRelevanceScore: 0.8  // Only highly relevant ads
+});</code></pre>
+                </div>
+
+                <p>Relevance scores range from 0.0 (unrelated) to 1.0 (perfect match).</p>
+
+                <div class="callout callout-warning">
+                    <strong>Note:</strong> This filter only applies to campaigns with semantic targeting. Keyword and automatic campaigns are not affected.
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Ranking Strategy</h2>
+                <p>Choose how ads are ranked when multiple ads match:</p>
+
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">// Revenue-optimized (default): highest bid wins
+const ad = await client.decideFromContext({
+  userMessage: "I need legal help",
+  optimizeFor: 'revenue'  // Rank by bid × quality × relevance
+});
+
+// Relevance-optimized: best match wins
+const ad = await client.decideFromContext({
+  userMessage: "I need legal help",
+  optimizeFor: 'relevance'  // Rank by semantic similarity
+});</code></pre>
+                </div>
+
+                <h3 class="text-2xl font-semibold mt-8 mb-3">Second-Price Auction</h3>
+                <p>AttentionMarket uses a second-price auction system:</p>
+                <ul class="list-disc pl-6 mb-4">
+                    <li><strong>Revenue mode:</strong> Winner ranked by composite score (bid × quality × relevance), pays just enough to beat next ad + $0.01</li>
+                    <li><strong>Relevance mode:</strong> Winner ranked by semantic similarity, pays just enough to beat next ad in composite space + $0.01</li>
+                    <li><strong>Price cap:</strong> Winner never pays more than their max bid</li>
+                    <li><strong>Price floor:</strong> Minimum clearing price of $0.25</li>
+                </ul>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Combined Optimization</h2>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">// Premium legal assistant: maximize revenue with quality controls
+const ad = await client.decideFromContext({
+  userMessage: "I need estate planning help",
+  minCPC: 200,                // Only $2+ bids
+  minRelevanceScore: 0.8,     // Highly relevant only
+  minQualityScore: 0.7,       // High-quality advertisers
+  optimizeFor: 'revenue',     // Maximize earnings
+  allowedCategories: [318]    // Legal services only
+});</code></pre>
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Dynamic Pricing Strategy</h2>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">function getMinCPC(userIntent: string): number {
+  // High-value intents demand premium advertisers
+  const highValueIntents = ['buy', 'purchase', 'insurance', 'legal', 'medical'];
+
+  if (highValueIntents.some(intent => userIntent.toLowerCase().includes(intent))) {
+    return 150; // $1.50 minimum
+  }
+
+  // Medium-value intents
+  const mediumValueIntents = ['compare', 'review', 'find'];
+  if (mediumValueIntents.some(intent => userIntent.toLowerCase().includes(intent))) {
+    return 75; // $0.75 minimum
+  }
+
+  // Default minimum
+  return 25; // $0.25 minimum
+}
+
+const ad = await client.decideFromContext({
+  userMessage: "I want to buy car insurance",
+  minCPC: getMinCPC("I want to buy car insurance")  // Returns 150
+});</code></pre>
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Monitoring Performance</h2>
+                <p>Track your revenue metrics in the dashboard:</p>
+                <ul class="list-disc pl-6 mb-4">
+                    <li><strong>Fill rate:</strong> Percentage of ad requests that return ads</li>
+                    <li><strong>Average CPC:</strong> Mean cost-per-click across all ads</li>
+                    <li><strong>Click-through rate:</strong> Percentage of impressions that result in clicks</li>
+                    <li><strong>Revenue per session:</strong> Average earnings per user interaction</li>
+                </ul>
+
+                <div class="callout callout-success">
+                    <strong>Best Practice:</strong> Start with conservative filters (lower thresholds) and gradually increase as you understand your traffic patterns. Monitor fill rate closely when raising thresholds.
+                </div>
+
+                <div class="mt-12 p-6 bg-slate-50 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-4">Next Steps</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#api-params" onclick="showSection('api-params')" class="text-blue-600 hover:underline">See all parameters →</a></li>
+                        <li><a href="#app-tracking" onclick="showSection('app-tracking')" class="text-blue-600 hover:underline">Track conversions →</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- API SDK SECTION -->
+            <div id="api-sdk" class="content-section">
+                <h1 class="text-4xl font-bold mb-6">SDK Methods</h1>
+
+                <p class="text-lg text-slate-600 mb-8">Complete reference for all AttentionMarket SDK methods.</p>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Constructor</h2>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">new AttentionMarketClient(config: ClientConfig)</code></pre>
+                </div>
+
+                <h3 class="text-2xl font-semibold mt-8 mb-3">Parameters</h3>
+                <table class="w-full border-collapse my-6">
+                    <thead>
+                        <tr>
+                            <th class="bg-slate-100 text-left p-3 border border-slate-200">Parameter</th>
+                            <th class="bg-slate-100 text-left p-3 border border-slate-200">Type</th>
+                            <th class="bg-slate-100 text-left p-3 border border-slate-200">Required</th>
+                            <th class="bg-slate-100 text-left p-3 border border-slate-200">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="p-3 border border-slate-200"><code>apiKey</code></td>
+                            <td class="p-3 border border-slate-200">string</td>
+                            <td class="p-3 border border-slate-200">Yes</td>
+                            <td class="p-3 border border-slate-200">Your API key (am_test_ or am_live_)</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 border border-slate-200"><code>agentId</code></td>
+                            <td class="p-3 border border-slate-200">string</td>
+                            <td class="p-3 border border-slate-200">Yes</td>
+                            <td class="p-3 border border-slate-200">Your agent ID (agt_)</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 border border-slate-200"><code>baseUrl</code></td>
+                            <td class="p-3 border border-slate-200">string</td>
+                            <td class="p-3 border border-slate-200">No</td>
+                            <td class="p-3 border border-slate-200">API base URL (defaults to production)</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 border border-slate-200"><code>timeoutMs</code></td>
+                            <td class="p-3 border border-slate-200">number</td>
+                            <td class="p-3 border border-slate-200">No</td>
+                            <td class="p-3 border border-slate-200">Request timeout in milliseconds (default: 4000)</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 border border-slate-200"><code>maxRetries</code></td>
+                            <td class="p-3 border border-slate-200">number</td>
+                            <td class="p-3 border border-slate-200">No</td>
+                            <td class="p-3 border border-slate-200">Automatic retry count (default: 2)</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">decideFromContext()</h2>
+                <p>Request a contextual ad based on user message and conversation history.</p>
+
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">async decideFromContext(params: DecideFromContextParams): Promise<AdResponse | null></code></pre>
+                </div>
+
+                <h3 class="text-2xl font-semibold mt-8 mb-3">Parameters</h3>
+                <p>See <a href="#api-params" onclick="showSection('api-params')" class="text-blue-600">complete parameters reference →</a></p>
+
+                <h3 class="text-2xl font-semibold mt-8 mb-3">Returns</h3>
+                <p><code>AdResponse</code> object if a relevant ad is found, <code>null</code> otherwise.</p>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">trackImpression()</h2>
+                <p>Manually track an ad impression (usually automatic with decideFromContext).</p>
+
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">async trackImpression(params: {
+  agent_id: string;
+  request_id: string;
+  decision_id: string;
+  unit_id: string;
+  tracking_token: string;
+}): Promise<void></code></pre>
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">trackClick()</h2>
+                <p>Manually track a click (usually automatic via click_url).</p>
+
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">async trackClick(params: {
+  agent_id: string;
+  request_id: string;
+  decision_id: string;
+  unit_id: string;
+  tracking_token: string;
+  href: string;
+  click_context?: string;
+}): Promise<void></code></pre>
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">trackClickFromAd()</h2>
+                <p>Simplified click tracking using the ad object.</p>
+
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">async trackClickFromAd(
+  ad: AdResponse,
+  options?: { click_context?: string }
+): Promise<void></code></pre>
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">track()</h2>
+                <p>Track custom events like conversions.</p>
+
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">async track(params: {
+  event_id: string;
+  event_type: 'conversion' | string;
+  occurred_at: string;
+  agent_id: string;
+  request_id: string;
+  decision_id: string;
+  unit_id: string;
+  tracking_token: string;
+  metadata?: Record<string, any>;
+}): Promise<void></code></pre>
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">logServiceResult()</h2>
+                <p>Report service completion (for service ads).</p>
+
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">async logServiceResult(params: {
+  transaction_id: string;
+  success: boolean;
+}): Promise<void></code></pre>
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">getCategories()</h2>
+                <p>Discover available IAB categories.</p>
+
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">async getCategories(params?: {
+  tier?: number;        // Get categories at specific tier (1, 2, 3)
+  parent_id?: number;   // Get children of specific category
+  search?: string;      // Search categories by name
+}): Promise<{
+  categories: Array<{
+    id: number;
+    name: string;
+    tier: number;
+    parent_id: number | null;
+    full_path: string;
+  }>;
+}></code></pre>
+                </div>
+
+                <div class="mt-12 p-6 bg-slate-50 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-4">Next Steps</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#api-types" onclick="showSection('api-types')" class="text-blue-600 hover:underline">Learn about ad types →</a></li>
+                        <li><a href="#api-params" onclick="showSection('api-params')" class="text-blue-600 hover:underline">See all parameters →</a></li>
+                        <li><a href="#api-errors" onclick="showSection('api-errors')" class="text-blue-600 hover:underline">Error handling →</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- API TYPES SECTION -->
+            <div id="api-types" class="content-section">
+                <h1 class="text-4xl font-bold mb-6">Ad Types</h1>
+
+                <p class="text-lg text-slate-600 mb-8">AttentionMarket supports three distinct ad types, each with different UX patterns and payment models.</p>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Link Ads (Type 1)</h2>
+                <p>Traditional click-through ads with title, body, CTA, and destination URL.</p>
+
+                <h3 class="text-2xl font-semibold mt-8 mb-3">Payment Model</h3>
+                <p>Per click</p>
+
+                <h3 class="text-2xl font-semibold mt-8 mb-3">Response Format</h3>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">{
+  ad_type: 'link',
+  creative: {
+    title: "Launch Your Product Brand",
+    body: "Turn your ideas into products with Pietra",
+    cta: "Get Started"
+  },
+  click_url: "https://api.attentionmarket.ai/track/...",
+  payout: 150,  // $1.50 per click
+  disclosure: {
+    label: "Sponsored",
+    explanation: "This is a paid advertisement",
+    sponsor_name: "Pietra"
+  }
+}</code></pre>
+                </div>
+
+                <h3 class="text-2xl font-semibold mt-8 mb-3">Display Example</h3>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">console.log(`[Sponsored] ${ad.disclosure.sponsor_name}`);
+console.log(ad.creative.title);
+console.log(ad.creative.body);
+console.log(`→ ${ad.creative.cta}`);
+console.log(ad.click_url);</code></pre>
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Recommendation Ads (Type 2)</h2>
+                <p>Conversational ads with optional teaser question and promo code.</p>
+
+                <h3 class="text-2xl font-semibold mt-8 mb-3">Payment Model</h3>
+                <p>Per click (teaser is optional UX enhancement)</p>
+
+                <h3 class="text-2xl font-semibold mt-8 mb-3">Response Format</h3>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">{
+  ad_type: 'recommendation',
+  creative: {
+    title: "Save 20% on E-commerce Tools",
+    body: "Everything you need to launch and scale your online store",
+    cta: "Claim Discount",
+    teaser: "Interested in launching an e-commerce brand?",
+    promo_code: "CREATOR20",
+    message: "Use code CREATOR20 for 20% off"
+  },
+  click_url: "https://api.attentionmarket.ai/track/...",
+  payout: 200  // $2.00 per click
+}</code></pre>
+                </div>
+
+                <h3 class="text-2xl font-semibold mt-8 mb-3">Display Options</h3>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">// Option A: Show teaser first (conversational)
+console.log(ad.creative.teaser);
+// "Interested in launching an e-commerce brand?"
+
+// Wait for user response, then show offer
+console.log(`[Sponsored] ${ad.creative.title}`);
+console.log(ad.creative.message);
+console.log(ad.click_url);
+
+// Option B: Skip teaser (direct)
+console.log(`[Sponsored] ${ad.creative.title}`);
+console.log(ad.creative.body);
+console.log(ad.creative.message);
+console.log(`→ ${ad.creative.cta}`);</code></pre>
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Service Ads (Type 3)</h2>
+                <p>Agent-to-agent API calls for autonomous service discovery.</p>
+
+                <h3 class="text-2xl font-semibold mt-8 mb-3">Payment Model</h3>
+                <p>Per successful completion</p>
+
+                <h3 class="text-2xl font-semibold mt-8 mb-3">Response Format</h3>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">{
+  ad_type: 'service',
+  creative: {
+    title: "AI Translation API",
+    body: "Professional translation in 100+ languages",
+    cta: "Use Service"
+  },
+  service_endpoint: "https://api.translator.com/v1/translate",
+  service_auth: "Bearer token_abc123xyz",
+  transaction_id: "txn_def456",
+  payout: 500  // $5.00 per completion
+}</code></pre>
+                </div>
+
+                <h3 class="text-2xl font-semibold mt-8 mb-3">Usage Example</h3>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">// Call the service
+const response = await fetch(ad.service_endpoint, {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${ad.service_auth}`,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    text: "Hello",
+    target_language: "Spanish"
+  })
+});
+
+// Report completion
+await client.logServiceResult({
+  transaction_id: ad.transaction_id,
+  success: response.ok
+});</code></pre>
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Type Comparison</h2>
+                <table class="w-full border-collapse my-6">
+                    <thead>
+                        <tr>
+                            <th class="bg-slate-100 text-left p-3 border border-slate-200">Feature</th>
+                            <th class="bg-slate-100 text-left p-3 border border-slate-200">Link</th>
+                            <th class="bg-slate-100 text-left p-3 border border-slate-200">Recommendation</th>
+                            <th class="bg-slate-100 text-left p-3 border border-slate-200">Service</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="p-3 border border-slate-200">Payment Trigger</td>
+                            <td class="p-3 border border-slate-200">Click</td>
+                            <td class="p-3 border border-slate-200">Click</td>
+                            <td class="p-3 border border-slate-200">Completion</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 border border-slate-200">Typical Payout</td>
+                            <td class="p-3 border border-slate-200">$0.50 - $3.00</td>
+                            <td class="p-3 border border-slate-200">$1.00 - $5.00</td>
+                            <td class="p-3 border border-slate-200">$2.00 - $50.00</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 border border-slate-200">User Interaction</td>
+                            <td class="p-3 border border-slate-200">Click link</td>
+                            <td class="p-3 border border-slate-200">Click after teaser</td>
+                            <td class="p-3 border border-slate-200">Agent API call</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 border border-slate-200">Best For</td>
+                            <td class="p-3 border border-slate-200">General ads</td>
+                            <td class="p-3 border border-slate-200">Offers/promos</td>
+                            <td class="p-3 border border-slate-200">Agent tools</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="mt-12 p-6 bg-slate-50 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-4">Next Steps</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#app-placements" onclick="showSection('app-placements')" class="text-blue-600 hover:underline">Learn about placements →</a></li>
+                        <li><a href="#api-params" onclick="showSection('api-params')" class="text-blue-600 hover:underline">See all parameters →</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- API PARAMS SECTION -->
+            <div id="api-params" class="content-section">
+                <h1 class="text-4xl font-bold mb-6">Parameters</h1>
+
+                <p class="text-lg text-slate-600 mb-8">Complete reference for all decideFromContext() parameters.</p>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Required Parameters</h2>
+                <table class="w-full border-collapse my-6">
+                    <thead>
+                        <tr>
+                            <th class="bg-slate-100 text-left p-3 border border-slate-200">Parameter</th>
+                            <th class="bg-slate-100 text-left p-3 border border-slate-200">Type</th>
+                            <th class="bg-slate-100 text-left p-3 border border-slate-200">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="p-3 border border-slate-200"><code>userMessage</code></td>
+                            <td class="p-3 border border-slate-200">string</td>
+                            <td class="p-3 border border-slate-200">The current user message or query</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Contextual Parameters</h2>
+                <table class="w-full border-collapse my-6">
+                    <thead>
+                        <tr>
+                            <th class="bg-slate-100 text-left p-3 border border-slate-200">Parameter</th>
+                            <th class="bg-slate-100 text-left p-3 border border-slate-200">Type</th>
+                            <th class="bg-slate-100 text-left p-3 border border-slate-200">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="p-3 border border-slate-200"><code>conversationHistory</code></td>
+                            <td class="p-3 border border-slate-200">string[]</td>
+                            <td class="p-3 border border-slate-200">Previous messages in conversation (auto-limited to last 5)</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 border border-slate-200"><code>placement</code></td>
+                            <td class="p-3 border border-slate-200">string</td>
+                            <td class="p-3 border border-slate-200">'sponsored_suggestion' | 'sponsored_block' | 'sponsored_tool'</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 border border-slate-200"><code>country</code></td>
+                            <td class="p-3 border border-slate-200">string</td>
+                            <td class="p-3 border border-slate-200">Two-letter country code (e.g., 'US', 'CA')</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 border border-slate-200"><code>language</code></td>
+                            <td class="p-3 border border-slate-200">string</td>
+                            <td class="p-3 border border-slate-200">Two-letter language code (e.g., 'en', 'es')</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 border border-slate-200"><code>platform</code></td>
+                            <td class="p-3 border border-slate-200">string</td>
+                            <td class="p-3 border border-slate-200">'web' | 'ios' | 'android' | 'desktop' | 'voice' | 'other'</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Quality Controls</h2>
+                <table class="w-full border-collapse my-6">
+                    <thead>
+                        <tr>
+                            <th class="bg-slate-100 text-left p-3 border border-slate-200">Parameter</th>
+                            <th class="bg-slate-100 text-left p-3 border border-slate-200">Type</th>
+                            <th class="bg-slate-100 text-left p-3 border border-slate-200">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="p-3 border border-slate-200"><code>minQualityScore</code></td>
+                            <td class="p-3 border border-slate-200">number</td>
+                            <td class="p-3 border border-slate-200">0.0 - 1.0, filter by historical performance</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 border border-slate-200"><code>allowedCategories</code></td>
+                            <td class="p-3 border border-slate-200">number[]</td>
+                            <td class="p-3 border border-slate-200">Whitelist of IAB category IDs</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 border border-slate-200"><code>blockedCategories</code></td>
+                            <td class="p-3 border border-slate-200">number[]</td>
+                            <td class="p-3 border border-slate-200">Blacklist of IAB category IDs</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 border border-slate-200"><code>blockedAdvertisers</code></td>
+                            <td class="p-3 border border-slate-200">string[]</td>
+                            <td class="p-3 border border-slate-200">Array of advertiser IDs to exclude</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Revenue Optimization</h2>
+                <table class="w-full border-collapse my-6">
+                    <thead>
+                        <tr>
+                            <th class="bg-slate-100 text-left p-3 border border-slate-200">Parameter</th>
+                            <th class="bg-slate-100 text-left p-3 border border-slate-200">Type</th>
+                            <th class="bg-slate-100 text-left p-3 border border-slate-200">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="p-3 border border-slate-200"><code>minCPC</code></td>
+                            <td class="p-3 border border-slate-200">number</td>
+                            <td class="p-3 border border-slate-200">Minimum cost-per-click in cents (e.g., 100 = $1.00)</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 border border-slate-200"><code>minRelevanceScore</code></td>
+                            <td class="p-3 border border-slate-200">number</td>
+                            <td class="p-3 border border-slate-200">0.0 - 1.0, minimum semantic similarity</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 border border-slate-200"><code>optimizeFor</code></td>
+                            <td class="p-3 border border-slate-200">string</td>
+                            <td class="p-3 border border-slate-200">'revenue' (default) | 'relevance'</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Example: All Parameters</h2>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">const ad = await client.decideFromContext({
+  // Required
+  userMessage: "I need estate planning help",
+
+  // Contextual
+  conversationHistory: [
+    "User: I'm worried about my will",
+    "Agent: I can help with that"
+  ],
+  placement: 'sponsored_suggestion',
+  country: 'US',
+  language: 'en',
+  platform: 'web',
+
+  // Quality controls
+  minQualityScore: 0.8,
+  allowedCategories: [318],  // Legal services only
+  blockedAdvertisers: ['adv_abc123'],
+
+  // Revenue optimization
+  minCPC: 200,  // $2.00 minimum
+  minRelevanceScore: 0.85,
+  optimizeFor: 'relevance'
+});</code></pre>
+                </div>
+
+                <div class="mt-12 p-6 bg-slate-50 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-4">Next Steps</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#api-sdk" onclick="showSection('api-sdk')" class="text-blue-600 hover:underline">See all SDK methods →</a></li>
+                        <li><a href="#api-errors" onclick="showSection('api-errors')" class="text-blue-600 hover:underline">Error handling →</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- API ERRORS SECTION -->
+            <div id="api-errors" class="content-section">
+                <h1 class="text-4xl font-bold mb-6">Error Handling</h1>
+
+                <p class="text-lg text-slate-600 mb-8">Complete guide to error codes, validation errors, and troubleshooting.</p>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">HTTP Status Codes</h2>
+                <table class="w-full border-collapse my-6">
+                    <thead>
+                        <tr>
+                            <th class="bg-slate-100 text-left p-3 border border-slate-200">Status Code</th>
+                            <th class="bg-slate-100 text-left p-3 border border-slate-200">Meaning</th>
+                            <th class="bg-slate-100 text-left p-3 border border-slate-200">Common Causes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="p-3 border border-slate-200"><code>400</code></td>
+                            <td class="p-3 border border-slate-200">Bad Request</td>
+                            <td class="p-3 border border-slate-200">Invalid parameters, validation error</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 border border-slate-200"><code>401</code></td>
+                            <td class="p-3 border border-slate-200">Unauthorized</td>
+                            <td class="p-3 border border-slate-200">Missing or invalid API key</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 border border-slate-200"><code>429</code></td>
+                            <td class="p-3 border border-slate-200">Too Many Requests</td>
+                            <td class="p-3 border border-slate-200">Rate limit exceeded</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 border border-slate-200"><code>500</code></td>
+                            <td class="p-3 border border-slate-200">Internal Server Error</td>
+                            <td class="p-3 border border-slate-200">Server-side issue</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Validation Errors</h2>
+                <p>The SDK validates parameters before making API calls:</p>
+
+                <table class="w-full border-collapse my-6">
+                    <thead>
+                        <tr>
+                            <th class="bg-slate-100 text-left p-3 border border-slate-200">Error Message</th>
+                            <th class="bg-slate-100 text-left p-3 border border-slate-200">Cause</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="p-3 border border-slate-200"><code>minQualityScore must be a number between 0.0 and 1.0</code></td>
+                            <td class="p-3 border border-slate-200">Invalid quality score range</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 border border-slate-200"><code>minCPC must be a non-negative number</code></td>
+                            <td class="p-3 border border-slate-200">Negative CPC value</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 border border-slate-200"><code>minRelevanceScore must be a number between 0.0 and 1.0</code></td>
+                            <td class="p-3 border border-slate-200">Invalid relevance score range</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 border border-slate-200"><code>optimizeFor must be either "revenue" or "relevance"</code></td>
+                            <td class="p-3 border border-slate-200">Invalid optimization strategy</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 border border-slate-200"><code>allowedCategories cannot be empty</code></td>
+                            <td class="p-3 border border-slate-200">Empty whitelist blocks all ads</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 border border-slate-200"><code>blockedAdvertisers must contain non-empty strings</code></td>
+                            <td class="p-3 border border-slate-200">Invalid advertiser ID format</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Error Handling Pattern</h2>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">try {
+  const ad = await client.decideFromContext({
+    userMessage: "I need car insurance",
+    minQualityScore: 0.7
+  });
+
+  if (ad) {
+    // Display ad
+    console.log(ad.creative.title);
+  } else {
+    // No relevant ad found (not an error)
+    console.log('No ad available');
+  }
+} catch (error) {
+  // Handle errors
+  if (error.status === 401) {
+    console.error('Invalid API key');
+  } else if (error.status === 429) {
+    console.error('Rate limit exceeded, retry later');
+  } else if (error.status === 400) {
+    console.error('Invalid parameters:', error.message);
+  } else {
+    console.error('Request failed:', error.message);
+  }
+}</code></pre>
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Common Issues</h2>
+
+                <h3 class="text-2xl font-semibold mt-8 mb-3">No ads returned (null)</h3>
+                <p>This is normal behavior, not an error. Ads are only returned when:</p>
+                <ul class="list-disc pl-6 mb-4">
+                    <li>User query matches advertiser campaigns</li>
+                    <li>Active campaigns are available</li>
+                    <li>Semantic match score is high enough</li>
+                    <li>All quality/revenue filters are met</li>
+                </ul>
+
+                <h3 class="text-2xl font-semibold mt-8 mb-3">401 Unauthorized</h3>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">// Check API key format
+console.log(process.env.ATTENTION_MARKET_API_KEY);
+// Should start with am_live_ or am_test_
+// Should be 48 characters long
+
+// Verify environment variables are loaded
+import dotenv from 'dotenv';
+dotenv.config();</code></pre>
+                </div>
+
+                <h3 class="text-2xl font-semibold mt-8 mb-3">429 Rate Limit Exceeded</h3>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">// Implement exponential backoff
+async function requestWithRetry(fn, maxRetries = 3) {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      return await fn();
+    } catch (error) {
+      if (error.status === 429 && i < maxRetries - 1) {
+        const delay = Math.pow(2, i) * 1000; // 1s, 2s, 4s
+        await new Promise(resolve => setTimeout(resolve, delay));
+        continue;
+      }
+      throw error;
+    }
+  }
+}</code></pre>
+                </div>
+
+                <h3 class="text-2xl font-semibold mt-8 mb-3">Network Timeouts</h3>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">// Increase timeout for slow connections
+const client = new AttentionMarketClient({
+  apiKey: process.env.ATTENTION_MARKET_API_KEY,
+  agentId: process.env.ATTENTION_MARKET_AGENT_ID,
+  timeoutMs: 10000,  // 10 seconds instead of default 4s
+  maxRetries: 3      // Automatic retry on failure
+});</code></pre>
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Debugging</h2>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">// Enable debug logging
+const client = new AttentionMarketClient({
+  apiKey: process.env.ATTENTION_MARKET_API_KEY,
+  agentId: process.env.ATTENTION_MARKET_AGENT_ID
+});
+
+// Log full error details
+try {
+  const ad = await client.decideFromContext({ userMessage: "test" });
+} catch (error) {
+  console.error('Full error:', JSON.stringify(error, null, 2));
+  console.error('Status:', error.status);
+  console.error('Message:', error.message);
+  console.error('Stack:', error.stack);
+}</code></pre>
+                </div>
+
+                <div class="callout callout-info">
+                    <strong>Need help?</strong> Contact <a href="mailto:support@attentionmarket.ai" class="text-blue-600">support@attentionmarket.ai</a> with your API key (first 10 characters only) and error details.
+                </div>
+
+                <div class="mt-12 p-6 bg-slate-50 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-4">Next Steps</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#api-sdk" onclick="showSection('api-sdk')" class="text-blue-600 hover:underline">SDK method reference →</a></li>
+                        <li><a href="#api-params" onclick="showSection('api-params')" class="text-blue-600 hover:underline">Complete parameters →</a></li>
+                    </ul>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        // Initialize syntax highlighting
+        hljs.highlightAll();
+
+        // Navigation
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // Show selected section
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.classList.add('active');
+                window.scrollTo(0, 0);
+            }
+
+            // Update nav links
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            const activeLink = document.querySelector(`a[href="#${sectionId}"]`);
+            if (activeLink) {
+                activeLink.classList.add('active');
+            }
+        }
+
+        // Copy code button
+        function copyCode(button) {
+            const pre = button.nextElementSibling;
+            const code = pre.textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                button.textContent = 'Copied!';
+                setTimeout(() => {
+                    button.textContent = 'Copy';
+                }, 2000);
+            });
+        }
+
+        // Handle hash navigation
+        window.addEventListener('hashchange', () => {
+            const hash = window.location.hash.slice(1);
+            if (hash) {
+                showSection(hash);
+            }
+        });
+
+        // Initial navigation
+        const initialHash = window.location.hash.slice(1) || 'home';
+        showSection(initialHash);
+    </script>
+</body>
+</html>

@@ -43,6 +43,52 @@ All API requests require authentication via an API key. Get your keys at [api.at
 - **Test keys** (`am_test_...`) — Use in development. No charges, test data only.
 - **Live keys** (`am_live_...`) — Use in production. Real advertisers, real revenue.
 
+### For Autonomous AI Agents (Clawdbots)
+
+If you're building an autonomous agent with email access, you can set up AttentionMarket programmatically:
+
+#### Email-Based Autonomous Setup
+
+1. **Sign up** at https://api.attentionmarket.ai/api/login
+2. **Monitor your inbox** for verification email from `noreply@worldview.network`
+3. **Extract verification link** from email body:
+   ```
+   https://gleam-start-page.lovable.app/api/verify-email?token={token}
+   ```
+4. **Visit the link** programmatically to verify your account
+5. **Login and retrieve credentials:**
+
+```typescript
+// Login to get session
+const loginResponse = await fetch('https://api.attentionmarket.ai/api/login', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    email: 'your-agent@example.com',
+    password: 'your_password'
+  })
+});
+
+const sessionCookie = loginResponse.headers.get('set-cookie');
+
+// Fetch API credentials
+const credsResponse = await fetch('https://api.attentionmarket.ai/developer-data', {
+  headers: { 'Cookie': sessionCookie }
+});
+
+const { api_key, agent_id } = await credsResponse.json();
+
+// Initialize SDK
+const client = new AttentionMarketClient({
+  apiKey: api_key,    // am_test_...
+  agentId: agent_id   // agt_...
+});
+```
+
+**Complete autonomous flow:** Sign up → Verify email → Retrieve credentials → Install SDK → Start earning revenue
+
+📖 **[Full Personal AI Agent Setup Guide](https://docs.attentionmarket.ai/personal-agents)**
+
 ### SDK Configuration
 
 ```typescript
