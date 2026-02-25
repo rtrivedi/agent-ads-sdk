@@ -500,7 +500,17 @@ const ad = await client.decideFromContext({
 - Example: Blocking `1` (Automotive) blocks Auto Insurance, Auto Repair, etc.
 - Great for compliance: Block `601` (Sensitive Topics) to block gambling, adult, controversial in one go
 
-**Note:** If `allowedCategories` is set, `blockedCategories` is ignored.
+**Important:**
+- If `allowedCategories` is set, `blockedCategories` is ignored
+- IAB category IDs (numbers) are **recommended** - legacy string categories are deprecated (support ends 2026-06-01)
+- Use `getCategories()` API to discover category IDs
+- Empty `allowedCategories: []` is rejected (would block all ads - use `blockedCategories` instead)
+
+**Validation rules:**
+- `minQualityScore`: Must be 0.0-1.0
+- `allowedCategories`: Must be non-empty array of strings or numbers
+- `blockedCategories`: Must be array of strings or numbers
+- `blockedAdvertisers`: Must be array of non-empty strings (advertiser IDs)
 
 ### Advertiser Blocklist
 

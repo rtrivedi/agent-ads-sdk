@@ -245,7 +245,57 @@ export class AttentionMarketClient {
     // Build taxonomy from suggestedCategory or infer from user message
     const taxonomy = params.suggestedCategory || this.inferTaxonomy(params.userMessage);
 
-    // Validate Phase 2 parameters (client-side)
+    // Validate Phase 1 parameters (Quality & Brand Safety)
+    if (params.minQualityScore !== undefined) {
+      if (typeof params.minQualityScore !== 'number' || params.minQualityScore < 0 || params.minQualityScore > 1) {
+        throw new Error('minQualityScore must be a number between 0.0 and 1.0');
+      }
+    }
+
+    if (params.allowedCategories !== undefined) {
+      if (!Array.isArray(params.allowedCategories)) {
+        throw new Error('allowedCategories must be an array');
+      }
+      if (params.allowedCategories.length === 0) {
+        throw new Error('allowedCategories cannot be empty (would block all ads). Use blockedCategories to exclude specific categories, or omit to allow all.');
+      }
+      // Validate each category is string or number
+      for (const cat of params.allowedCategories) {
+        if (typeof cat !== 'string' && typeof cat !== 'number') {
+          throw new Error(`allowedCategories must contain strings or numbers, found: ${typeof cat}`);
+        }
+      }
+    }
+
+    if (params.blockedCategories !== undefined) {
+      if (!Array.isArray(params.blockedCategories)) {
+        throw new Error('blockedCategories must be an array');
+      }
+      // Validate each category is string or number
+      for (const cat of params.blockedCategories) {
+        if (typeof cat !== 'string' && typeof cat !== 'number') {
+          throw new Error(`blockedCategories must contain strings or numbers, found: ${typeof cat}`);
+        }
+      }
+      // Warn if both allowed and blocked are set (allowed takes precedence)
+      if (params.allowedCategories && params.allowedCategories.length > 0) {
+        console.warn('[AttentionMarket] Both allowedCategories and blockedCategories specified. blockedCategories will be ignored.');
+      }
+    }
+
+    if (params.blockedAdvertisers !== undefined) {
+      if (!Array.isArray(params.blockedAdvertisers)) {
+        throw new Error('blockedAdvertisers must be an array');
+      }
+      // Validate each advertiser ID is a string (UUIDs are strings)
+      for (const id of params.blockedAdvertisers) {
+        if (typeof id !== 'string' || id.trim().length === 0) {
+          throw new Error('blockedAdvertisers must contain non-empty strings (advertiser IDs)');
+        }
+      }
+    }
+
+    // Validate Phase 2 parameters (Revenue Optimization)
     if (params.minCPC !== undefined) {
       if (typeof params.minCPC !== 'number' || params.minCPC < 0) {
         throw new Error('minCPC must be a non-negative number (cost-per-click in cents)');
