@@ -575,6 +575,17 @@ const ad = await client.decideFromContext({
 - **Niche apps**: `'relevance'` to prioritize perfect matches over high bids
 - **Premium experiences**: Combine with high `minRelevanceScore` + `'relevance'` ranking
 
+**How it works (second-price auction):**
+- **Revenue mode**: Winner ranked by composite score (bid × quality × relevance), pays just enough to beat next ad's composite score + $0.01
+- **Relevance mode**: Winner ranked by semantic similarity, pays just enough to beat next ad in the composite score space + $0.01
+- **Always capped**: Winner never pays more than their max bid (auction integrity guaranteed)
+- **Floor price**: Minimum $0.25 clearing price ensures platform revenue
+
+**Important notes:**
+- `minRelevanceScore` only applies to campaigns with semantic targeting
+- For keyword/automatic campaigns, relevance filter has no effect
+- Validation errors return HTTP 400 with clear messages
+
 ### Combined Revenue Controls
 
 ```typescript

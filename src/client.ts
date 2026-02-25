@@ -245,6 +245,23 @@ export class AttentionMarketClient {
     // Build taxonomy from suggestedCategory or infer from user message
     const taxonomy = params.suggestedCategory || this.inferTaxonomy(params.userMessage);
 
+    // Validate Phase 2 parameters (client-side)
+    if (params.minCPC !== undefined) {
+      if (typeof params.minCPC !== 'number' || params.minCPC < 0) {
+        throw new Error('minCPC must be a non-negative number (cost-per-click in cents)');
+      }
+    }
+
+    if (params.minRelevanceScore !== undefined) {
+      if (typeof params.minRelevanceScore !== 'number' || params.minRelevanceScore < 0 || params.minRelevanceScore > 1) {
+        throw new Error('minRelevanceScore must be a number between 0.0 and 1.0');
+      }
+    }
+
+    if (params.optimizeFor && params.optimizeFor !== 'revenue' && params.optimizeFor !== 'relevance') {
+      throw new Error('optimizeFor must be either "revenue" or "relevance"');
+    }
+
     // Build full DecideRequest with semantic context
     const request: DecideRequest = {
       request_id: generateUUID(),
