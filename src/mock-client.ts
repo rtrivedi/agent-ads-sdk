@@ -212,8 +212,8 @@ export class MockAttentionMarketClient {
    */
   async decide(request: DecideRequest): Promise<AdUnit | null> {
     const response = await this.decideRaw(request);
-    if (response.status === 'filled' && response.units.length > 0) {
-      return response.units[0] || null;
+    if (response.status === 'filled' && response.units && response.units.length > 0) {
+      return response.units![0] || null;
     }
     return null;
   }

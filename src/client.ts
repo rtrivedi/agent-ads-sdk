@@ -195,7 +195,7 @@ export class AttentionMarketClient {
     }
 
     // Return first unit if available
-    return response.units[0] ?? null;
+    return response.units?.[0] ?? null;
   }
 
   /**
@@ -340,6 +340,8 @@ export class AttentionMarketClient {
       },
       context,
       user_intent: params.userMessage,
+      // Use minimal response format by default for better performance
+      response_format: 'minimal',
       // Developer controls (Phase 1: Quality & Brand Safety)
       ...(params.minQualityScore !== undefined && { minQualityScore: params.minQualityScore }),
       ...(params.allowedCategories && { allowedCategories: params.allowedCategories }),
@@ -354,12 +356,61 @@ export class AttentionMarketClient {
     // Call decideRaw to get full response with metadata
     const response = await this.decideRaw(request, options);
 
-    if (response.status === 'no_fill' || response.units.length === 0) {
+    // Handle minimal format response (which is just the ad object directly)
+    if (response && response.creative) {
+      // This is already a minimal format response
+      // Auto-track impression for minimal format too
+      if (response['_meta']) {
+        try {
+          await this.track({
+            event_id: `evt_${generateUUID()}`,
+            event_type: 'impression',
+            occurred_at: new Date().toISOString(),
+            agent_id: this.agentId,
+            request_id: response['_meta']['request_id'],
+            decision_id: response['_meta']['decision_id'],
+            unit_id: response['_meta']['unit_id'],
+            tracking_token: response.tracking_token,
+          } as EventIngestRequest);
+        } catch (error) {
+          console.warn('[AttentionMarket] Failed to auto-track impression:', error);
+        }
+      }
+
+      // Map minimal format to standard AdResponse structure
+      const adResponse: import('./types.js').AdResponse = {
+        request_id: request.request_id,
+        decision_id: `dec_${generateUUID()}`,
+        advertiser_id: response.advertiser_id || '',
+        ad_type: 'link',
+        payout: response.payout || 0,
+        creative: response.creative!,
+        click_url: response.click_url || '',
+        tracking_url: response.click_url || '', // Same as click_url
+        tracking_token: response.tracking_token || '',
+        ...(response.relevance_score !== undefined && { relevance_score: response.relevance_score }),
+        disclosure: response.disclosure || {
+          label: 'Sponsored',
+          explanation: 'This is a paid advertisement',
+          sponsor_name: 'Advertiser'
+        },
+        // Internal fields preserved for backward compatibility
+        _ad: {
+          unit_id: '',
+          tracking: { token: response.tracking_token || '' }
+        } as any
+      };
+
+      return adResponse;
+    }
+
+    // Handle null response or verbose format response (backward compatibility)
+    if (!response || response.status === 'no_fill' || !response.units || response.units.length === 0) {
       return null;
     }
 
     // Get first ad unit
-    const adUnit = response.units[0];
+    const adUnit = response.units![0];
 
     // Only support sponsored_suggestion for now (most common use case)
     if (!adUnit || adUnit.unit_type !== 'sponsored_suggestion') {
@@ -750,12 +801,12 @@ export class AttentionMarketClient {
     const response = await this.decideRaw(request, { idempotencyKey });
 
     // No fill
-    if (response.status === 'no_fill' || response.units.length === 0) {
+    if (response.status === 'no_fill' || !response.units || response.units.length === 0) {
       return null;
     }
 
     // Convert AdUnit to OfferResponse
-    const adUnit = response.units[0];
+    const adUnit = response.units![0];
 
     // Only support sponsored_suggestion for now
     if (!adUnit || adUnit.unit_type !== 'sponsored_suggestion') {
@@ -770,7 +821,7 @@ export class AttentionMarketClient {
 
     return {
       offer_id: adUnit.unit_id,
-      request_id: response.request_id,
+      request_id: response.request_id || '',
       impression_id: impressionId,
       // LIMITATION: Backend doesn't return campaign_id yet - use unit_id as placeholder
       campaign_id: adUnit.unit_id,
@@ -800,7 +851,7 @@ export class AttentionMarketClient {
           ...(params.revenueSharePct !== undefined ? { source_agent_pct: params.revenueSharePct } : {})
         }
       } : {}),
-      ttl_ms: response.ttl_ms
+      ttl_ms: response.ttl_ms || 300000
     };
   }
 
@@ -919,12 +970,12 @@ export class AttentionMarketClient {
     const response = await this.decideRaw(request, { idempotencyKey });
 
     // No fill
-    if (response.status === 'no_fill' || response.units.length === 0) {
+    if (response.status === 'no_fill' || !response.units || response.units.length === 0) {
       return null;
     }
 
     // Convert AdUnit to OfferResponse
-    const adUnit = response.units[0];
+    const adUnit = response.units![0];
 
     // Only support sponsored_suggestion for now
     if (!adUnit || adUnit.unit_type !== 'sponsored_suggestion') {
@@ -939,7 +990,7 @@ export class AttentionMarketClient {
 
     return {
       offer_id: adUnit.unit_id,
-      request_id: response.request_id,
+      request_id: response.request_id || '',
       impression_id: impressionId,
       // LIMITATION: Backend doesn't return campaign_id yet - use unit_id as placeholder
       campaign_id: adUnit.unit_id,
@@ -969,7 +1020,7 @@ export class AttentionMarketClient {
           ...(params.revenueSharePct !== undefined ? { source_agent_pct: params.revenueSharePct } : {})
         }
       } : {}),
-      ttl_ms: response.ttl_ms
+      ttl_ms: response.ttl_ms || 300000
     };
   }
 
@@ -1066,11 +1117,11 @@ export class AttentionMarketClient {
     // Call decide endpoint
     const response = await this.decideRaw(request);
 
-    if (response.status === 'no_fill' || response.units.length === 0) {
+    if (response.status === 'no_fill' || !response.units || response.units.length === 0) {
       return null;
     }
 
-    const adUnit = response.units[0] as any;
+    const adUnit = response.units![0] as any;
 
     // Only return if it's a service ad
     if (adUnit.ad_type !== 'service') {

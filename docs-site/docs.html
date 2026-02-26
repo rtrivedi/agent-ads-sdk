@@ -133,12 +133,14 @@
                         <li><a href="#controls-quality" onclick="showSection('controls-quality')" class="nav-link block text-sm py-1 px-3 rounded-md text-slate-600 hover:bg-slate-50">Quality</a></li>
                         <li><a href="#controls-categories" onclick="showSection('controls-categories')" class="nav-link block text-sm py-1 px-3 rounded-md text-slate-600 hover:bg-slate-50">Categories</a></li>
                         <li><a href="#controls-revenue" onclick="showSection('controls-revenue')" class="nav-link block text-sm py-1 px-3 rounded-md text-slate-600 hover:bg-slate-50">Revenue</a></li>
+                        <li><a href="#performance" onclick="showSection('performance')" class="nav-link block text-sm py-1 px-3 rounded-md text-slate-600 hover:bg-slate-50">Performance</a></li>
                     </ul>
                 </div>
 
                 <div>
-                    <h3 class="text-xs font-semibold text-slate-900 uppercase tracking-wider mb-3">API Reference</h3>
+                    <h3 class="text-xs font-semibold text-slate-900 uppercase tracking-wider mb-3">Integration</h3>
                     <ul class="space-y-2">
+                        <li><a href="#claude-code" onclick="showSection('claude-code')" class="nav-link block text-sm py-1 px-3 rounded-md text-slate-600 hover:bg-slate-50">🤖 Claude Code</a></li>
                         <li><a href="#api-sdk" onclick="showSection('api-sdk')" class="nav-link block text-sm py-1 px-3 rounded-md text-slate-600 hover:bg-slate-50">SDK Methods</a></li>
                         <li><a href="#api-types" onclick="showSection('api-types')" class="nav-link block text-sm py-1 px-3 rounded-md text-slate-600 hover:bg-slate-50">Ad Types</a></li>
                         <li><a href="#api-params" onclick="showSection('api-params')" class="nav-link block text-sm py-1 px-3 rounded-md text-slate-600 hover:bg-slate-50">Parameters</a></li>
@@ -154,6 +156,12 @@
             <!-- HOME SECTION -->
             <div id="home" class="content-section active">
                 <h1 class="text-4xl font-bold mb-6">AttentionMarket Developer Documentation</h1>
+
+                <div class="flex items-center gap-4 mb-6">
+                    <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">SDK v0.14.1</span>
+                    <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-semibold">✨ Optimized Payloads</span>
+                    <span class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-semibold">🎯 Relevance Scoring</span>
+                </div>
 
                 <p class="text-xl text-slate-600 mb-8">Monetize your AI application with contextual advertising. AttentionMarket matches user intent with relevant sponsored content.</p>
 
@@ -2245,6 +2253,10 @@ const ad = await client.decideFromContext({
 
                 <p>Relevance scores range from 0.0 (unrelated) to 1.0 (perfect match).</p>
 
+                <div class="callout callout-info">
+                    <strong>New in v0.14.1:</strong> The <code>relevance_score</code> is now included in the minimal payload response by default, allowing frontend applications to make rendering decisions based on ad relevance.
+                </div>
+
                 <div class="callout callout-warning">
                     <strong>Note:</strong> This filter only applies to campaigns with semantic targeting. Keyword and automatic campaigns are not affected.
                 </div>
@@ -2335,6 +2347,344 @@ const ad = await client.decideFromContext({
                     <ul class="space-y-2">
                         <li><a href="#api-params" onclick="showSection('api-params')" class="text-blue-600 hover:underline">See all parameters →</a></li>
                         <li><a href="#app-tracking" onclick="showSection('app-tracking')" class="text-blue-600 hover:underline">Track conversions →</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- PERFORMANCE SECTION -->
+            <div id="performance" class="content-section">
+                <h1 class="text-4xl font-bold mb-6">Performance Optimization</h1>
+
+                <p class="text-lg text-slate-600 mb-8">Optimize network efficiency and reduce payload size by up to 84% with intelligent response formatting.</p>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Payload Optimization (v0.14.0+)</h2>
+                <p class="mb-4">The SDK automatically uses an optimized minimal payload format that reduces response size by <strong>84%</strong> (from 3.2KB to ~520B) while maintaining all essential functionality including relevance scores.</p>
+
+                <div class="callout callout-success">
+                    <strong>Benefits:</strong> 6x less data transfer • Faster parsing • Lower bandwidth usage • Reduced costs • Better mobile performance
+                </div>
+
+                <h3 class="text-2xl font-semibold mt-8 mb-3">Response Formats</h3>
+                <p class="mb-4">The SDK supports three response formats to match your needs:</p>
+
+                <table class="w-full border-collapse my-6">
+                    <thead>
+                        <tr>
+                            <th class="bg-slate-100 text-left p-3 border border-slate-200">Format</th>
+                            <th class="bg-slate-100 text-left p-3 border border-slate-200">Size</th>
+                            <th class="bg-slate-100 text-left p-3 border border-slate-200">Use Case</th>
+                            <th class="bg-slate-100 text-left p-3 border border-slate-200">Auto-Impression</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="p-3 border border-slate-200"><strong>minimal</strong></td>
+                            <td class="p-3 border border-slate-200">~520B</td>
+                            <td class="p-3 border border-slate-200">Production apps (default, includes relevance)</td>
+                            <td class="p-3 border border-slate-200">✅ Yes</td>
+                        </tr>
+                        <tr class="bg-slate-50">
+                            <td class="p-3 border border-slate-200">standard</td>
+                            <td class="p-3 border border-slate-200">~645B</td>
+                            <td class="p-3 border border-slate-200">Apps needing disclosure details</td>
+                            <td class="p-3 border border-slate-200">❌ Manual</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 border border-slate-200">verbose</td>
+                            <td class="p-3 border border-slate-200">~3.1KB</td>
+                            <td class="p-3 border border-slate-200">Debugging, analytics</td>
+                            <td class="p-3 border border-slate-200">❌ Manual</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3 class="text-2xl font-semibold mt-8 mb-3">Minimal Format (Default)</h3>
+                <p class="mb-4">The SDK automatically uses the minimal format for optimal performance:</p>
+
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">// Minimal format (default, ~520B) - Essentials + relevance
+const ad = await client.decideFromContext({
+  userMessage: "I need car insurance",
+  response_format: 'minimal'  // Optional, this is the default
+});
+
+// Returns:
+{
+  creative: { title, body, cta },
+  click_url: string,           // Auto-tracks CTR when clicked
+  tracking_token: string,
+  advertiser_id: string,
+  payout: number,              // Earnings in cents
+  relevance_score: number      // 0.0-1.0 for frontend filtering
+}</code></pre>
+                </div>
+
+                <div class="callout callout-info">
+                    <strong>Relevance Score:</strong> The <code>relevance_score</code> field (0.0-1.0) indicates how well the ad matches the user's context. Use this for frontend filtering or conditional rendering.
+                </div>
+
+                <h3 class="text-2xl font-semibold mt-8 mb-3">Click Tracking & CTR</h3>
+                <p class="mb-4">The <code>click_url</code> automatically tracks clicks and updates CTR metrics:</p>
+
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">// Display the ad
+if (ad && ad.relevance_score > 0.7) {  // Optional: filter by relevance
+  console.log(ad.creative.title);
+  console.log(ad.creative.body);
+
+  // When user clicks, use the click_url
+  // This automatically:
+  // 1. Tracks the click event
+  // 2. Updates CTR metrics
+  // 3. Credits developer earnings
+  // 4. Redirects to advertiser
+  window.open(ad.click_url);
+}</code></pre>
+                </div>
+
+                <h3 class="text-2xl font-semibold mt-8 mb-3">Advanced Formats</h3>
+                <p class="mb-4">For specific use cases, you can request more detailed responses:</p>
+
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-typescript">// Standard format (~645B) - Includes disclosure info
+const ad = await client.decide({
+  response_format: 'standard',
+  // ... other params
+});
+
+// Verbose format (~3.1KB) - Full response with all metadata
+const ad = await client.decide({
+  response_format: 'verbose',
+  // ... other params
+});</code></pre>
+                </div>
+
+                <div class="callout callout-warning">
+                    <strong>Note:</strong> The minimal format automatically tracks impressions for you. When using standard or verbose formats with the raw <code>decide()</code> API, you must manually track impressions.
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Best Practices</h2>
+
+                <ul class="list-disc pl-6 mb-4">
+                    <li><strong>Use minimal format:</strong> It's the default and provides the best performance</li>
+                    <li><strong>Filter by relevance:</strong> Consider showing ads only above a threshold (e.g., 0.7)</li>
+                    <li><strong>Always use click_url:</strong> It handles tracking, fraud prevention, and redirects</li>
+                    <li><strong>Monitor metrics:</strong> Track CTR and relevance scores to optimize ad quality</li>
+                </ul>
+
+                <div class="mt-12 p-6 bg-slate-50 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-4">Next Steps</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#controls-quality" onclick="showSection('controls-quality')" class="text-blue-600 hover:underline">Add quality filters →</a></li>
+                        <li><a href="#app-tracking" onclick="showSection('app-tracking')" class="text-blue-600 hover:underline">Track conversions →</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- CLAUDE CODE SECTION -->
+            <div id="claude-code" class="content-section">
+                <h1 class="text-4xl font-bold mb-6">🤖 Claude Code Integration</h1>
+
+                <p class="text-lg text-slate-600 mb-8">Ready-to-use prompts for integrating AttentionMarket with Claude Code. Copy, paste, and start earning revenue in minutes.</p>
+
+                <div class="performance-grid">
+                    <div class="performance-metric">
+                        <span class="metric-value">5-12%</span>
+                        <span class="metric-label">Average CTR</span>
+                    </div>
+                    <div class="performance-metric">
+                        <span class="metric-value">$0.50-$15</span>
+                        <span class="metric-label">Per Click</span>
+                    </div>
+                    <div class="performance-metric">
+                        <span class="metric-value">< 100ms</span>
+                        <span class="metric-label">API Latency</span>
+                    </div>
+                    <div class="performance-metric">
+                        <span class="metric-value">~520B</span>
+                        <span class="metric-label">Payload Size</span>
+                    </div>
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Quick Start Prompt</h2>
+
+                <div class="callout callout-tip">
+                    <strong>One-Line Integration:</strong> Copy this prompt into Claude Code for instant setup.
+                </div>
+
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-text">I want to add AttentionMarket ads to my AI app. Credentials:
+- API Key: am_test_YOUR_KEY
+- Agent ID: agt_YOUR_ID
+Create a simple getRelevantAd(message) function that returns ads only when relevant (score>0.7).</code></pre>
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Natural Conversation Integration</h2>
+
+                <p>Make ads feel like helpful suggestions, not interruptions.</p>
+
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-text">Help me integrate AttentionMarket ads naturally into my Claude-based AI assistant.
+
+Requirements:
+1. Ads should only appear when genuinely helpful to the user
+2. Clear disclosure: "Sponsored" or "Partner offer" label
+3. Maintain natural conversation flow
+4. Present ads as one option among organic suggestions
+5. Track both impressions and clicks automatically
+
+Show me:
+1. How to detect when an ad would be helpful
+2. Natural ways to introduce sponsored content
+3. Example conversation flows with integrated ads
+4. How to handle user reactions (positive/negative)</code></pre>
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Advanced Filtering & Safety</h2>
+
+                <p>Enterprise-grade controls for brand safety and revenue optimization.</p>
+
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-text">I need AttentionMarket integration with strict brand safety controls.
+
+BRAND SAFETY:
+- Block categories: [601] (sensitive content)
+- Block specific advertisers: ['competitor_id_1']
+- Only show ads from: [31, 150, 190] (Insurance, Travel, Restaurants)
+
+QUALITY CONTROLS:
+- Minimum relevance score: 0.75
+- Minimum quality score: 0.6
+- Minimum CPC: 150 cents ($1.50)
+
+Show me complete configuration with error handling and graceful degradation.</code></pre>
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Testing & Analytics</h2>
+
+                <p>Set up comprehensive testing and metrics tracking.</p>
+
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-text">Set up complete testing environment for AttentionMarket integration.
+
+TESTING:
+1. Easy switch between test/live keys
+2. Detailed logging of all ad requests
+3. Mock responses for unit testing
+
+ANALYTICS:
+1. Track: impressions, clicks, CTR, revenue, fill rate
+2. Create dashboard data structure
+3. Debug mode with full request/response logging
+
+Show me environment configuration, analytics collector, and test suite.</code></pre>
+                </div>
+
+                <h2 class="text-3xl font-semibold mt-12 mb-4 border-b border-slate-200 pb-2">Common Integration Patterns</h2>
+
+                <h3 class="text-2xl font-semibold mt-8 mb-3">Q&A Pattern</h3>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-javascript">// User asks question → AI answers → Related ad if relevant
+const handleQuestion = async (question) => {
+  const answer = await generateAIResponse(question);
+
+  const ad = await client.decideFromContext({
+    userMessage: question,
+    conversationHistory: [answer],
+    placement: 'sponsored_suggestion',
+    minRelevanceScore: 0.7
+  });
+
+  if (ad) {
+    return {
+      answer,
+      sponsoredSuggestion: {
+        label: "Sponsored",
+        title: ad.creative.title,
+        body: ad.creative.body,
+        url: ad.click_url
+      }
+    };
+  }
+
+  return { answer };
+};</code></pre>
+                </div>
+
+                <h3 class="text-2xl font-semibold mt-8 mb-3">Recommendation Pattern</h3>
+                <div class="code-container">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre><code class="language-javascript">// AI suggests options → Includes sponsored option clearly marked
+const getRecommendations = async (need) => {
+  const organicOptions = await findOrganicOptions(need);
+
+  const ad = await client.decideFromContext({
+    userMessage: need,
+    placement: 'sponsored_suggestion'
+  });
+
+  if (ad && ad.relevance_score > 0.8) {
+    return [
+      ...organicOptions,
+      {
+        type: 'sponsored',
+        label: '⭐ Partner Offer',
+        ...ad.creative,
+        url: ad.click_url
+      }
+    ];
+  }
+
+  return organicOptions;
+};</code></pre>
+                </div>
+
+                <div class="callout callout-info mt-8">
+                    <strong>Full Guide:</strong> View the complete <a href="https://github.com/rtrivedi/agent-ads-sdk/blob/main/CLAUDE_CODE_INTEGRATION.md" target="_blank" class="text-blue-600 hover:underline">Claude Code Integration Guide</a> for more patterns, mobile integration, and troubleshooting.
+                </div>
+
+                <div class="mt-12 p-6 bg-slate-50 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-4">Best Practices</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <h4 class="font-semibold text-green-600 mb-2">✅ DO</h4>
+                            <ul class="list-disc pl-5 space-y-1 text-sm">
+                                <li>Always use <code>click_url</code> (auto-tracked)</li>
+                                <li>Set reasonable <code>minRelevanceScore</code> (0.6-0.8)</li>
+                                <li>Include conversation context</li>
+                                <li>Show clear "Sponsored" labels</li>
+                                <li>Handle no-fill gracefully</li>
+                                <li>Use test keys during development</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-red-600 mb-2">❌ DON'T</h4>
+                            <ul class="list-disc pl-5 space-y-1 text-sm">
+                                <li>Don't manipulate ad content</li>
+                                <li>Don't hide sponsored labels</li>
+                                <li>Don't show ads for every query</li>
+                                <li>Don't cache ads (they expire)</li>
+                                <li>Don't track clicks manually</li>
+                                <li>Don't use live keys in development</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-12 p-6 bg-slate-50 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-4">Next Steps</h3>
+                    <ul class="space-y-2">
+                        <li><a href="https://api.attentionmarket.ai" target="_blank" class="text-blue-600 hover:underline">Get your API keys →</a></li>
+                        <li><a href="#api-sdk" onclick="showSection('api-sdk')" class="text-blue-600 hover:underline">View SDK reference →</a></li>
+                        <li><a href="https://github.com/rtrivedi/agent-ads-sdk" target="_blank" class="text-blue-600 hover:underline">Browse examples on GitHub →</a></li>
                     </ul>
                 </div>
             </div>

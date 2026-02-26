@@ -36,6 +36,9 @@ export interface DecideRequest {
   context?: string;
   /** Detected or inferred user intent for semantic matching (optional) */
   user_intent?: string;
+  /** Response format: 'minimal' | 'standard' | 'verbose' (default: 'minimal') */
+  response_format?: string;
+  [key: string]: any; // Allow additional properties for developer controls
 }
 
 /**
@@ -157,11 +160,31 @@ export interface DecideFromContextRequest {
 }
 
 export interface DecideResponse {
-  request_id: string;
-  decision_id: string;
-  status: 'filled' | 'no_fill';
-  ttl_ms: number;
-  units: AdUnit[];
+  // Verbose format fields
+  request_id?: string;
+  decision_id?: string;
+  status?: 'filled' | 'no_fill';
+  ttl_ms?: number;
+  units?: AdUnit[];
+
+  // Minimal/Standard format fields
+  creative?: {
+    title: string;
+    body: string;
+    cta: string;
+  };
+  click_url?: string;
+  tracking_token?: string;
+  advertiser_id?: string;
+  payout?: number;
+  disclosure?: {
+    label: string;
+    explanation: string;
+    sponsor_name: string;
+  };
+  relevance_score?: number;
+
+  [key: string]: any; // Allow for format variations
 }
 
 // ============================================================================
@@ -674,6 +697,9 @@ export interface AdResponse {
 
   /** Tracking token for event tracking */
   tracking_token: string;
+
+  /** Relevance score (0.0-1.0) for frontend rendering decisions */
+  relevance_score?: number;
 
   /** Disclosure information */
   disclosure: Disclosure;

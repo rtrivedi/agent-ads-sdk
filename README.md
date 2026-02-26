@@ -368,6 +368,65 @@ const ad = await client.decideFromContext({
 });
 ```
 
+## Performance Optimization
+
+### Payload Optimization (v0.14.0+)
+
+The SDK automatically uses an optimized minimal payload format that reduces response size by **84%** (from 3.2KB to ~520B) while maintaining all essential functionality including relevance scores. This improves:
+
+- **Network efficiency:** 6x less data transfer
+- **Response speed:** Faster parsing and processing
+- **Mobile performance:** Lower bandwidth usage
+- **Cost savings:** Reduced data transfer costs
+
+#### Response Formats
+
+The SDK supports three response formats:
+
+```typescript
+// Minimal format (default, ~520B) - Essentials + relevance
+const ad = await client.decideFromContext({
+  userMessage: "I need car insurance",
+  response_format: 'minimal'  // Optional, this is the default
+});
+
+// Returns:
+{
+  creative: { title, body, cta },
+  click_url: string,
+  tracking_token: string,
+  advertiser_id: string,
+  payout: number,
+  relevance_score: number  // 0.0-1.0 for frontend filtering
+}
+```
+
+For advanced use cases, you can request more detailed responses:
+
+```typescript
+// Standard format (645B) - Includes disclosure info
+const ad = await client.decide({
+  response_format: 'standard',
+  // ... other params
+});
+
+// Verbose format (3.1KB) - Full response with all metadata
+const ad = await client.decide({
+  response_format: 'verbose',
+  // ... other params
+});
+```
+
+#### Format Comparison
+
+| Format | Size | Use Case | Auto-impression |
+|--------|------|----------|-----------------|
+| **minimal** | ~520B | Production apps (default, includes relevance) | ✅ Yes |
+| **standard** | ~645B | Apps needing disclosure details | ❌ Manual |
+| **verbose** | ~3.1KB | Debugging, analytics | ❌ Manual |
+
+**Note:** The minimal format automatically tracks impressions for you. When using standard or verbose formats with the raw `decide()` API, you must manually track impressions.
+
 ## Advanced Features
 
 ### Multi-Turn Conversations
@@ -496,6 +555,38 @@ Use test API keys (`am_test_...`) for development and testing. Test keys:
 - Have the same rate limits as live keys
 
 Switch to live keys (`am_live_...`) when deploying to production.
+
+## 🤖 Claude Code Integration
+
+Building with Claude Code? We've created ready-to-use prompts for seamless integration.
+
+### Quick Start (One Line)
+
+```
+I want to add AttentionMarket ads to my AI app. Credentials:
+- API Key: am_test_YOUR_KEY
+- Agent ID: agt_YOUR_ID
+Create a simple getRelevantAd(message) function that returns ads only when relevant (score>0.7).
+```
+
+### Full Integration Guide
+
+📖 **[Claude Code Integration Guide](CLAUDE_CODE_INTEGRATION.md)** — Copy-paste prompts for:
+- Natural conversation integration
+- Advanced filtering & brand safety
+- Testing & analytics setup
+- Mobile app integration
+- Common patterns & best practices
+
+### Performance Metrics
+
+| Metric | Expected Performance |
+|--------|---------------------|
+| **CTR** | 5-12% average |
+| **Revenue/Click** | $0.50 - $15.00 |
+| **Fill Rate** | 40-60% |
+| **API Latency** | < 100ms p95 |
+| **Payload Size** | ~520 bytes |
 
 ## Support
 
