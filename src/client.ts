@@ -177,7 +177,7 @@ export class AttentionMarketClient {
       requestOptions.idempotencyKey = options.idempotencyKey;
     }
 
-    return await this.http.request<DecideResponse>('POST', '/v1/decide', requestOptions);
+    return await this.http.request<DecideResponse>('POST', '/decide', requestOptions);
   }
 
   /**
@@ -423,7 +423,7 @@ export class AttentionMarketClient {
    * Report an event (impression, click, action, conversion, feedback).
    */
   async track(event: EventIngestRequest): Promise<EventIngestResponse> {
-    return await this.http.request<EventIngestResponse>('POST', '/v1/event', {
+    return await this.http.request<EventIngestResponse>('POST', '/event', {
       body: event,
     });
   }
@@ -532,14 +532,14 @@ export class AttentionMarketClient {
    * ```
    */
   async sendFeedback(request: import('./types.js').FeedbackRequest): Promise<import('./types.js').FeedbackResponse> {
-    return await this.http.request<import('./types.js').FeedbackResponse>('POST', '/v1/feedback', { body: request });
+    return await this.http.request<import('./types.js').FeedbackResponse>('POST', '/feedback', { body: request });
   }
 
   /**
    * Fetch default policy constraints and formatting requirements.
    */
   async getPolicy(): Promise<PolicyResponse> {
-    return await this.http.request<PolicyResponse>('GET', '/v1/policy');
+    return await this.http.request<PolicyResponse>('GET', '/policy');
   }
 
   /**
@@ -557,7 +557,7 @@ export class AttentionMarketClient {
       maxRetries: DEFAULT_MAX_RETRIES,
     });
 
-    return await http.request<AgentSignupResponse>('POST', '/v1/agent-signup', {
+    return await http.request<AgentSignupResponse>('POST', '/agent-signup', {
       body: request,
     });
   }
@@ -1119,7 +1119,7 @@ export class AttentionMarketClient {
   ): Promise<ServiceResultResponse> {
     return await this.http.request<ServiceResultResponse>(
       'POST',
-      '/v1/service-result',
+      '/service-result',
       { body: params }
     );
   }
@@ -1171,7 +1171,7 @@ export class AttentionMarketClient {
       queryParams.append('search', params.search);
     }
 
-    const url = `/v1/categories${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+    const url = `/categories${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
 
     return await this.http.request<CategoryTaxonomyResponse>(
       'GET',

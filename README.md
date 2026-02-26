@@ -95,7 +95,8 @@ const client = new AttentionMarketClient({
 const client = new AttentionMarketClient({
   apiKey: 'am_live_YOUR_KEY',        // Required
   agentId: 'agt_YOUR_AGENT_ID',      // Required for decideFromContext()
-  baseUrl: 'https://peruwnbrqkvmrldhpoom.supabase.co/functions/v1',  // Optional: defaults to production
+  // baseUrl defaults to production Supabase endpoint
+  // Only override if self-hosting or using different environment
   timeoutMs: 4000,                   // Optional: request timeout in milliseconds
   maxRetries: 2                      // Optional: automatic retry count
 });
