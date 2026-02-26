@@ -30,7 +30,7 @@ import type { CreateImpressionEventParams, CreateClickEventParams } from './util
 
 // Default configuration (points to AttentionMarket production API)
 // Developers can override with their own backend if self-hosting
-const DEFAULT_BASE_URL = 'https://api.attentionmarket.ai/v1';
+const DEFAULT_BASE_URL = 'https://peruwnbrqkvmrldhpoom.supabase.co/functions/v1';
 const DEFAULT_TIMEOUT_MS = 4000;
 const DEFAULT_MAX_RETRIES = 2;
 
