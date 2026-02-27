@@ -42,6 +42,34 @@ export interface DecideRequest {
 }
 
 /**
+ * User context for better ad targeting
+ */
+export interface UserContext {
+  /** User's interests (e.g., ['travel', 'fitness', 'cooking']) */
+  interests?: string[];
+
+  /** Recent conversation topics for context */
+  recent_topics?: string[];
+
+  /** Whether user shows purchase intent */
+  purchase_intent?: boolean;
+}
+
+/**
+ * Session context for conversation continuity
+ */
+export interface SessionContext {
+  /** Unique session identifier for tracking multi-turn conversations */
+  session_id?: string;
+
+  /** Number of messages in current session */
+  message_count?: number;
+
+  /** User's current stage in the buying journey */
+  intent_stage?: 'research' | 'comparison' | 'ready_to_buy';
+}
+
+/**
  * Simplified request for semantic context-based ad matching.
  * Uses conversation context instead of manual taxonomy selection.
  *
@@ -53,7 +81,10 @@ export interface DecideRequest {
  * const ad = await client.decideFromContext({
  *   userMessage: "I need help with estate planning",
  *   conversationHistory: ["User: My father passed away recently"],
- *   placement: 'sponsored_suggestion'
+ *   placement: 'sponsored_suggestion',
+ *   sessionId: 'session_123',
+ *   intentStage: 'research',
+ *   userInterests: ['finance', 'legal']
  * });
  * ```
  */
@@ -84,6 +115,22 @@ export interface DecideFromContextRequest {
 
   /** User's platform. Default: 'web' */
   platform?: 'web' | 'ios' | 'android' | 'desktop' | 'voice' | 'other';
+
+  // Enhanced context fields (v0.15.0+)
+
+  /**
+   * User context for better ad targeting.
+   * Includes interests, topics, and purchase intent signals.
+   * @since v0.15.0
+   */
+  user_context?: UserContext;
+
+  /**
+   * Session context for multi-turn conversations.
+   * Includes session ID, message count, and intent stage.
+   * @since v0.15.0
+   */
+  session_context?: SessionContext;
 
   // Quality & Brand Safety Controls
 

@@ -5,6 +5,14 @@
 
 import { HTTPClient } from './http.js';
 import { createImpressionEvent, createClickEvent, generateUUID } from './utils.js';
+import {
+  detectIntentStage,
+  extractInterests,
+  extractTopics,
+  generateSessionId,
+  detectPurchaseIntent,
+  calculateMessageCount
+} from './utils/intent-detector.js';
 import type {
   SDKConfig,
   DecideRequest,
@@ -236,6 +244,48 @@ export class AttentionMarketClient {
     const contextParts = [...limitedHistory, params.userMessage];
     const context = contextParts.join('\n');
 
+    // === Smart Context Features (v0.15.0) ===
+    // Auto-detect intent stage if not provided
+    const intentStage = params.session_context?.intent_stage ||
+                        detectIntentStage(params.userMessage, limitedHistory);
+
+    // Extract and validate user interests
+    let interests = params.user_context?.interests ||
+                    extractInterests(params.userMessage, limitedHistory);
+
+    // Filter and sanitize interests
+    interests = interests
+      .filter((interest: any) => typeof interest === 'string' && interest.trim().length > 0)
+      .map((interest: string) => interest.trim().toLowerCase())
+      .slice(0, 10); // Limit to 10 interests
+
+    // Extract and validate recent topics
+    let recentTopics = params.user_context?.recent_topics ||
+                       extractTopics(limitedHistory);
+
+    // Filter and sanitize topics
+    recentTopics = recentTopics
+      .filter((topic: any) => typeof topic === 'string' && topic.trim().length > 0)
+      .map((topic: string) => topic.trim().toLowerCase())
+      .slice(0, 5); // Limit to 5 topics
+
+    // Validate purchase intent
+    const purchaseIntent = params.user_context?.purchase_intent !== undefined
+                          ? Boolean(params.user_context.purchase_intent) // Force boolean
+                          : detectPurchaseIntent(params.userMessage, intentStage);
+
+    // Generate or use provided session ID (validated and request-scoped)
+    const rawSessionId = params.session_context?.session_id;
+    const sessionId = (typeof rawSessionId === 'string' && rawSessionId.trim().length > 0)
+                     ? rawSessionId.trim().slice(0, 100) // Limit session ID length
+                     : generateSessionId();
+
+    // Validate and calculate message count
+    const rawMessageCount = params.session_context?.message_count;
+    const messageCount = (typeof rawMessageCount === 'number' && rawMessageCount >= 0)
+                        ? Math.min(rawMessageCount, 1000) // Cap at 1000 messages
+                        : calculateMessageCount(limitedHistory);
+
     // Use provided values or sensible defaults
     const country = params.country || 'US';
     const language = params.language || 'en';
@@ -342,6 +392,23 @@ export class AttentionMarketClient {
       user_intent: params.userMessage,
       // Use minimal response format by default for better performance
       response_format: 'minimal',
+      // === Smart Context Fields (v0.15.0) ===
+      // Include user context if we have any data
+      ...((interests.length > 0 || recentTopics.length > 0 || purchaseIntent) && {
+        user_context: {
+          ...(interests.length > 0 && { interests }),
+          ...(recentTopics.length > 0 && { recent_topics: recentTopics }),
+          ...(purchaseIntent && { purchase_intent: purchaseIntent })
+        }
+      }),
+      // Include session context
+      ...(sessionId && {
+        session_context: {
+          session_id: sessionId,
+          message_count: messageCount,
+          ...(intentStage && { intent_stage: intentStage })
+        }
+      }),
       // Developer controls (Phase 1: Quality & Brand Safety)
       ...(params.minQualityScore !== undefined && { minQualityScore: params.minQualityScore }),
       ...(params.allowedCategories && { allowedCategories: params.allowedCategories }),

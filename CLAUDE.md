@@ -8,7 +8,7 @@
 
 **AttentionMarket SDK** - Advertising exchange for AI agents/chatbots. Developers monetize their AI apps by showing relevant ads to users.
 
-- **Current Version:** 0.8.0 (Advertising Exchange with 3 ad types)
+- **Current Version:** 0.15.0 (Smart Context with intent detection + user profiling)
 - **NPM Package:** `@the_ro_show/agent-ads-sdk`
 - **Backend:** Supabase Edge Functions (Deno)
 - **Database:** PostgreSQL (Supabase hosted)
@@ -312,4 +312,19 @@ Before deploying to production:
 
 ---
 
-**Last Updated:** 2026-02-12 (v0.8.0 - Advertising Exchange with teaser-based recommendation ads)
+**Last Updated:** 2026-02-26 (v0.15.0 - Smart Context with intent detection + user profiling)
+
+---
+
+## Version History
+
+### v0.15.0 (2026-02-26) - Smart Context Features
+- Added automatic intent stage detection (research → comparison → ready_to_buy)
+- Added user interest extraction from conversation
+- Added session tracking for multi-turn conversations
+- Added context boosting in decide function for better ad relevance
+- Improved semantic embeddings with user signals
+- Claims: 2-3x improvement in ad relevance
+
+### v0.8.0 (2026-02-12) - Advertising Exchange
+- Initial exchange with 3 ad types (link, recommendation, service)

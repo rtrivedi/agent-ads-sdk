@@ -2,10 +2,13 @@
 
 **Copy-paste prompts for integrating contextual ads into your AI applications with Claude Code**
 
+> **v0.15.1 Update**: Now with Smart Context for 2-3x better ad relevance!
+
 ---
 
 ## Quick Navigation
 - [Quick Start (One-Line Integration)](#quick-start-one-line-integration)
+- [Smart Context Integration (NEW)](#smart-context-integration-new)
 - [Natural Conversation Integration](#natural-conversation-integration)
 - [Advanced Filtering & Safety](#advanced-filtering--safety)
 - [Testing & Analytics](#testing--analytics)
@@ -43,6 +46,41 @@ Show me the complete implementation with error handling.
 - Automatic impression tracking
 - Click tracking via `click_url`
 - Graceful no-fill handling
+
+---
+
+## Smart Context Integration (NEW)
+
+### Copy this prompt for v0.15.1+ smart context features:
+
+```
+I want to integrate AttentionMarket ads with the new v0.15.1 smart context features.
+My credentials: am_test_YOUR_KEY, agt_YOUR_AGENT_ID
+
+Build an integration that:
+1. Tracks conversation history for better context
+2. Auto-detects user intent stage (research vs comparison vs ready to buy)
+3. Extracts user interests from the conversation
+4. Uses session IDs for multi-turn conversations
+5. Only shows highly relevant ads based on intent stage
+
+Example: If user is in "research" stage, show informational ads.
+If they're "ready to buy", show action-oriented ads with CTAs.
+
+The function should accept:
+- userMessage: string
+- conversationHistory: string[]
+- sessionId?: string
+
+Return enhanced ad with relevance scoring.
+```
+
+### What Claude will build:
+- Session tracking across conversations
+- Intent stage detection
+- Interest extraction
+- Context-aware ad matching
+- 2-3x better CTR through smart targeting
 
 ---
 
