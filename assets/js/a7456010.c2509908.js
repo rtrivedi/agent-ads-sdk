@@ -1,0 +1,1 @@
+"use strict";(globalThis.webpackChunkattentionmarket_docs=globalThis.webpackChunkattentionmarket_docs||[]).push([[1235],{8552(t){t.exports=JSON.parse('{"name":"docusaurus-plugin-content-pages","id":"default"}')}}]);

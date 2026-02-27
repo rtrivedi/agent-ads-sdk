@@ -1,0 +1,1 @@
+"use strict";(globalThis.webpackChunkattentionmarket_docs=globalThis.webpackChunkattentionmarket_docs||[]).push([[9647],{7121(e,t,a){a.r(t),a.d(t,{default:()=>i});a(6540);var s=a(4164),r=a(7559),n=a(5500),c=a(2831),o=a(1656),u=a(4848);function i(e){return(0,u.jsx)(n.e3,{className:(0,s.A)(r.G.wrapper.docsPages),children:(0,u.jsx)(o.A,{children:(0,c.v)(e.route.routes)})})}}}]);
