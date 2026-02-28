@@ -1,0 +1,252 @@
+---
+title: Basic Integration
+sidebar_label: Basic Integration
+sidebar_position: 3
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# Basic Integration
+
+Complete integration examples for common frameworks and platforms.
+
+## Chatbot Integration
+
+### React Chatbot
+
+<Tabs groupId="framework">
+<TabItem value="react" label="React + TypeScript">
+
+```tsx
+import { useState } from 'react';
+import { AttentionMarketClient, type AdResponse } from '@the_ro_show/agent-ads-sdk';
+
+const client = new AttentionMarketClient({
+  apiKey: process.env.REACT_APP_API_KEY!,
+  agentId: process.env.REACT_APP_AGENT_ID!
+});
+
+interface Message {
+  role: 'user' | 'assistant' | 'sponsored';
+  content: string | AdResponse;
+}
+
+export function Chatbot() {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState('');
+
+  async function sendMessage() {
+    const userMessage = input;
+    setInput('');
+
+    // Add user message
+    setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
+
+    // Get AI response and ad in parallel
+    const [aiResponse, ad] = await Promise.all([
+      fetch('/api/chat', {
+        method: 'POST',
+        body: JSON.stringify({ message: userMessage })
+      }).then(r => r.json()),
+      client.decideFromContext({
+        userMessage,
+        placement: 'sponsored_suggestion',
+        minQualityScore: 0.7
+      })
+    ]);
+
+    // Add AI response
+    setMessages(prev => [...prev, {
+      role: 'assistant',
+      content: aiResponse.text
+    }]);
+
+    // Add sponsored content if available
+    if (ad) {
+      setMessages(prev => [...prev, {
+        role: 'sponsored',
+        content: ad
+      }]);
+    }
+  }
+
+  return (
+    <div className="chatbot">
+      <div className="messages">
+        {messages.map((msg, i) => (
+          <div key={i} className={`message message--${msg.role}`}>
+            {msg.role === 'sponsored' ? (
+              <SponsoredMessage ad={msg.content as AdResponse} />
+            ) : (
+              <div>{msg.content as string}</div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <input
+        value={input}
+        onChange={e => setInput(e.target.value)}
+        onKeyPress={e => e.key === 'Enter' && sendMessage()}
+        placeholder="Type a message..."
+      />
+    </div>
+  );
+}
+
+function SponsoredMessage({ ad }: { ad: AdResponse }) {
+  return (
+    <div className="sponsored-message">
+      <span className="badge badge--warning">{ad.disclosure.label}</span>
+      <h4>{ad.creative.title}</h4>
+      <p>{ad.creative.body}</p>
+      <a href={ad.click_url} target="_blank" rel="noopener noreferrer">
+        {ad.creative.cta} →
+      </a>
+    </div>
+  );
+}
+```
+
+</TabItem>
+</Tabs>
+
+### Backend API Route
+
+<Tabs groupId="backend">
+<TabItem value="nextjs" label="Next.js API Route">
+
+```typescript
+// app/api/chat/route.ts
+import { AttentionMarketClient } from '@the_ro_show/agent-ads-sdk';
+import { NextResponse } from 'next/server';
+
+const client = new AttentionMarketClient({
+  apiKey: process.env.ATTENTIONMARKET_API_KEY!,
+  agentId: process.env.ATTENTIONMARKET_AGENT_ID!
+});
+
+export async function POST(request: Request) {
+  const { message } = await request.json();
+
+  // Get contextual ad
+  const ad = await client.decideFromContext({
+    userMessage: message,
+    placement: 'sponsored_suggestion',
+    minQualityScore: 0.7
+  });
+
+  return NextResponse.json({
+    text: 'Your AI response here',
+    ad
+  });
+}
+```
+
+</TabItem>
+<TabItem value="express" label="Express.js">
+
+```typescript
+import express from 'express';
+import { AttentionMarketClient } from '@the_ro_show/agent-ads-sdk';
+
+const app = express();
+app.use(express.json());
+
+const client = new AttentionMarketClient({
+  apiKey: process.env.ATTENTIONMARKET_API_KEY!,
+  agentId: process.env.ATTENTIONMARKET_AGENT_ID!
+});
+
+app.post('/api/chat', async (req, res) => {
+  const { message } = req.body;
+
+  const ad = await client.decideFromContext({
+    userMessage: message,
+    placement: 'sponsored_suggestion'
+  });
+
+  res.json({
+    text: 'Your AI response here',
+    ad
+  });
+});
+
+app.listen(3000);
+```
+
+</TabItem>
+</Tabs>
+
+## Search Integration
+
+```typescript
+async function searchWithAds(query: string) {
+  // Get organic results and sponsored ad in parallel
+  const [organicResults, sponsoredAd] = await Promise.all([
+    searchDatabase(query),
+    client.decideFromContext({
+      userMessage: query,
+      placement: 'sponsored_block',
+      optimizeFor: 'revenue'
+    })
+  ]);
+
+  return {
+    organic: organicResults,
+    sponsored: sponsoredAd
+  };
+}
+```
+
+## Multi-Turn Conversations
+
+```typescript
+const conversationHistory: string[] = [];
+
+async function handleMessage(userMessage: string) {
+  // Add to history
+  conversationHistory.push(`User: ${userMessage}`);
+
+  // Get ad with context
+  const ad = await client.decideFromContext({
+    userMessage,
+    conversationHistory: conversationHistory.slice(-5),  // Last 5 messages
+    placement: 'sponsored_suggestion'
+  });
+
+  // Add AI response to history
+  const aiResponse = await getAIResponse(userMessage);
+  conversationHistory.push(`Assistant: ${aiResponse}`);
+
+  return { aiResponse, ad };
+}
+```
+
+## Error Handling
+
+```typescript
+async function safeAdRequest(message: string) {
+  try {
+    return await client.decideFromContext({
+      userMessage: message,
+      placement: 'sponsored_suggestion',
+      timeoutMs: 3000
+    });
+  } catch (error) {
+    if (error.status === 429) {
+      console.warn('Rate limited, skipping ad');
+    } else if (error.status === 500) {
+      console.error('Server error, skipping ad');
+    }
+    return null;  // Gracefully degrade
+  }
+}
+```
+
+## Next Steps
+
+- [Placements →](/applications/placements)
+- [Tracking →](/applications/tracking)
+- [Best Practices →](/applications/best-practices)

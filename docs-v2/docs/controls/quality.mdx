@@ -1,0 +1,67 @@
+---
+title: Quality Controls
+sidebar_label: Quality
+sidebar_position: 1
+---
+
+# Quality Controls
+
+Filter ads based on historical performance metrics to maintain high-quality user experiences.
+
+## Quality Score
+
+Every ad has a quality score (0.0-1.0) based on:
+- Click-through rate (CTR)
+- Conversion rate
+- User feedback
+- Historical performance
+
+### Minimum Quality Filter
+
+```typescript
+const ad = await client.decideFromContext({
+  userMessage: "I need car insurance",
+  minQualityScore: 0.7  // Only ads with quality >= 0.7
+});
+```
+
+**Use cases:**
+
+| Score | Use Case |
+|-------|----------|
+| 0.8+ | Premium applications, brand-sensitive contexts |
+| 0.7+ | High-quality experiences, trusted brands |
+| 0.5+ | General applications, balanced fill rate |
+
+## Advertiser Blocklist
+
+Block specific advertisers:
+
+```typescript
+const ad = await client.decideFromContext({
+  userMessage: "I need legal help",
+  blockedAdvertisers: ['adv_abc123', 'adv_xyz789']
+});
+```
+
+Advertiser IDs are included in ad responses as `advertiser_id`.
+
+## Category Filtering
+
+See [Category Controls →](/controls/categories) for detailed category filtering.
+
+## Combined Controls
+
+```typescript
+const ad = await client.decideFromContext({
+  userMessage: "I need estate planning help",
+  minQualityScore: 0.8,           // Only top quality
+  allowedCategories: [318],       // Legal services only
+  blockedAdvertisers: ['adv_123'] // Block competitor
+});
+```
+
+## Next Steps
+
+- [Category Controls →](/controls/categories)
+- [Revenue Optimization →](/controls/revenue)

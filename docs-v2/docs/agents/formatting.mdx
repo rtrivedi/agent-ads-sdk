@@ -1,0 +1,38 @@
+---
+title: Response Formatting
+sidebar_label: Formatting
+sidebar_position: 5
+---
+
+# Response Formatting
+
+Format service recommendations for display to users or other agents.
+
+## Simple Format
+
+```typescript
+const service = await client.getService({
+  taskDescription: "Translate document"
+});
+
+console.log(`Service: ${service._ad.title}`);
+console.log(`Endpoint: ${service.service_endpoint}`);
+```
+
+## Structured Format
+
+```typescript
+function formatServiceResponse(service: ServiceAdResponse) {
+  return {
+    provider: service.disclosure.sponsor_name,
+    description: service._ad.body,
+    endpoint: service.service_endpoint,
+    cost: service.payout / 100,  // cents to dollars
+    transaction_id: service.transaction_id
+  };
+}
+```
+
+## Next Steps
+
+- [Error Handling →](/agents/error-handling)

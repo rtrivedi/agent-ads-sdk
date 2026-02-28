@@ -1,0 +1,108 @@
+---
+title: Revenue Optimization
+sidebar_label: Revenue
+sidebar_position: 3
+---
+
+# Revenue Optimization
+
+Maximize earnings with revenue optimization controls.
+
+## Minimum CPC Filter
+
+Only show ads bidding at or above a threshold:
+
+```typescript
+const ad = await client.decideFromContext({
+  userMessage: "I need car insurance",
+  minCPC: 100  // Only ads bidding >= $1.00 per click
+});
+```
+
+**Use cases:**
+
+| Threshold | Use Case |
+|-----------|----------|
+| 200+ | Premium apps ($2+ ads only) |
+| 100+ | High-value verticals |
+| 50+ | Revenue targets |
+
+**Trade-off:** Higher thresholds = higher revenue per ad but lower fill rate.
+
+## Minimum Relevance Score
+
+Only show highly relevant ads:
+
+```typescript
+const ad = await client.decideFromContext({
+  userMessage: "Help me plan my wedding",
+  minRelevanceScore: 0.8  // Only highly relevant ads
+});
+```
+
+**Use cases:**
+- Niche applications (0.8+)
+- Context-sensitive placements (0.7+)
+- Brand-aligned content (0.6+)
+
+## Ranking Strategy
+
+Choose how ads are ranked:
+
+```typescript
+// Revenue-optimized (default): highest bid wins
+const ad = await client.decideFromContext({
+  userMessage: "I need legal help",
+  optimizeFor: 'revenue'  // Rank by bid × quality × relevance
+});
+
+// Relevance-optimized: best match wins
+const ad = await client.decideFromContext({
+  userMessage: "I need legal help",
+  optimizeFor: 'relevance'  // Rank by semantic similarity
+});
+```
+
+## Combined Optimization
+
+```typescript
+const ad = await client.decideFromContext({
+  userMessage: "I need estate planning help",
+  minRelevanceScore: 0.8,    // Highly relevant
+  minCPC: 200,               // $2+ bids
+  minQualityScore: 0.7,      // High quality
+  optimizeFor: 'relevance',  // Best match wins
+  allowedCategories: [318]   // Legal services only
+});
+```
+
+## Revenue Expectations
+
+### Second-Price Auction
+
+- **Winner ranked by:** `bid × quality × relevance`
+- **Winner pays:** Just enough to beat next ad + $0.01
+- **Your share:** 70% of clearing price
+
+### Example Scenarios
+
+**Scenario 1: Customer Service Bot**
+- 10,000 users/month
+- 50,000 ad requests
+- 60% fill rate (30,000 ads)
+- 5% CTR (1,500 clicks)
+- $1.50 avg CPC
+- **Monthly revenue:** $1,575
+
+**Scenario 2: Search Engine**
+- 100,000 users/month
+- 500,000 searches
+- 80% fill rate (400,000 ads)
+- 3% CTR (12,000 clicks)
+- $2.00 avg CPC
+- **Monthly revenue:** $16,800
+
+## Next Steps
+
+- [API Reference →](/api/sdk)
+- [Best Practices →](/applications/best-practices)

@@ -1,0 +1,414 @@
+---
+title: Installation
+sidebar_label: Installation
+sidebar_position: 2
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# Installation
+
+Install the AttentionMarket SDK in your project and configure your development environment.
+
+## Requirements
+
+- **Node.js:** 16.0.0 or higher
+- **Package Manager:** npm, yarn, or pnpm
+- **TypeScript:** 4.5+ (optional, but recommended)
+
+## Install the SDK
+
+<Tabs groupId="package-manager">
+<TabItem value="npm" label="npm">
+
+```bash
+npm install @the_ro_show/agent-ads-sdk
+```
+
+</TabItem>
+<TabItem value="yarn" label="yarn">
+
+```bash
+yarn add @the_ro_show/agent-ads-sdk
+```
+
+</TabItem>
+<TabItem value="pnpm" label="pnpm">
+
+```bash
+pnpm add @the_ro_show/agent-ads-sdk
+```
+
+</TabItem>
+</Tabs>
+
+## Verify Installation
+
+```typescript
+import { AttentionMarketClient } from '@the_ro_show/agent-ads-sdk';
+
+console.log('AttentionMarket SDK installed successfully');
+```
+
+## Environment Setup
+
+### 1. Get Your Credentials
+
+Sign up at [api.attentionmarket.ai](https://api.attentionmarket.ai) and retrieve:
+
+- **API Key:** `am_test_...` (for development) or `am_live_...` (for production)
+- **Agent ID:** `agt_...` (identifies your application)
+
+### 2. Configure Environment Variables
+
+<Tabs groupId="env-setup">
+<TabItem value="env-file" label=".env File">
+
+Create a `.env` file in your project root:
+
+```bash
+ATTENTIONMARKET_API_KEY=am_test_your_key_here
+ATTENTIONMARKET_AGENT_ID=agt_your_agent_id_here
+```
+
+Install dotenv (if not already installed):
+
+```bash
+npm install dotenv
+```
+
+Load environment variables:
+
+```typescript
+import 'dotenv/config';
+import { AttentionMarketClient } from '@the_ro_show/agent-ads-sdk';
+
+const client = new AttentionMarketClient({
+  apiKey: process.env.ATTENTIONMARKET_API_KEY!,
+  agentId: process.env.ATTENTIONMARKET_AGENT_ID!
+});
+```
+
+</TabItem>
+<TabItem value="vercel" label="Vercel">
+
+Add environment variables in your Vercel project settings:
+
+1. Go to **Settings** → **Environment Variables**
+2. Add `ATTENTIONMARKET_API_KEY`
+3. Add `ATTENTIONMARKET_AGENT_ID`
+4. Redeploy your application
+
+```typescript
+// No additional configuration needed
+const client = new AttentionMarketClient({
+  apiKey: process.env.ATTENTIONMARKET_API_KEY!,
+  agentId: process.env.ATTENTIONMARKET_AGENT_ID!
+});
+```
+
+</TabItem>
+<TabItem value="railway" label="Railway">
+
+Add environment variables in Railway:
+
+1. Go to **Variables** tab in your project
+2. Click **+ New Variable**
+3. Add `ATTENTIONMARKET_API_KEY` and `ATTENTIONMARKET_AGENT_ID`
+4. Redeploy
+
+```typescript
+const client = new AttentionMarketClient({
+  apiKey: process.env.ATTENTIONMARKET_API_KEY!,
+  agentId: process.env.ATTENTIONMARKET_AGENT_ID!
+});
+```
+
+</TabItem>
+</Tabs>
+
+:::danger Security Warning
+Never commit `.env` files to version control. Add `.env` to your `.gitignore`:
+
+```bash
+echo ".env" >> .gitignore
+```
+:::
+
+## TypeScript Configuration
+
+### Type Definitions
+
+The SDK includes full TypeScript type definitions. No additional installation needed.
+
+```typescript
+import type {
+  AdResponse,
+  DecideRequest,
+  TrackingEvent
+} from '@the_ro_show/agent-ads-sdk';
+```
+
+### tsconfig.json
+
+Recommended TypeScript configuration:
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true
+  }
+}
+```
+
+## Framework-Specific Setup
+
+### Next.js
+
+<Tabs groupId="nextjs-version">
+<TabItem value="app-router" label="App Router (Next.js 13+)">
+
+```typescript
+// app/api/chat/route.ts
+import { AttentionMarketClient } from '@the_ro_show/agent-ads-sdk';
+import { NextResponse } from 'next/server';
+
+const client = new AttentionMarketClient({
+  apiKey: process.env.ATTENTIONMARKET_API_KEY!,
+  agentId: process.env.ATTENTIONMARKET_AGENT_ID!
+});
+
+export async function POST(request: Request) {
+  const { message } = await request.json();
+
+  const ad = await client.decideFromContext({
+    userMessage: message,
+    placement: 'sponsored_suggestion'
+  });
+
+  return NextResponse.json({ ad });
+}
+```
+
+</TabItem>
+<TabItem value="pages-router" label="Pages Router (Next.js 12)">
+
+```typescript
+// pages/api/chat.ts
+import type { NextApiRequest, NextApiResponse } from 'next';
+import { AttentionMarketClient } from '@the_ro_show/agent-ads-sdk';
+
+const client = new AttentionMarketClient({
+  apiKey: process.env.ATTENTIONMARKET_API_KEY!,
+  agentId: process.env.ATTENTIONMARKET_AGENT_ID!
+});
+
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
+  const { message } = req.body;
+
+  const ad = await client.decideFromContext({
+    userMessage: message,
+    placement: 'sponsored_suggestion'
+  });
+
+  res.status(200).json({ ad });
+}
+```
+
+</TabItem>
+</Tabs>
+
+### Express.js
+
+```typescript
+import express from 'express';
+import { AttentionMarketClient } from '@the_ro_show/agent-ads-sdk';
+
+const app = express();
+app.use(express.json());
+
+const client = new AttentionMarketClient({
+  apiKey: process.env.ATTENTIONMARKET_API_KEY!,
+  agentId: process.env.ATTENTIONMARKET_AGENT_ID!
+});
+
+app.post('/api/chat', async (req, res) => {
+  const { message } = req.body;
+
+  const ad = await client.decideFromContext({
+    userMessage: message,
+    placement: 'sponsored_suggestion'
+  });
+
+  res.json({ ad });
+});
+
+app.listen(3000);
+```
+
+### Deno
+
+```typescript
+import { AttentionMarketClient } from 'npm:@the_ro_show/agent-ads-sdk';
+
+const client = new AttentionMarketClient({
+  apiKey: Deno.env.get('ATTENTIONMARKET_API_KEY')!,
+  agentId: Deno.env.get('ATTENTIONMARKET_AGENT_ID')!
+});
+
+Deno.serve(async (req) => {
+  const { message } = await req.json();
+
+  const ad = await client.decideFromContext({
+    userMessage: message,
+    placement: 'sponsored_suggestion'
+  });
+
+  return Response.json({ ad });
+});
+```
+
+### Bun
+
+```typescript
+import { AttentionMarketClient } from '@the_ro_show/agent-ads-sdk';
+
+const client = new AttentionMarketClient({
+  apiKey: process.env.ATTENTIONMARKET_API_KEY!,
+  agentId: process.env.ATTENTIONMARKET_AGENT_ID!
+});
+
+Bun.serve({
+  port: 3000,
+  async fetch(req) {
+    const { message } = await req.json();
+
+    const ad = await client.decideFromContext({
+      userMessage: message,
+      placement: 'sponsored_suggestion'
+    });
+
+    return Response.json({ ad });
+  }
+});
+```
+
+## Testing Your Setup
+
+### Basic Test
+
+Create a test file to verify your installation:
+
+```typescript
+// test-setup.ts
+import { AttentionMarketClient } from '@the_ro_show/agent-ads-sdk';
+
+async function testSetup() {
+  const client = new AttentionMarketClient({
+    apiKey: process.env.ATTENTIONMARKET_API_KEY!,
+    agentId: process.env.ATTENTIONMARKET_AGENT_ID!
+  });
+
+  try {
+    const ad = await client.decideFromContext({
+      userMessage: "I need car insurance",
+      placement: 'sponsored_suggestion'
+    });
+
+    if (ad) {
+      console.log('✅ Setup successful!');
+      console.log(`Ad: ${ad.creative.title}`);
+      console.log(`Payout: $${ad.payout / 100}`);
+    } else {
+      console.log('⚠️  Setup works, but no ads available (normal in test mode)');
+    }
+  } catch (error) {
+    console.error('❌ Setup failed:', error.message);
+    process.exit(1);
+  }
+}
+
+testSetup();
+```
+
+Run the test:
+
+```bash
+npx tsx test-setup.ts
+```
+
+## Troubleshooting
+
+### Module not found
+
+If you see `Cannot find module '@the_ro_show/agent-ads-sdk'`:
+
+1. Verify installation: `npm list @the_ro_show/agent-ads-sdk`
+2. Clear cache and reinstall:
+   ```bash
+   rm -rf node_modules package-lock.json
+   npm install
+   ```
+
+### TypeScript errors
+
+If you see TypeScript errors:
+
+1. Verify TypeScript version: `npx tsc --version` (should be 4.5+)
+2. Clear TypeScript cache: `rm -rf node_modules/.cache`
+3. Restart your IDE
+
+### Environment variables not loading
+
+If environment variables are `undefined`:
+
+1. Verify `.env` file exists in project root
+2. Verify `dotenv` is installed and imported
+3. Check for typos in variable names
+4. Restart your development server
+
+### Network errors
+
+If you see connection errors:
+
+1. Verify your internet connection
+2. Check if you're behind a corporate firewall
+3. Try using a custom timeout:
+   ```typescript
+   const client = new AttentionMarketClient({
+     apiKey: process.env.ATTENTIONMARKET_API_KEY!,
+     agentId: process.env.ATTENTIONMARKET_AGENT_ID!,
+     timeoutMs: 10000  // 10 seconds
+   });
+   ```
+
+## Next Steps
+
+<div className="row">
+  <div className="col col--6">
+    <div className="feature-card">
+      <h3>Basic Integration</h3>
+      <p>Learn how to integrate ads into your application.</p>
+      <a href="/applications/basic-integration">Read More →</a>
+    </div>
+  </div>
+  <div className="col col--6">
+    <div className="feature-card">
+      <h3>Placements</h3>
+      <p>Understand the three types of ad placements.</p>
+      <a href="/applications/placements">Read More →</a>
+    </div>
+  </div>
+</div>

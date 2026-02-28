@@ -1,0 +1,105 @@
+---
+title: Response Formats
+sidebar_label: Responses
+sidebar_position: 4
+---
+
+# Response Formats
+
+Complete reference for all API response types.
+
+## AdResponse
+
+```typescript
+interface AdResponse {
+  request_id: string;
+  decision_id: string;
+  advertiser_id: string;
+  ad_type: 'link' | 'recommendation' | 'service';
+  payout: number;  // Amount earned on conversion (cents)
+
+  creative: {
+    title: string;
+    body: string;
+    cta: string;
+  };
+
+  click_url: string;        // Auto-tracked click URL
+  tracking_url?: string;    // Server-side tracking URL
+  tracking_token: string;   // For manual event tracking
+
+  disclosure: {
+    label: string;          // "Sponsored"
+    explanation: string;    // Full disclosure text
+    sponsor_name: string;   // Advertiser name
+  };
+
+  // Internal fields (for tracking)
+  _ad: {
+    unit_id: string;
+    url?: string;
+  };
+}
+```
+
+## ServiceAdResponse
+
+```typescript
+interface ServiceAdResponse {
+  request_id: string;
+  decision_id: string;
+  advertiser_id: string;
+  ad_type: 'service';
+  payout: number;
+
+  service_endpoint: string;
+  service_auth: string;
+  transaction_id: string;
+  service_schema: object;
+
+  disclosure: {
+    label: string;
+    explanation: string;
+    sponsor_name: string;
+  };
+
+  _ad: {
+    unit_id: string;
+    title: string;
+    body: string;
+  };
+}
+```
+
+## CategoryResponse
+
+```typescript
+interface CategoryResponse {
+  categories: Category[];
+}
+
+interface Category {
+  id: number;
+  name: string;
+  parent_id: number | null;
+  tier: number;
+  full_path: string;  // "Automotive > Auto Insurance"
+}
+```
+
+## Error Response
+
+```typescript
+interface ErrorResponse {
+  error: {
+    message: string;
+    code: string;
+    status: number;
+  };
+}
+```
+
+## Next Steps
+
+- [Errors →](/api/errors)
+- [SDK Reference →](/api/sdk)

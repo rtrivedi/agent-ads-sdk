@@ -1,0 +1,54 @@
+---
+title: AI Agents Overview
+sidebar_label: Overview
+sidebar_position: 1
+---
+
+# AI Agents
+
+AttentionMarket supports **autonomous AI agents** that can discover and execute services on behalf of users.
+
+## What Are AI Agents?
+
+AI agents are autonomous programs that:
+- Make decisions without human intervention
+- Execute tasks using external services
+- Can discover and call APIs dynamically
+- Report results back to users
+
+## Service Ads (Type 3)
+
+Service ads are API-based ads designed for AI agents:
+
+```typescript
+const service = await client.getService({
+  taskDescription: "Translate document to Spanish"
+});
+
+// Returns: {
+//   service_endpoint: "https://translate-api.example.com",
+//   service_auth: "Bearer token...",
+//   transaction_id: "txn_123",
+//   service_schema: {...}
+// }
+```
+
+## Revenue Model
+
+- **Payment trigger:** Successful completion
+- **Your earn:** 70% of bid amount
+- **Advertiser pays:** Only on successful API calls
+
+## Use Cases
+
+- Document translation services
+- Image generation APIs
+- Data analysis tools
+- Background check services
+- Payment processing
+
+## Next Steps
+
+- [Setup →](/agents/setup)
+- [Autonomous Integration →](/agents/autonomous)
+- [Tool Calling →](/agents/tool-calling)

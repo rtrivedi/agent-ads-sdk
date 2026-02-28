@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Campaign - AttentionMarket</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      opacity: 0.9;
+      font-size: 16px;
+    }
+
+    .form-container {
+      padding: 40px;
+    }
+
+    .step {
+      display: none;
+    }
+
+    .step.active {
+      display: block;
+    }
+
+    .step-indicator {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 40px;
+      padding: 0 40px;
+    }
+
+    .step-dot {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #e0e0e0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: #999;
+      transition: all 0.3s;
+      position: relative;
+    }
+
+    .step-dot.active {
+      background: #667eea;
+      color: white;
+    }
+
+    .step-dot.completed {
+      background: #48bb78;
+      color: white;
+    }
+
+    .step-dot::after {
+      content: '';
+      position: absolute;
+      width: 100px;
+      height: 2px;
+      background: #e0e0e0;
+      left: 50px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .step-dot:last-child::after {
+      display: none;
+    }
+
+    .form-group {
+      margin-bottom: 25px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #333;
+      font-size: 14px;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: border-color 0.3s;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .radio-group {
+      display: flex;
+      gap: 15px;
+      margin-top: 10px;
+    }
+
+    .radio-option {
+      flex: 1;
+      position: relative;
+    }
+
+    .radio-option input {
+      position: absolute;
+      opacity: 0;
+    }
+
+    .radio-option label {
+      display: block;
+      padding: 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin: 0;
+    }
+
+    .radio-option input:checked + label {
+      background: #667eea;
+      color: white;
+      border-color: #667eea;
+    }
+
+    .chip-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .chip {
+      padding: 8px 16px;
+      background: #f0f0f0;
+      border-radius: 20px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .chip.selected {
+      background: #667eea;
+      color: white;
+    }
+
+    .help-text {
+      font-size: 13px;
+      color: #666;
+      margin-top: 5px;
+    }
+
+    .price-display {
+      background: #e8f5e9;
+      border: 2px solid #4caf50;
+      border-radius: 8px;
+      padding: 15px;
+      margin-top: 10px;
+    }
+
+    .price-display .discount {
+      color: #2e7d32;
+      font-weight: bold;
+      font-size: 18px;
+    }
+
+    .price-display .market {
+      color: #666;
+      text-decoration: line-through;
+      font-size: 14px;
+    }
+
+    .buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 40px;
+    }
+
+    button {
+      padding: 12px 30px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .btn-secondary {
+      background: #e0e0e0;
+      color: #333;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .preview-box {
+      background: #f9f9f9;
+      border: 2px dashed #ddd;
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 20px;
+    }
+
+    .preview-ad {
+      background: white;
+      border-radius: 8px;
+      padding: 15px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .preview-ad h3 {
+      color: #1a73e8;
+      margin-bottom: 8px;
+    }
+
+    .preview-ad p {
+      color: #333;
+      margin-bottom: 10px;
+      line-height: 1.5;
+    }
+
+    .preview-ad button {
+      background: #1a73e8;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .success-message {
+      background: #e8f5e9;
+      border: 1px solid #4caf50;
+      color: #2e7d32;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .error-message {
+      background: #ffebee;
+      border: 1px solid #f44336;
+      color: #c62828;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Create Your Campaign</h1>
+      <p>Reach millions of AI users at 50% below market rates</p>
+    </div>
+
+    <div class="step-indicator">
+      <div class="step-dot active" data-step="1">1</div>
+      <div class="step-dot" data-step="2">2</div>
+      <div class="step-dot" data-step="3">3</div>
+      <div class="step-dot" data-step="4">4</div>
+      <div class="step-dot" data-step="5">5</div>
+    </div>
+
+    <div class="form-container">
+      <div class="success-message" id="successMsg"></div>
+      <div class="error-message" id="errorMsg"></div>
+
+      <form id="campaignForm">
+        <!-- Step 1: Campaign Type -->
+        <div class="step active" data-step="1">
+          <h2>What do you want to promote?</h2>
+          <p class="help-text">Choose the type that best fits your goals</p>
+
+          <div class="radio-group">
+            <div class="radio-option">
+              <input type="radio" id="type-link" name="ad_type" value="link" checked>
+              <label for="type-link">
+                <div>🔗 Website or Product</div>
+                <small>Drive traffic to your site</small>
+              </label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="type-recommendation" name="ad_type" value="recommendation">
+              <label for="type-recommendation">
+                <div>🎁 Special Offer</div>
+                <small>Promote discounts & deals</small>
+              </label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="type-service" name="ad_type" value="service">
+              <label for="type-service">
+                <div>🤖 API Service</div>
+                <small>AI agent integration</small>
+              </label>
+            </div>
+          </div>
+
+          <div class="buttons">
+            <span></span>
+            <button type="button" class="btn-primary" onclick="nextStep()">Continue</button>
+          </div>
+        </div>
+
+        <!-- Step 2: Business Information -->
+        <div class="step" data-step="2">
+          <h2>Tell us about your business</h2>
+
+          <div class="form-group">
+            <label for="campaign_name">Campaign Name</label>
+            <input type="text" id="campaign_name" name="campaign_name" required
+                   placeholder="e.g., Summer Sale 2024">
+          </div>
+
+          <div class="form-group">
+            <label for="company_website">Company Website</label>
+            <input type="url" id="company_website" name="company_website" required
+                   placeholder="https://example.com">
+            <div class="help-text">We'll analyze your site to suggest categories</div>
+          </div>
+
+          <div class="form-group">
+            <label for="intent_description">What problem do you solve?</label>
+            <textarea id="intent_description" name="intent_description" required
+                      placeholder="e.g., We help small businesses create professional websites without coding"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="ideal_customer">Who is your ideal customer?</label>
+            <textarea id="ideal_customer" name="ideal_customer" required
+                      placeholder="e.g., Small business owners who need an online presence but don't have technical skills"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="value_proposition">What makes you different?</label>
+            <textarea id="value_proposition" name="value_proposition"
+                      placeholder="e.g., Unlike competitors, we offer 24/7 support and no transaction fees"></textarea>
+            <div class="help-text">Optional but helps improve matching</div>
+          </div>
+
+          <div class="buttons">
+            <button type="button" class="btn-secondary" onclick="prevStep()">Back</button>
+            <button type="button" class="btn-primary" onclick="analyzeAndContinue()">
+              <span id="analyzeBtn">Analyze & Continue</span>
+              <span id="analyzeLoader" class="loading" style="display:none"></span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 3: Targeting & Enrichment -->
+        <div class="step" data-step="3">
+          <h2>Smart Targeting</h2>
+          <p class="help-text">We've analyzed your business. Confirm or adjust:</p>
+
+          <div class="form-group">
+            <label>Detected Categories</label>
+            <div class="chip-container" id="categoryChips">
+              <!-- Populated dynamically -->
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>When do people need you most?</label>
+            <div class="chip-container">
+              <div class="chip" data-value="research">Just researching</div>
+              <div class="chip" data-value="comparing">Comparing options</div>
+              <div class="chip" data-value="ready">Ready to buy</div>
+              <div class="chip" data-value="urgent">Urgent need</div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Emotional triggers</label>
+            <div class="chip-container">
+              <div class="chip" data-value="frustrated">Frustrated</div>
+              <div class="chip" data-value="excited">Excited</div>
+              <div class="chip" data-value="curious">Curious</div>
+              <div class="chip" data-value="worried">Worried</div>
+              <div class="chip" data-value="confident">Confident</div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="keywords">Keywords (optional)</label>
+            <input type="text" id="keywords" name="keywords"
+                   placeholder="e.g., website builder, no code, small business">
+            <div class="help-text">Separate with commas. AI will find related queries automatically.</div>
+          </div>
+
+          <div class="buttons">
+            <button type="button" class="btn-secondary" onclick="prevStep()">Back</button>
+            <button type="button" class="btn-primary" onclick="nextStep()">Continue</button>
+          </div>
+        </div>
+
+        <!-- Step 4: Budget & Bidding -->
+        <div class="step" data-step="4">
+          <h2>Budget & Bidding</h2>
+
+          <div class="price-display" id="priceDisplay">
+            <div class="discount">Your Rate: $2.00 per click</div>
+            <div class="market">Market Rate: $4.00 (50% savings!)</div>
+          </div>
+
+          <div class="form-group">
+            <label for="budget">Total Budget</label>
+            <input type="number" id="budget" name="budget" min="10" required
+                   placeholder="100" value="100">
+            <div class="help-text">Minimum $10. You can add more anytime.</div>
+          </div>
+
+          <div class="form-group">
+            <label for="max_cpc">Maximum Cost Per Click</label>
+            <input type="number" id="max_cpc" name="max_cpc" min="0.25" step="0.25" required
+                   placeholder="2.00" value="2.00">
+            <div class="help-text" id="cpcHelp">Suggested: $1.50 - $2.50 for your category</div>
+          </div>
+
+          <div class="form-group">
+            <label for="daily_limit">Daily Spending Limit (Optional)</label>
+            <input type="number" id="daily_limit" name="daily_limit" min="5"
+                   placeholder="No daily limit">
+          </div>
+
+          <div class="preview-box">
+            <h3>Estimated Performance</h3>
+            <p id="performanceEstimate">
+              With $100 budget at $2.00 CPC:
+              <br>• ~50 clicks
+              <br>• ~2,500 impressions (2% CTR)
+              <br>• 3-5 days runtime
+            </p>
+          </div>
+
+          <div class="buttons">
+            <button type="button" class="btn-secondary" onclick="prevStep()">Back</button>
+            <button type="button" class="btn-primary" onclick="nextStep()">Continue</button>
+          </div>
+        </div>
+
+        <!-- Step 5: Create Ad -->
+        <div class="step" data-step="5">
+          <h2>Create Your Ad</h2>
+
+          <!-- Link Ad Fields -->
+          <div id="linkAdFields">
+            <div class="form-group">
+              <label for="ad_title">Headline (60 chars)</label>
+              <input type="text" id="ad_title" name="ad_title" maxlength="60" required
+                     placeholder="Get 50% Off Professional Websites">
+              <div class="help-text"><span id="titleCount">0</span>/60 characters</div>
+            </div>
+
+            <div class="form-group">
+              <label for="ad_body">Description (150 chars)</label>
+              <textarea id="ad_body" name="ad_body" maxlength="150" required
+                        placeholder="Create stunning websites in minutes. No coding required. 24/7 support included."></textarea>
+              <div class="help-text"><span id="bodyCount">0</span>/150 characters</div>
+            </div>
+
+            <div class="form-group">
+              <label for="ad_cta">Call to Action</label>
+              <select id="ad_cta" name="ad_cta" required>
+                <option value="Learn More">Learn More</option>
+                <option value="Get Started">Get Started</option>
+                <option value="Shop Now">Shop Now</option>
+                <option value="Sign Up">Sign Up</option>
+                <option value="Try Free">Try Free</option>
+                <option value="Get Quote">Get Quote</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="landing_url">Landing Page URL</label>
+              <input type="url" id="landing_url" name="landing_url" required
+                     placeholder="https://example.com/offer">
+            </div>
+          </div>
+
+          <!-- Recommendation Ad Fields -->
+          <div id="recommendationAdFields" style="display:none">
+            <div class="form-group">
+              <label for="teaser">Teaser Question (Optional but recommended)</label>
+              <input type="text" id="teaser" name="teaser"
+                     placeholder="Interested in 50% off website building?">
+              <div class="help-text">Hooks users before showing the offer</div>
+            </div>
+
+            <div class="form-group">
+              <label for="promo_code">Promo Code</label>
+              <input type="text" id="promo_code" name="promo_code"
+                     placeholder="SAVE50">
+            </div>
+
+            <div class="form-group">
+              <label for="offer_message">Offer Message</label>
+              <textarea id="offer_message" name="offer_message"
+                        placeholder="Get 50% off your first 3 months with code SAVE50. Professional websites, no coding required!"></textarea>
+            </div>
+          </div>
+
+          <!-- Service Ad Fields -->
+          <div id="serviceAdFields" style="display:none">
+            <div class="form-group">
+              <label for="service_endpoint">API Endpoint</label>
+              <input type="url" id="service_endpoint" name="service_endpoint"
+                     placeholder="https://api.example.com/service">
+            </div>
+
+            <div class="form-group">
+              <label for="service_description">Service Description</label>
+              <textarea id="service_description" name="service_description"
+                        placeholder="Translate any document to 50+ languages with 99% accuracy"></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="service_price">Price Per Successful Call</label>
+              <input type="number" id="service_price" name="service_price" min="0.50" step="0.50"
+                     placeholder="5.00">
+            </div>
+          </div>
+
+          <div class="preview-box">
+            <h3>Ad Preview</h3>
+            <div class="preview-ad" id="adPreview">
+              <h3 id="previewTitle">Your Headline Here</h3>
+              <p id="previewBody">Your description will appear here...</p>
+              <button id="previewCta">Learn More</button>
+              <div style="margin-top: 10px; font-size: 12px; color: #666;">Sponsored</div>
+            </div>
+          </div>
+
+          <div class="buttons">
+            <button type="button" class="btn-secondary" onclick="prevStep()">Back</button>
+            <button type="button" class="btn-primary" onclick="launchCampaign()">
+              <span id="launchBtn">Launch Campaign</span>
+              <span id="launchLoader" class="loading" style="display:none"></span>
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let currentStep = 1;
+    const totalSteps = 5;
+    let campaignData = {};
+    let enrichmentData = {};
+
+    function nextStep() {
+      if (currentStep < totalSteps) {
+        document.querySelector(`.step[data-step="${currentStep}"]`).classList.remove('active');
+        document.querySelector(`.step-dot[data-step="${currentStep}"]`).classList.add('completed');
+        currentStep++;
+        document.querySelector(`.step[data-step="${currentStep}"]`).classList.add('active');
+        document.querySelector(`.step-dot[data-step="${currentStep}"]`).classList.add('active');
+        updateAdTypeFields();
+      }
+    }
+
+    function prevStep() {
+      if (currentStep > 1) {
+        document.querySelector(`.step[data-step="${currentStep}"]`).classList.remove('active');
+        document.querySelector(`.step-dot[data-step="${currentStep}"]`).classList.remove('active');
+        currentStep--;
+        document.querySelector(`.step[data-step="${currentStep}"]`).classList.remove('completed');
+        document.querySelector(`.step[data-step="${currentStep}"]`).classList.add('active');
+      }
+    }
+
+    function updateAdTypeFields() {
+      const adType = document.querySelector('input[name="ad_type"]:checked').value;
+
+      document.getElementById('linkAdFields').style.display = 'none';
+      document.getElementById('recommendationAdFields').style.display = 'none';
+      document.getElementById('serviceAdFields').style.display = 'none';
+
+      if (adType === 'link') {
+        document.getElementById('linkAdFields').style.display = 'block';
+      } else if (adType === 'recommendation') {
+        document.getElementById('linkAdFields').style.display = 'block';
+        document.getElementById('recommendationAdFields').style.display = 'block';
+      } else if (adType === 'service') {
+        document.getElementById('serviceAdFields').style.display = 'block';
+      }
+    }
+
+    async function analyzeAndContinue() {
+      const btn = document.getElementById('analyzeBtn');
+      const loader = document.getElementById('analyzeLoader');
+
+      btn.style.display = 'none';
+      loader.style.display = 'inline-block';
+
+      // Collect form data
+      campaignData = {
+        campaign_name: document.getElementById('campaign_name').value,
+        company_website: document.getElementById('company_website').value,
+        intent_description: document.getElementById('intent_description').value,
+        ideal_customer: document.getElementById('ideal_customer').value,
+        value_proposition: document.getElementById('value_proposition').value
+      };
+
+      // Simulate API call to analyze website and enrich campaign
+      setTimeout(() => {
+        // Mock enrichment data
+        enrichmentData = {
+          categories: ['E-commerce', 'Web Development', 'Small Business'],
+          suggested_cpc: 2.00,
+          market_cpc: 4.00,
+          keywords: ['website builder', 'no code', 'ecommerce platform']
+        };
+
+        // Populate category chips
+        const categoryContainer = document.getElementById('categoryChips');
+        categoryContainer.innerHTML = enrichmentData.categories.map(cat =>
+          `<div class="chip selected">${cat}</div>`
+        ).join('');
+
+        // Update pricing display
+        document.querySelector('.discount').textContent = `Your Rate: $${enrichmentData.suggested_cpc.toFixed(2)} per click`;
+        document.querySelector('.market').textContent = `Market Rate: $${enrichmentData.market_cpc.toFixed(2)} (50% savings!)`;
+
+        btn.style.display = 'inline';
+        loader.style.display = 'none';
+        nextStep();
+      }, 1500);
+    }
+
+    // Character counters
+    document.getElementById('ad_title')?.addEventListener('input', (e) => {
+      document.getElementById('titleCount').textContent = e.target.value.length;
+      document.getElementById('previewTitle').textContent = e.target.value || 'Your Headline Here';
+    });
+
+    document.getElementById('ad_body')?.addEventListener('input', (e) => {
+      document.getElementById('bodyCount').textContent = e.target.value.length;
+      document.getElementById('previewBody').textContent = e.target.value || 'Your description will appear here...';
+    });
+
+    document.getElementById('ad_cta')?.addEventListener('change', (e) => {
+      document.getElementById('previewCta').textContent = e.target.value;
+    });
+
+    // Chip selection
+    document.addEventListener('click', (e) => {
+      if (e.target.classList.contains('chip')) {
+        e.target.classList.toggle('selected');
+      }
+    });
+
+    // Budget calculator
+    document.getElementById('budget')?.addEventListener('input', updatePerformance);
+    document.getElementById('max_cpc')?.addEventListener('input', updatePerformance);
+
+    function updatePerformance() {
+      const budget = parseFloat(document.getElementById('budget').value) || 100;
+      const cpc = parseFloat(document.getElementById('max_cpc').value) || 2;
+
+      const clicks = Math.floor(budget / cpc);
+      const impressions = Math.floor(clicks / 0.02); // 2% CTR
+      const days = Math.ceil(budget / 20); // ~$20/day spend
+
+      document.getElementById('performanceEstimate').innerHTML = `
+        With $${budget} budget at $${cpc.toFixed(2)} CPC:
+        <br>• ~${clicks} clicks
+        <br>• ~${impressions.toLocaleString()} impressions (2% CTR)
+        <br>• ${days}-${days + 2} days runtime
+      `;
+    }
+
+    async function launchCampaign() {
+      const btn = document.getElementById('launchBtn');
+      const loader = document.getElementById('launchLoader');
+
+      btn.style.display = 'none';
+      loader.style.display = 'inline-block';
+
+      // Collect all form data
+      const formData = new FormData(document.getElementById('campaignForm'));
+      const data = Object.fromEntries(formData);
+
+      // Add enrichment data
+      data.enrichment = enrichmentData;
+      data.selected_stages = Array.from(document.querySelectorAll('.chip.selected'))
+        .map(chip => chip.dataset.value)
+        .filter(Boolean);
+
+      // Simulate API call
+      setTimeout(() => {
+        document.getElementById('successMsg').textContent = 'Campaign created successfully! It\'s now live and serving ads.';
+        document.getElementById('successMsg').style.display = 'block';
+
+        // Reset form or redirect
+        setTimeout(() => {
+          window.location.href = '/dashboard';
+        }, 2000);
+      }, 1500);
+    }
+  </script>
+</body>
+</html>

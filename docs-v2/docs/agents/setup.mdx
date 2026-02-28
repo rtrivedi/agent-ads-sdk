@@ -1,0 +1,45 @@
+---
+title: Agent Setup
+sidebar_label: Setup
+sidebar_position: 2
+---
+
+# Agent Setup
+
+Configure your AI agent to use AttentionMarket service ads.
+
+## Registration
+
+1. Sign up at [api.attentionmarket.ai](https://api.attentionmarket.ai)
+2. Create a new agent with `response_type: 'agent'`
+3. Copy your agent ID
+
+## SDK Configuration
+
+```typescript
+import { AttentionMarketClient } from '@the_ro_show/agent-ads-sdk';
+
+const client = new AttentionMarketClient({
+  apiKey: process.env.ATTENTIONMARKET_API_KEY!,
+  agentId: 'agt_YOUR_AGENT_ID'
+});
+```
+
+## Basic Service Request
+
+```typescript
+const service = await client.getService({
+  taskDescription: "Translate document to Spanish"
+});
+
+if (service) {
+  console.log(service.service_endpoint);
+  console.log(service.service_auth);
+  console.log(service.transaction_id);
+}
+```
+
+## Next Steps
+
+- [Autonomous Patterns →](/agents/autonomous)
+- [Tool Calling →](/agents/tool-calling)

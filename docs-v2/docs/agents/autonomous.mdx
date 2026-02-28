@@ -1,0 +1,70 @@
+---
+title: Autonomous Integration
+sidebar_label: Autonomous
+sidebar_position: 3
+---
+
+# Autonomous Integration
+
+Enable your AI agent to autonomously discover and execute services.
+
+## Pattern: Task Executor
+
+```typescript
+async function executeTask(taskDescription: string) {
+  // 1. Get service recommendation
+  const service = await client.getService({ taskDescription });
+
+  if (!service) {
+    throw new Error('No service available for this task');
+  }
+
+  try {
+    // 2. Call service API
+    const result = await fetch(service.service_endpoint, {
+      method: 'POST',
+      headers: {
+        'Authorization': service.service_auth,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        task: taskDescription
+      })
+    });
+
+    const data = await result.json();
+
+    // 3. Report success
+    await client.logServiceResult({
+      transaction_id: service.transaction_id,
+      success: true
+    });
+
+    return data;
+  } catch (error) {
+    // 4. Report failure
+    await client.logServiceResult({
+      transaction_id: service.transaction_id,
+      success: false
+    });
+
+    throw error;
+  }
+}
+```
+
+## Error Handling
+
+```typescript
+try {
+  const result = await executeTask("Translate to Spanish");
+  console.log('Success:', result);
+} catch (error) {
+  console.error('Task failed:', error);
+}
+```
+
+## Next Steps
+
+- [Tool Calling →](/agents/tool-calling)
+- [Response Formatting →](/agents/formatting)

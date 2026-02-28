@@ -1,0 +1,329 @@
+---
+title: Authentication
+sidebar_label: Authentication
+sidebar_position: 3
+---
+
+# Authentication
+
+All API requests to AttentionMarket require authentication using API keys. This guide covers key management, security best practices, and rate limits.
+
+## API Keys
+
+### Key Types
+
+AttentionMarket provides two types of API keys:
+
+| Type | Prefix | Purpose | Charges |
+|------|--------|---------|---------|
+| **Test** | `am_test_...` | Development and testing | No charges, test data only |
+| **Live** | `am_live_...` | Production traffic | Real advertisers, real revenue |
+
+:::tip Development Workflow
+Always use test keys during development. Switch to live keys only when deploying to production.
+:::
+
+### Getting API Keys
+
+1. Sign up at [api.attentionmarket.ai](https://api.attentionmarket.ai)
+2. Navigate to **Settings** → **API Keys**
+3. Click **Create API Key**
+4. Choose **Test** or **Live** mode
+5. Copy the key (you won't see it again)
+
+:::danger Keep Keys Secret
+Never commit API keys to version control. Use environment variables or secret management tools.
+:::
+
+## SDK Configuration
+
+### Basic Setup
+
+```typescript
+import { AttentionMarketClient } from '@the_ro_show/agent-ads-sdk';
+
+const client = new AttentionMarketClient({
+  apiKey: process.env.ATTENTIONMARKET_API_KEY,
+  agentId: process.env.ATTENTIONMARKET_AGENT_ID
+});
+```
+
+### Advanced Configuration
+
+```typescript
+const client = new AttentionMarketClient({
+  apiKey: 'am_live_YOUR_KEY',
+  agentId: 'agt_YOUR_AGENT_ID',
+
+  // Optional: custom API endpoint (for testing)
+  baseUrl: 'https://api.attentionmarket.ai/v1',
+
+  // Optional: request timeout (default: 4000ms)
+  timeoutMs: 5000,
+
+  // Optional: automatic retry count (default: 2)
+  maxRetries: 3
+});
+```
+
+## Agent IDs
+
+Every API request requires an **agent ID** (`agt_...`) that identifies your AI application. Agent IDs are used for:
+
+- Revenue attribution (tracking earnings)
+- Analytics and reporting
+- Quality score calculation
+- Rate limiting
+
+### Creating an Agent
+
+1. Go to [api.attentionmarket.ai](https://api.attentionmarket.ai)
+2. Navigate to **Agents** → **Create Agent**
+3. Fill in agent details (name, description, platform)
+4. Copy the agent ID
+
+### Multiple Agents
+
+You can create multiple agents for different applications or environments:
+
+```typescript
+// Production chatbot
+const prodClient = new AttentionMarketClient({
+  apiKey: process.env.PROD_API_KEY,
+  agentId: 'agt_prod_chatbot'
+});
+
+// Development chatbot
+const devClient = new AttentionMarketClient({
+  apiKey: process.env.TEST_API_KEY,
+  agentId: 'agt_dev_chatbot'
+});
+```
+
+## Security Best Practices
+
+### 1. Use Environment Variables
+
+Never hardcode API keys in source code:
+
+```typescript
+// ❌ Bad: Hardcoded key
+const client = new AttentionMarketClient({
+  apiKey: 'am_live_abc123...',
+  agentId: 'agt_xyz789'
+});
+
+// ✅ Good: Environment variable
+const client = new AttentionMarketClient({
+  apiKey: process.env.ATTENTIONMARKET_API_KEY,
+  agentId: process.env.ATTENTIONMARKET_AGENT_ID
+});
+```
+
+### 2. Use Server-Side Requests Only
+
+API keys should **never** be exposed to client-side JavaScript:
+
+```typescript
+// ❌ Bad: Client-side (browser)
+// Users can see your API key in network requests
+
+// ✅ Good: Server-side (Node.js, Deno, etc.)
+const ad = await client.decideFromContext({
+  userMessage: req.body.message
+});
+```
+
+### 3. Rotate Keys Regularly
+
+Rotate API keys every 90 days:
+
+1. Create a new API key in the dashboard
+2. Update environment variables in production
+3. Delete the old key after 24 hours (grace period)
+
+### 4. Use Secret Management Tools
+
+For production deployments, use secret management:
+
+- **AWS:** AWS Secrets Manager
+- **Vercel:** Environment Variables (encrypted)
+- **Railway:** Environment Variables
+- **Docker:** Docker Secrets
+- **Kubernetes:** Kubernetes Secrets
+
+Example with AWS Secrets Manager:
+
+```typescript
+import { SecretsManagerClient, GetSecretValueCommand } from '@aws-sdk/client-secrets-manager';
+
+const secretsManager = new SecretsManagerClient({ region: 'us-east-1' });
+
+async function getApiKey() {
+  const command = new GetSecretValueCommand({
+    SecretId: 'attentionmarket/api-key'
+  });
+
+  const response = await secretsManager.send(command);
+  return JSON.parse(response.SecretString!).apiKey;
+}
+
+const client = new AttentionMarketClient({
+  apiKey: await getApiKey(),
+  agentId: 'agt_YOUR_AGENT_ID'
+});
+```
+
+## Rate Limits
+
+AttentionMarket enforces rate limits to prevent abuse and ensure fair resource allocation.
+
+### Current Limits
+
+| Limit Type | Requests | Window |
+|------------|----------|--------|
+| **Per IP** | 60 | 1 minute |
+| **Per API Key** | 100 | 1 minute |
+
+### Rate Limit Headers
+
+Every API response includes rate limit headers:
+
+```http
+X-RateLimit-Limit: 100
+X-RateLimit-Remaining: 95
+X-RateLimit-Reset: 1678901234
+```
+
+### Handling Rate Limits
+
+When you exceed the rate limit, you'll receive a `429 Too Many Requests` error:
+
+```typescript
+try {
+  const ad = await client.decideFromContext({
+    userMessage: "I need car insurance"
+  });
+} catch (error) {
+  if (error.status === 429) {
+    // Wait and retry
+    const retryAfter = error.headers['retry-after'];
+    console.log(`Rate limited. Retry after ${retryAfter} seconds`);
+  }
+}
+```
+
+### Automatic Retries
+
+The SDK automatically retries failed requests (including rate limits) with exponential backoff:
+
+```typescript
+const client = new AttentionMarketClient({
+  apiKey: 'am_live_YOUR_KEY',
+  agentId: 'agt_YOUR_AGENT_ID',
+  maxRetries: 3  // Retry up to 3 times
+});
+```
+
+### Increasing Limits
+
+If you need higher rate limits, contact [support@attentionmarket.ai](mailto:support@attentionmarket.ai) with:
+
+- Your use case and expected traffic
+- Current average requests per minute
+- Peak requests per minute
+
+## Error Handling
+
+### Authentication Errors
+
+```typescript
+try {
+  const ad = await client.decideFromContext({
+    userMessage: "I need car insurance"
+  });
+} catch (error) {
+  if (error.status === 401) {
+    console.error('Invalid API key');
+  } else if (error.status === 403) {
+    console.error('API key disabled or agent ID mismatch');
+  }
+}
+```
+
+### Common Authentication Issues
+
+| Error | Status | Cause | Solution |
+|-------|--------|-------|----------|
+| Missing authorization header | 401 | No API key provided | Set `apiKey` in client config |
+| Invalid API key | 401 | Key is malformed or revoked | Check dashboard for valid keys |
+| Agent ID mismatch | 403 | Agent ID doesn't belong to API key | Verify agent ID in dashboard |
+| API key disabled | 403 | Key was manually disabled | Create a new API key |
+
+## Testing Authentication
+
+### Verify API Key
+
+Test your API key with a simple request:
+
+```typescript
+import { AttentionMarketClient } from '@the_ro_show/agent-ads-sdk';
+
+const client = new AttentionMarketClient({
+  apiKey: 'am_test_YOUR_KEY',
+  agentId: 'agt_YOUR_AGENT_ID'
+});
+
+try {
+  const ad = await client.decideFromContext({
+    userMessage: "test message",
+    placement: 'sponsored_suggestion'
+  });
+
+  console.log('✅ Authentication successful');
+  console.log(`Agent ID: ${ad?.decision_id ? 'valid' : 'invalid'}`);
+} catch (error) {
+  console.error('❌ Authentication failed:', error.message);
+}
+```
+
+### Validate Environment Setup
+
+```typescript
+// Check that environment variables are set
+function validateEnv() {
+  const required = ['ATTENTIONMARKET_API_KEY', 'ATTENTIONMARKET_AGENT_ID'];
+
+  for (const key of required) {
+    if (!process.env[key]) {
+      throw new Error(`Missing required environment variable: ${key}`);
+    }
+  }
+
+  // Validate key format
+  const apiKey = process.env.ATTENTIONMARKET_API_KEY!;
+  if (!apiKey.startsWith('am_test_') && !apiKey.startsWith('am_live_')) {
+    throw new Error('Invalid API key format');
+  }
+
+  // Validate agent ID format
+  const agentId = process.env.ATTENTIONMARKET_AGENT_ID!;
+  if (!agentId.startsWith('agt_')) {
+    throw new Error('Invalid agent ID format');
+  }
+
+  console.log('✅ Environment validated');
+}
+
+validateEnv();
+```
+
+## Next Steps
+
+- [Quick Start Guide](/quickstart) — Make your first API request
+- [AI Applications](/applications/introduction) — Integration patterns
+- [Error Handling](/api/errors) — Complete error reference
+
+---
+
+Need help? [Contact support →](mailto:support@attentionmarket.ai)

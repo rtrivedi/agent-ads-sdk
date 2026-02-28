@@ -1,0 +1,86 @@
+---
+title: Category Filtering
+sidebar_label: Categories
+sidebar_position: 2
+---
+
+# Category Filtering
+
+Control which advertiser categories can appear using IAB Content Taxonomy 3.0.
+
+## IAB Categories
+
+AttentionMarket uses **IAB Content Taxonomy 3.0**:
+- 704 total categories
+- 38 top-level verticals
+- Hierarchical parent-child relationships
+
+## Allowed Categories (Whitelist)
+
+Only show ads from specific categories:
+
+```typescript
+// Insurance app: only insurance ads
+const ad = await client.decideFromContext({
+  userMessage: "I need car insurance",
+  allowedCategories: [31]  // Auto Insurance
+});
+
+// Wedding planner: wedding + photography + food
+const ad = await client.decideFromContext({
+  userMessage: "Help me plan my wedding",
+  allowedCategories: [603, 162, 190]  // Weddings, Photography, Restaurants
+});
+```
+
+## Blocked Categories (Blacklist)
+
+Block specific categories:
+
+```typescript
+// Block sensitive content
+const ad = await client.decideFromContext({
+  userMessage: "Help me with something",
+  blockedCategories: [601]  // Blocks "Sensitive Topics" + all children
+});
+
+// Legal assistant: block competitor law firms
+const ad = await client.decideFromContext({
+  userMessage: "I need legal help",
+  blockedCategories: [318]  // Block "Legal Services"
+});
+```
+
+**Parent-child relationships:** Blocking a parent category automatically blocks all subcategories.
+
+**Precedence:** If `allowedCategories` is set, `blockedCategories` is ignored.
+
+## Discovering Categories
+
+```typescript
+// Get all 38 top-level categories
+const tier1 = await client.getCategories({ tier: 1 });
+tier1.categories.forEach(cat => {
+  console.log(`${cat.id}: ${cat.name}`);
+});
+
+// Get subcategories of "Automotive" (ID: 1)
+const automotive = await client.getCategories({ parent_id: 1 });
+
+// Search for categories
+const insurance = await client.getCategories({ search: 'insurance' });
+```
+
+## Common Categories
+
+| ID | Category | Subcategories |
+|----|----------|---------------|
+| 1 | Automotive | Auto Insurance (31), Auto Repair (34), Auto Buying (30) |
+| 31 | Insurance | Auto Insurance, Health Insurance, Life Insurance |
+| 150 | Attractions | Parks, Museums, Theaters |
+| 318 | Legal Services | Lawyers, Notaries, Legal Advice |
+| 601 | Sensitive Topics | Various sensitive content |
+
+## Next Steps
+
+- [Revenue Optimization →](/controls/revenue)

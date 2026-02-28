@@ -1,0 +1,309 @@
+---
+title: Quick Start
+sidebar_label: Quick Start
+sidebar_position: 2
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# Quick Start
+
+Get up and running with AttentionMarket in 5 minutes.
+
+## Prerequisites
+
+- Node.js 16+ (or Python 3.8+ for Python SDK)
+- An API key from [api.attentionmarket.ai](https://api.attentionmarket.ai)
+- An agent ID (provided during registration)
+
+## Step 1: Install the SDK
+
+<Tabs groupId="language">
+<TabItem value="npm" label="npm">
+
+```bash
+npm install @the_ro_show/agent-ads-sdk
+```
+
+</TabItem>
+<TabItem value="yarn" label="yarn">
+
+```bash
+yarn add @the_ro_show/agent-ads-sdk
+```
+
+</TabItem>
+<TabItem value="pnpm" label="pnpm">
+
+```bash
+pnpm add @the_ro_show/agent-ads-sdk
+```
+
+</TabItem>
+</Tabs>
+
+## Step 2: Get Your API Keys
+
+1. Sign up at [api.attentionmarket.ai](https://api.attentionmarket.ai)
+2. Create a new agent (or use an existing one)
+3. Copy your API key and agent ID
+
+You'll receive two types of keys:
+
+- **Test keys** (`am_test_...`) — Use for development. Returns test ads, no charges.
+- **Live keys** (`am_live_...`) — Use in production. Real advertisers, real revenue.
+
+:::tip
+Always use test keys during development to avoid affecting production metrics.
+:::
+
+## Step 3: Initialize the Client
+
+<Tabs groupId="language">
+<TabItem value="typescript" label="TypeScript">
+
+```typescript
+import { AttentionMarketClient } from '@the_ro_show/agent-ads-sdk';
+
+const client = new AttentionMarketClient({
+  apiKey: 'am_test_YOUR_KEY',
+  agentId: 'agt_YOUR_AGENT_ID'
+});
+```
+
+</TabItem>
+<TabItem value="javascript" label="JavaScript">
+
+```javascript
+const { AttentionMarketClient } = require('@the_ro_show/agent-ads-sdk');
+
+const client = new AttentionMarketClient({
+  apiKey: 'am_test_YOUR_KEY',
+  agentId: 'agt_YOUR_AGENT_ID'
+});
+```
+
+</TabItem>
+</Tabs>
+
+## Step 4: Request an Ad
+
+<Tabs groupId="language">
+<TabItem value="typescript" label="TypeScript">
+
+```typescript
+// Request a contextual ad based on user message
+const ad = await client.decideFromContext({
+  userMessage: "I'm looking for car insurance",
+  placement: 'sponsored_suggestion'
+});
+
+if (ad) {
+  // Display the ad
+  console.log(ad.creative.title);  // "Get 20% off car insurance"
+  console.log(ad.creative.body);   // "Compare quotes from top providers"
+  console.log(ad.creative.cta);    // "Get a Quote"
+
+  // When user clicks, redirect to:
+  console.log(ad.click_url);       // Auto-tracked click URL
+}
+```
+
+</TabItem>
+<TabItem value="javascript" label="JavaScript">
+
+```javascript
+// Request a contextual ad based on user message
+const ad = await client.decideFromContext({
+  userMessage: "I'm looking for car insurance",
+  placement: 'sponsored_suggestion'
+});
+
+if (ad) {
+  // Display the ad
+  console.log(ad.creative.title);  // "Get 20% off car insurance"
+  console.log(ad.creative.body);   // "Compare quotes from top providers"
+  console.log(ad.creative.cta);    // "Get a Quote"
+
+  // When user clicks, redirect to:
+  console.log(ad.click_url);       // Auto-tracked click URL
+}
+```
+
+</TabItem>
+</Tabs>
+
+:::note Impression Tracking
+The SDK automatically tracks impressions when using `decideFromContext()`. You only need to handle click tracking.
+:::
+
+## Step 5: Display the Ad
+
+Here's how to display the ad in your UI:
+
+<Tabs groupId="framework">
+<TabItem value="react" label="React">
+
+```tsx
+function ChatMessage({ ad }: { ad: AdResponse }) {
+  return (
+    <div className="sponsored-message">
+      <span className="disclosure">{ad.disclosure.label}</span>
+      <h3>{ad.creative.title}</h3>
+      <p>{ad.creative.body}</p>
+      <a href={ad.click_url} target="_blank" rel="noopener">
+        {ad.creative.cta}
+      </a>
+    </div>
+  );
+}
+```
+
+</TabItem>
+<TabItem value="vue" label="Vue">
+
+```vue
+<template>
+  <div class="sponsored-message">
+    <span class="disclosure">{{ ad.disclosure.label }}</span>
+    <h3>{{ ad.creative.title }}</h3>
+    <p>{{ ad.creative.body }}</p>
+    <a :href="ad.click_url" target="_blank" rel="noopener">
+      {{ ad.creative.cta }}
+    </a>
+  </div>
+</template>
+
+<script setup lang="ts">
+import type { AdResponse } from '@the_ro_show/agent-ads-sdk';
+
+defineProps<{ ad: AdResponse }>();
+</script>
+```
+
+</TabItem>
+<TabItem value="html" label="HTML">
+
+```html
+<div class="sponsored-message">
+  <span class="disclosure">Sponsored</span>
+  <h3>Get 20% off car insurance</h3>
+  <p>Compare quotes from top providers</p>
+  <a href="https://api.attentionmarket.ai/tracking/..." target="_blank">
+    Get a Quote
+  </a>
+</div>
+```
+
+</TabItem>
+</Tabs>
+
+## Complete Example
+
+Here's a complete chatbot example:
+
+```typescript
+import { AttentionMarketClient } from '@the_ro_show/agent-ads-sdk';
+
+const client = new AttentionMarketClient({
+  apiKey: 'am_test_YOUR_KEY',
+  agentId: 'agt_YOUR_AGENT_ID'
+});
+
+async function handleUserMessage(message: string) {
+  // Get contextual ad
+  const ad = await client.decideFromContext({
+    userMessage: message,
+    placement: 'sponsored_suggestion',
+    minQualityScore: 0.7  // Only show high-quality ads
+  });
+
+  if (ad) {
+    // Format ad for display
+    const sponsoredMessage = {
+      type: 'sponsored',
+      disclosure: ad.disclosure.label,
+      title: ad.creative.title,
+      body: ad.creative.body,
+      cta: ad.creative.cta,
+      url: ad.click_url,
+      payout: ad.payout / 100  // Convert cents to dollars
+    };
+
+    return sponsoredMessage;
+  }
+
+  return null;  // No ad available
+}
+
+// Usage
+const ad = await handleUserMessage("I need car insurance");
+if (ad) {
+  console.log(`Showing ad: ${ad.title} (earn $${ad.payout} on click)`);
+}
+```
+
+## What's Next?
+
+Now that you have ads working, explore advanced features:
+
+<div className="row">
+  <div className="col col--6">
+    <div className="feature-card">
+      <h3>Learn About Placements</h3>
+      <p>Discover the three types of ad placements and when to use each one.</p>
+      <a href="/applications/placements">Read More →</a>
+    </div>
+  </div>
+  <div className="col col--6">
+    <div className="feature-card">
+      <h3>Developer Controls</h3>
+      <p>Fine-tune ad quality, categories, and revenue optimization.</p>
+      <a href="/controls/quality">Read More →</a>
+    </div>
+  </div>
+</div>
+
+<div className="row" style={{marginTop: '1rem'}}>
+  <div className="col col--6">
+    <div className="feature-card">
+      <h3>Track Conversions</h3>
+      <p>Improve ad relevance and earn bonuses by tracking conversions.</p>
+      <a href="/applications/tracking">Read More →</a>
+    </div>
+  </div>
+  <div className="col col--6">
+    <div className="feature-card">
+      <h3>API Reference</h3>
+      <p>Complete SDK method reference and parameter documentation.</p>
+      <a href="/api/sdk">Read More →</a>
+    </div>
+  </div>
+</div>
+
+## Common Issues
+
+### No ads returned
+
+If `decideFromContext()` returns `null`, it means:
+
+1. No ads matched the user query (try broader queries in test mode)
+2. Your filters are too strict (remove `minQualityScore`, `minCPC`, etc.)
+3. Your API key is invalid (check the dashboard)
+
+### Clicks not tracked
+
+Make sure you're using `ad.click_url` (not `ad._ad.url`). The `click_url` includes tracking parameters.
+
+### TypeScript errors
+
+Make sure to import types:
+
+```typescript
+import type { AdResponse, DecideRequest } from '@the_ro_show/agent-ads-sdk';
+```
+
+---
+
+Need help? [Contact support →](mailto:support@attentionmarket.ai)

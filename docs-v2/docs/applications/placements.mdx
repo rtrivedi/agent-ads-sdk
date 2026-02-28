@@ -1,0 +1,66 @@
+---
+title: Placements
+sidebar_label: Placements
+sidebar_position: 4
+---
+
+# Ad Placements
+
+A **placement** defines where ads appear in your application. AttentionMarket supports three placement types optimized for different use cases.
+
+## Placement Types
+
+| Placement | Use Case | Example |
+|-----------|----------|---------|
+| `sponsored_suggestion` | Conversational ads in chat | "Sponsored: Get 20% off car insurance" |
+| `sponsored_block` | Dedicated ad section | Sidebar ads, banner ads |
+| `sponsored_tool` | AI agent service recommendations | "Use TranslateAPI for translation" |
+
+## Sponsored Suggestion
+
+Conversational ads that appear inline with chat messages.
+
+```typescript
+const ad = await client.decideFromContext({
+  userMessage: "I need car insurance",
+  placement: 'sponsored_suggestion'
+});
+
+// Display: "Sponsored: Get 20% off car insurance - Compare quotes"
+```
+
+**Best for:** Chatbots, virtual assistants, conversational interfaces
+
+## Sponsored Block
+
+Dedicated ad section separate from main content.
+
+```typescript
+const ad = await client.decideFromContext({
+  userMessage: query,
+  placement: 'sponsored_block'
+});
+
+// Display in sidebar or banner area
+```
+
+**Best for:** Search engines, productivity tools, dashboards
+
+## Sponsored Tool
+
+Service recommendations for autonomous agents.
+
+```typescript
+const service = await client.getService({
+  taskDescription: "Translate document to Spanish"
+});
+
+// Agent calls service API
+```
+
+**Best for:** AI agents, automation tools, task executors
+
+## Next Steps
+
+- [Tracking →](/applications/tracking)
+- [Best Practices →](/applications/best-practices)

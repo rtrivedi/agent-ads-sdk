@@ -1,0 +1,56 @@
+---
+title: Error Handling
+sidebar_label: Error Handling
+sidebar_position: 6
+---
+
+# Error Handling
+
+Handle errors gracefully in autonomous agents.
+
+## Service Unavailable
+
+```typescript
+const service = await client.getService({ taskDescription });
+
+if (!service) {
+  // No service available - use fallback
+  return await fallbackMethod();
+}
+```
+
+## API Errors
+
+```typescript
+try {
+  const result = await callServiceAPI(service);
+
+  await client.logServiceResult({
+    transaction_id: service.transaction_id,
+    success: true
+  });
+
+  return result;
+} catch (error) {
+  await client.logServiceResult({
+    transaction_id: service.transaction_id,
+    success: false
+  });
+
+  throw error;
+}
+```
+
+## Timeout Handling
+
+```typescript
+const service = await client.getService({
+  taskDescription: task,
+  timeoutMs: 5000  // 5 second timeout
+});
+```
+
+## Next Steps
+
+- [API Reference →](/api/sdk)
+- [Error Codes →](/api/errors)

@@ -1,0 +1,77 @@
+---
+title: Parameters
+sidebar_label: Parameters
+sidebar_position: 3
+---
+
+# API Parameters
+
+Complete reference for all SDK parameters.
+
+## DecideFromContext Parameters
+
+| Parameter | Type | Required | Description | Validation |
+|-----------|------|----------|-------------|------------|
+| `userMessage` | string | Yes | User's message or query | Non-empty string |
+| `placement` | string | No | Placement type | `'sponsored_suggestion'`, `'sponsored_block'`, `'sponsored_tool'` |
+| `conversationHistory` | string[] | No | Last 5 messages | Max 5 items |
+| `minQualityScore` | number | No | Minimum quality filter | 0.0-1.0 |
+| `minCPC` | number | No | Minimum CPC in cents | >= 0 |
+| `minRelevanceScore` | number | No | Minimum relevance filter | 0.0-1.0 |
+| `optimizeFor` | string | No | Ranking strategy | `'revenue'` or `'relevance'` |
+| `allowedCategories` | number[] | No | Whitelist categories | Non-empty array of IAB category IDs |
+| `blockedCategories` | number[] | No | Blacklist categories | Array of IAB category IDs |
+| `blockedAdvertisers` | string[] | No | Blocked advertiser IDs | Array of advertiser IDs |
+| `country` | string | No | User country | ISO 3166-1 alpha-2 |
+| `language` | string | No | User language | ISO 639-1 |
+| `platform` | string | No | Platform type | `'web'`, `'ios'`, `'android'`, `'desktop'`, `'voice'`, `'other'` |
+
+## GetService Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `taskDescription` | string | Yes | Task description for service matching |
+| `timeoutMs` | number | No | Request timeout in milliseconds |
+
+## Track Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `event_id` | string | Yes | Unique event identifier |
+| `event_type` | string | Yes | Event type: `'conversion'`, `'impression'`, `'click'` |
+| `occurred_at` | string | Yes | ISO 8601 timestamp |
+| `agent_id` | string | Yes | Agent identifier |
+| `request_id` | string | Yes | Request identifier from ad response |
+| `decision_id` | string | Yes | Decision identifier from ad response |
+| `unit_id` | string | Yes | Unit identifier from ad response |
+| `tracking_token` | string | Yes | Tracking token from ad response |
+| `metadata` | object | No | Additional event data |
+
+## Validation Examples
+
+```typescript
+// ✅ Valid
+await client.decideFromContext({
+  userMessage: "I need car insurance",
+  minQualityScore: 0.7,
+  minCPC: 100,
+  allowedCategories: [31]
+});
+
+// ❌ Invalid: minQualityScore out of range
+await client.decideFromContext({
+  userMessage: "test",
+  minQualityScore: 1.5  // Error: must be 0.0-1.0
+});
+
+// ❌ Invalid: empty allowedCategories
+await client.decideFromContext({
+  userMessage: "test",
+  allowedCategories: []  // Error: cannot be empty
+});
+```
+
+## Next Steps
+
+- [Responses →](/api/responses)
+- [Errors →](/api/errors)

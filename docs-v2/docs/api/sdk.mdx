@@ -1,0 +1,155 @@
+---
+title: SDK Reference
+sidebar_label: SDK Methods
+sidebar_position: 1
+---
+
+# SDK Reference
+
+Complete SDK method reference for the AttentionMarket client.
+
+## Client Initialization
+
+```typescript
+import { AttentionMarketClient } from '@the_ro_show/agent-ads-sdk';
+
+const client = new AttentionMarketClient({
+  apiKey: string,          // Required: am_test_... or am_live_...
+  agentId: string,         // Required: agt_...
+  baseUrl?: string,        // Optional: API endpoint (default: production)
+  timeoutMs?: number,      // Optional: request timeout (default: 4000ms)
+  maxRetries?: number      // Optional: retry count (default: 2)
+});
+```
+
+## Methods
+
+### decideFromContext()
+
+Get a contextual ad based on user message.
+
+```typescript
+const ad = await client.decideFromContext({
+  userMessage: string,                 // Required
+  placement: 'sponsored_suggestion' | 'sponsored_block' | 'sponsored_tool',
+  conversationHistory?: string[],      // Optional: last 5 messages
+  minQualityScore?: number,            // Optional: 0.0-1.0
+  minCPC?: number,                     // Optional: cents (100 = $1.00)
+  minRelevanceScore?: number,          // Optional: 0.0-1.0
+  optimizeFor?: 'revenue' | 'relevance', // Optional: default 'revenue'
+  allowedCategories?: number[],        // Optional: IAB category IDs
+  blockedCategories?: number[],        // Optional: IAB category IDs
+  blockedAdvertisers?: string[],       // Optional: advertiser IDs
+  country?: string,                    // Optional: ISO 3166-1 alpha-2
+  language?: string,                   // Optional: ISO 639-1
+  platform?: string                    // Optional: 'web' | 'ios' | 'android' | 'desktop' | 'voice' | 'other'
+});
+```
+
+**Returns:** `AdResponse | null`
+
+### getService()
+
+Get a service ad for AI agents.
+
+```typescript
+const service = await client.getService({
+  taskDescription: string,  // Required
+  timeoutMs?: number        // Optional
+});
+```
+
+**Returns:** `ServiceAdResponse | null`
+
+### trackImpression()
+
+Manually track an ad impression.
+
+```typescript
+await client.trackImpression({
+  agent_id: string,
+  request_id: string,
+  decision_id: string,
+  unit_id: string,
+  tracking_token: string
+});
+```
+
+### trackClick()
+
+Manually track an ad click.
+
+```typescript
+await client.trackClick({
+  agent_id: string,
+  request_id: string,
+  decision_id: string,
+  unit_id: string,
+  tracking_token: string,
+  href: string,
+  click_context?: string
+});
+```
+
+### trackClickFromAd()
+
+Simplified click tracking from ad object.
+
+```typescript
+await client.trackClickFromAd(ad, {
+  click_context?: string
+});
+```
+
+### track()
+
+Track custom events (conversions, etc.).
+
+```typescript
+await client.track({
+  event_id: string,
+  event_type: 'conversion' | 'impression' | 'click',
+  occurred_at: string,  // ISO 8601
+  agent_id: string,
+  request_id: string,
+  decision_id: string,
+  unit_id: string,
+  tracking_token: string,
+  metadata?: {
+    conversion_value?: number,
+    conversion_type?: string,
+    [key: string]: any
+  }
+});
+```
+
+### logServiceResult()
+
+Report service execution result.
+
+```typescript
+await client.logServiceResult({
+  transaction_id: string,
+  success: boolean
+});
+```
+
+### getCategories()
+
+Discover IAB categories.
+
+```typescript
+const result = await client.getCategories({
+  tier?: number,        // Optional: 1-3
+  parent_id?: number,   // Optional: parent category ID
+  search?: string       // Optional: search query
+});
+```
+
+**Returns:** `{ categories: Category[] }`
+
+## Next Steps
+
+- [Ad Types →](/api/ad-types)
+- [Parameters →](/api/parameters)
+- [Responses →](/api/responses)

@@ -1,0 +1,90 @@
+---
+title: Best Practices
+sidebar_label: Best Practices
+sidebar_position: 6
+---
+
+# Best Practices
+
+Guidelines for optimal ad performance and user experience.
+
+## 1. Show Ads Contextually
+
+Only request ads when user intent is clear:
+
+```typescript
+// ✅ Good: Specific intent
+await client.decideFromContext({
+  userMessage: "I need car insurance"
+});
+
+// ❌ Bad: Vague intent
+await client.decideFromContext({
+  userMessage: "hello"
+});
+```
+
+## 2. Use Quality Filters
+
+Protect your brand with quality filters:
+
+```typescript
+const ad = await client.decideFromContext({
+  userMessage: message,
+  minQualityScore: 0.7  // Only high-quality ads
+});
+```
+
+## 3. Disclose Sponsored Content
+
+Always label ads clearly:
+
+```typescript
+<span className="disclosure">{ad.disclosure.label}</span>
+<h3>{ad.creative.title}</h3>
+```
+
+## 4. Handle No-Fill Gracefully
+
+Always check if an ad is returned:
+
+```typescript
+const ad = await client.decideFromContext({
+  userMessage: message
+});
+
+if (ad) {
+  // Show ad
+} else {
+  // Continue without ad (graceful degradation)
+}
+```
+
+## 5. Optimize Revenue
+
+Combine controls for maximum revenue:
+
+```typescript
+const ad = await client.decideFromContext({
+  userMessage: message,
+  minCPC: 200,              // $2+ ads only
+  minQualityScore: 0.7,     // High quality
+  optimizeFor: 'revenue'    // Maximize earnings
+});
+```
+
+## 6. Track Conversions
+
+Improve ad relevance by tracking conversions:
+
+```typescript
+await client.track({
+  event_type: 'conversion',
+  tracking_token: ad.tracking_token
+});
+```
+
+## Next Steps
+
+- [Developer Controls →](/controls/quality)
+- [Revenue Optimization →](/controls/revenue)

@@ -1,0 +1,118 @@
+---
+title: Error Codes
+sidebar_label: Errors
+sidebar_position: 5
+---
+
+# Error Codes
+
+Complete reference for API errors and status codes.
+
+## HTTP Status Codes
+
+| Code | Meaning | Cause | Solution |
+|------|---------|-------|----------|
+| 400 | Bad Request | Invalid parameters | Check error message for details |
+| 401 | Unauthorized | Missing or invalid API key | Verify API key |
+| 403 | Forbidden | API key disabled or agent ID mismatch | Check dashboard |
+| 429 | Too Many Requests | Rate limit exceeded | Wait and retry |
+| 500 | Internal Server Error | Server error | Contact support |
+
+## Validation Errors
+
+```typescript
+// minQualityScore out of range
+{
+  error: {
+    message: "minQualityScore must be a number between 0.0 and 1.0",
+    code: "VALIDATION_ERROR",
+    status: 400
+  }
+}
+
+// Empty allowedCategories
+{
+  error: {
+    message: "allowedCategories cannot be empty (would block all ads)",
+    code: "VALIDATION_ERROR",
+    status: 400
+  }
+}
+
+// Invalid optimizeFor
+{
+  error: {
+    message: "optimizeFor must be either 'revenue' or 'relevance'",
+    code: "VALIDATION_ERROR",
+    status: 400
+  }
+}
+```
+
+## Authentication Errors
+
+```typescript
+// Missing API key
+{
+  error: {
+    message: "Missing authorization header",
+    code: "UNAUTHORIZED",
+    status: 401
+  }
+}
+
+// Invalid API key
+{
+  error: {
+    message: "Invalid API key",
+    code: "UNAUTHORIZED",
+    status: 401
+  }
+}
+
+// Agent ID mismatch
+{
+  error: {
+    message: "Agent ID does not belong to this API key",
+    code: "FORBIDDEN",
+    status: 403
+  }
+}
+```
+
+## Rate Limit Errors
+
+```typescript
+{
+  error: {
+    message: "Rate limit exceeded. Retry after 60 seconds.",
+    code: "RATE_LIMIT_EXCEEDED",
+    status: 429
+  }
+}
+```
+
+## Error Handling
+
+```typescript
+try {
+  const ad = await client.decideFromContext({
+    userMessage: "test"
+  });
+} catch (error) {
+  if (error.status === 400) {
+    console.error('Validation error:', error.message);
+  } else if (error.status === 401) {
+    console.error('Authentication error:', error.message);
+  } else if (error.status === 429) {
+    console.warn('Rate limited, retrying...');
+  } else if (error.status === 500) {
+    console.error('Server error, skipping ad');
+  }
+}
+```
+
+## Next Steps
+
+- [SDK Reference →](/api/sdk)
+- [Authentication →](/authentication)

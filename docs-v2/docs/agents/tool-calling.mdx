@@ -1,0 +1,73 @@
+---
+title: Tool Calling
+sidebar_label: Tool Calling
+sidebar_position: 4
+---
+
+# Tool Calling
+
+Integrate AttentionMarket services with LLM tool calling (OpenAI, Anthropic, etc.).
+
+## OpenAI Function Calling
+
+```typescript
+import OpenAI from 'openai';
+
+const openai = new OpenAI();
+
+const tools = [
+  {
+    type: 'function',
+    function: {
+      name: 'get_translation_service',
+      description: 'Get a translation service for translating documents',
+      parameters: {
+        type: 'object',
+        properties: {
+          task: {
+            type: 'string',
+            description: 'Translation task description'
+          }
+        },
+        required: ['task']
+      }
+    }
+  }
+];
+
+async function handleToolCall(toolCall: any) {
+  if (toolCall.function.name === 'get_translation_service') {
+    const args = JSON.parse(toolCall.function.arguments);
+
+    const service = await client.getService({
+      taskDescription: args.task
+    });
+
+    return service;
+  }
+}
+```
+
+## Anthropic Claude Tool Use
+
+```typescript
+const tools = [{
+  name: 'get_service',
+  description: 'Get a service for executing tasks',
+  input_schema: {
+    type: 'object',
+    properties: {
+      task: {
+        type: 'string',
+        description: 'Task description'
+      }
+    },
+    required: ['task']
+  }
+}];
+```
+
+## Next Steps
+
+- [Response Formatting →](/agents/formatting)
+- [Error Handling →](/agents/error-handling)

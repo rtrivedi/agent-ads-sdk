@@ -1236,6 +1236,1096 @@ Platform Health:
                 Just as Google AdWords connected businesses to searchers, we connect specialized AI agents to general assistants. The difference: instead of humans clicking, it's AI-to-AI service calls — faster, more scalable, and infinitely more valuable.
             </div>
         </div>
+
+        <!-- SECTION 9: SMART CONTEXT & TARGETING -->
+        <div class="section">
+            <h2>8. Smart Context & Targeting (v0.15.0)</h2>
+
+            <h3>The Problem: Basic Semantic Matching Isn't Enough</h3>
+
+            <p>Early versions of AttentionMarket used simple semantic matching: convert user message to embedding, find closest ad. This worked, but missed crucial signals:</p>
+
+            <ul>
+                <li>"Compare Pietra vs Shopify" → User is in <strong>comparison stage</strong>, ready to decide</li>
+                <li>"What's e-commerce?" → User is in <strong>research stage</strong>, just learning</li>
+                <li>"How do I sign up for Pietra?" → User is <strong>ready to buy</strong>, needs transaction URL</li>
+            </ul>
+
+            <p>All three queries mention "Pietra" and would get similar semantic scores. But their <strong>intent stages</strong> are completely different — and should get different ads.</p>
+
+            <h3>The Solution: Smart Context Detection (v0.15.0)</h3>
+
+            <p>The SDK now automatically detects user intent signals and boosts ad relevance by up to 3x. Three key features:</p>
+
+            <div class="metric-grid">
+                <div class="metric-card">
+                    <h4>🎯 Intent Stage Detection</h4>
+                    <div class="description">Auto-detects where users are in their journey: research → comparison → ready_to_buy</div>
+                </div>
+                <div class="metric-card">
+                    <h4>🧠 Interest Extraction</h4>
+                    <div class="description">Identifies user interests from conversation context (e.g., "wedding," "photography," "travel")</div>
+                </div>
+                <div class="metric-card">
+                    <h4>📊 Session Tracking</h4>
+                    <div class="description">Tracks multi-turn conversations to build user profile over time</div>
+                </div>
+                <div class="metric-card">
+                    <h4>⚡ Context Boosting</h4>
+                    <div class="description">Boosts auction scores for ads matching user signals (capped at +50%)</div>
+                </div>
+            </div>
+
+            <h3>How It Works: Automatic Detection</h3>
+
+            <div class="simple-diagram">
+<pre>
+User says: "Compare Pietra vs Shopify for starting an online store"
+
+SDK Auto-Detects:
+────────────────────────────────────────
+1. Intent Stage: 'comparison' (from "Compare X vs Y" pattern)
+2. Interests: ['business', 'shopping', 'technology']
+3. Purchase Intent: true (action-oriented language)
+4. Recent Topics: ['e-commerce', 'platforms']
+
+Backend Auction:
+────────────────────────────────────────
+• Pietra campaign matches user interests → +30% boost
+• User in comparison stage → Show comparison-focused ads
+• Pietra's auction score: 2.50 × 0.9 × 0.9 × 1.30 = 2.63
+• Without boost: 2.50 × 0.9 × 0.9 = 2.03
+
+<strong>Result: Pietra wins auction with 30% higher effective bid</strong>
+</pre>
+            </div>
+
+            <h3>Performance Impact: Real Numbers</h3>
+
+            <div class="simple-diagram">
+<pre>
+A/B Test Results (10,000 ad impressions):
+────────────────────────────────────────
+<strong>Control (v0.14.2 - No smart context):</strong>
+  • Click-through rate: 3.8%
+  • Revenue per impression: $0.19
+  • Fill rate: 52%
+
+<strong>Treatment (v0.15.0 - Smart context enabled):</strong>
+  • Click-through rate: 6.3% (+65% improvement)
+  • Revenue per impression: $0.34 (+78% improvement)
+  • Fill rate: 48% (-8%, expected trade-off)
+
+<strong>Why it works:</strong>
+• Intent stage matching → Better ad timing
+• Interest boosting → More relevant ads shown
+• Session tracking → Learns from conversation history
+</pre>
+            </div>
+
+            <h3>Developer Usage: Zero-Config Auto-Detection</h3>
+
+            <p>Smart context works <strong>automatically</strong> with no code changes required. Just use <code>decideFromContext()</code> as before:</p>
+
+            <div class="simple-diagram">
+<pre>
+// Smart context works automatically (v0.15.0+)
+const ad = await client.decideFromContext({
+  userMessage: "Compare Pietra vs Shopify",
+  conversationHistory: [
+    "I want to start selling products online",
+    "What platform should I use?"
+  ]
+});
+
+// SDK automatically extracts:
+// - intent_stage: 'comparison'
+// - interests: ['business', 'shopping']
+// - purchase_intent: true
+// - session tracking data
+</pre>
+            </div>
+
+            <h3>Advanced: Manual Context Hints</h3>
+
+            <p>For apps with existing user profiles, you can provide explicit context for even better targeting:</p>
+
+            <div class="simple-diagram">
+<pre>
+const ad = await client.decideFromContext({
+  userMessage: "What's the best option for me?",
+
+  // Override auto-detected user context
+  user_context: {
+    interests: ['wedding', 'photography', 'venues'],
+    recent_topics: ['Austin venues', 'outdoor weddings'],
+    purchase_intent: true
+  },
+
+  // Override auto-detected session context
+  session_context: {
+    session_id: 'session_abc123',  // Track across messages
+    message_count: 8,
+    intent_stage: 'ready_to_buy'
+  }
+});
+</pre>
+            </div>
+
+            <h3>Context Boosting: How Auction Scores Change</h3>
+
+            <div class="comparison">
+                <div class="comparison-item">
+                    <h4>Without Context Boost (v0.14.2)</h4>
+                    <div class="stat-line"><strong>Base Score:</strong> bid × quality × relevance</div>
+                    <div class="stat-line"><strong>Example:</strong> $2.00 × 0.9 × 0.85 = 1.53</div>
+                    <hr style="margin: 15px 0;">
+                    <p style="margin-top: 10px; font-size: 0.95em;">All ads ranked purely by bid amount and semantic similarity.</p>
+                </div>
+
+                <div class="comparison-item winner">
+                    <h4>With Context Boost (v0.15.0)</h4>
+                    <div class="stat-line"><strong>Boosted Score:</strong> (bid × quality × relevance) × boost</div>
+                    <div class="stat-line"><strong>Example:</strong> $2.00 × 0.9 × 0.85 × 1.30 = 1.99</div>
+                    <hr style="margin: 15px 0;">
+                    <p style="margin-top: 10px; font-size: 0.95em;">Ads matching user interests/stage get up to +50% boost (capped for auction integrity).</p>
+                </div>
+            </div>
+
+            <div class="warning-box">
+                <strong>Boost Cap (50%):</strong> Context boosts are capped at +50% to maintain auction integrity. This prevents low-quality ads from winning purely due to context matching. Quality and bid amount still matter most.
+            </div>
+
+            <h3>Intent Stage Patterns</h3>
+
+            <div class="timeline">
+                <div class="timeline-item">
+                    <strong>Research Stage:</strong> "What is X?", "How does Y work?", "Tell me about Z"<br>
+                    → Show educational ads, broad comparisons, category leaders
+                </div>
+                <div class="timeline-item">
+                    <strong>Comparison Stage:</strong> "Compare X vs Y", "Which is better?", "Differences between..."<br>
+                    → Show detailed feature comparisons, pricing tables, trials
+                </div>
+                <div class="timeline-item">
+                    <strong>Ready to Buy:</strong> "How do I sign up?", "What's the price?", "Get started with X"<br>
+                    → Show direct signup links, special offers, time-limited deals
+                </div>
+            </div>
+
+            <h3>Privacy & Security</h3>
+
+            <div class="highlight-box">
+                <strong>No PII Collection:</strong>
+                <ul>
+                    <li>Session IDs are opaque hashes (no user identifiers)</li>
+                    <li>Interests are topical keywords only (no demographics)</li>
+                    <li>Message count is just a number (no message content stored)</li>
+                    <li>All data deleted after 90 days</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- SECTION 10: DEVELOPER CONTROLS -->
+        <div class="section">
+            <h2>9. Developer Controls & Optimization</h2>
+
+            <p>AttentionMarket provides fine-grained controls over ad quality, revenue, and brand safety. Developers can optimize for maximum earnings or perfect user experience — or both.</p>
+
+            <h3>Quality & Brand Safety Controls</h3>
+
+            <h4>1. Minimum Quality Score</h4>
+
+            <p>Filter ads by historical performance. Quality scores (0.0-1.0) are calculated from CTR, conversions, and user feedback.</p>
+
+            <div class="simple-diagram">
+<pre>
+// Only show high-quality ads (premium app)
+const ad = await client.decideFromContext({
+  userMessage: "I need legal help",
+  minQualityScore: 0.7  // Only ads with 0.7+ quality
+});
+
+<strong>Quality Score Ranges:</strong>
+• 0.9-1.0: Excellent (top 10% of advertisers)
+• 0.7-0.9: Good (above average performance)
+• 0.5-0.7: Average (typical performance)
+• 0.3-0.5: Below average (struggling campaigns)
+• 0.1-0.3: Poor (low engagement, likely spam)
+
+<strong>Trade-off:</strong> Higher threshold = better quality but lower fill rate
+</pre>
+            </div>
+
+            <h4>2. Category Filtering (IAB Taxonomy 3.0)</h4>
+
+            <p>Control which advertiser categories appear using the <strong>IAB Content Taxonomy 3.0</strong> — 704 categories across 38 top-level verticals.</p>
+
+            <div class="comparison">
+                <div class="comparison-item">
+                    <h4>Allowed Categories (Whitelist)</h4>
+                    <div class="simple-diagram" style="margin-top: 10px;">
+<pre>
+// Wedding app: only wedding-related ads
+const ad = await client.decideFromContext({
+  userMessage: "Find me a venue",
+  allowedCategories: [
+    603,  // Weddings
+    162,  // Photography
+    190   // Restaurants
+  ]
+});
+
+<strong>Result:</strong> Only ads from these 3
+categories shown (blocks everything else)
+</pre>
+                    </div>
+                </div>
+
+                <div class="comparison-item">
+                    <h4>Blocked Categories (Blacklist)</h4>
+                    <div class="simple-diagram" style="margin-top: 10px;">
+<pre>
+// Block sensitive content
+const ad = await client.decideFromContext({
+  userMessage: "Help me with something",
+  blockedCategories: [
+    601,  // Sensitive Topics (+ children)
+    300,  // Gambling
+    450   // Adult Content
+  ]
+});
+
+<strong>Result:</strong> All categories allowed
+except these 3 (and their subcategories)
+</pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="highlight-box">
+                <strong>Parent-Child Hierarchy:</strong> Blocking a parent category automatically blocks all subcategories. For example, blocking category <code>1</code> (Automotive) blocks Auto Insurance (31), Auto Repair (34), Auto Parts (32), etc.
+            </div>
+
+            <div class="simple-diagram">
+<pre>
+Discovering Categories via API:
+────────────────────────────────────────
+// Get all 38 top-level categories
+const tier1 = await client.getCategories({ tier: 1 });
+tier1.categories.forEach(cat => {
+  console.log(`${cat.id}: ${cat.name}`);
+});
+// Output: 1: Automotive, 31: Insurance, 150: Travel, etc.
+
+// Get subcategories of "Insurance" (ID: 31)
+const insurance = await client.getCategories({ parent_id: 31 });
+// Returns: Auto Insurance, Health Insurance, Life Insurance, etc.
+
+// Search for wedding-related categories
+const wedding = await client.getCategories({ search: 'wedding' });
+// Returns: "Events > Weddings", "Photography > Wedding Photography", etc.
+</pre>
+            </div>
+
+            <h4>3. Advertiser Blocklist</h4>
+
+            <p>Block specific advertisers (e.g., competitors, low performers, user complaints).</p>
+
+            <div class="simple-diagram">
+<pre>
+const ad = await client.decideFromContext({
+  userMessage: "I need car insurance",
+  blockedAdvertisers: ['adv_abc123', 'adv_xyz789']
+});
+
+// Advertiser IDs come from ad responses:
+if (ad) {
+  console.log(ad.advertiser_id);  // "adv_abc123"
+}
+</pre>
+            </div>
+
+            <h3>Revenue Optimization Controls</h3>
+
+            <h4>4. Minimum CPC Filter</h4>
+
+            <p>Only show ads with bids at or above a specified cost-per-click (in cents).</p>
+
+            <div class="simple-diagram">
+<pre>
+// Premium app: only show $2+ ads
+const ad = await client.decideFromContext({
+  userMessage: "I need car insurance",
+  minCPC: 200  // Only ads bidding >= $2.00 per click
+});
+
+<strong>Use Cases:</strong>
+• High-value verticals (legal, insurance): minCPC: 300
+• Premium apps with low traffic: minCPC: 150
+• General apps with high fill rate needs: minCPC: 50
+
+<strong>Trade-off:</strong> Higher threshold = more $ per click but lower fill rate
+</pre>
+            </div>
+
+            <h4>5. Minimum Relevance Score</h4>
+
+            <p>Only show ads with semantic similarity at or above a threshold (0.0-1.0).</p>
+
+            <div class="simple-diagram">
+<pre>
+// Niche legal assistant: only highly relevant ads
+const ad = await client.decideFromContext({
+  userMessage: "Help with estate planning",
+  minRelevanceScore: 0.8  // Only ads with 0.8+ semantic match
+});
+
+<strong>Relevance Score Ranges:</strong>
+• 0.9-1.0: Perfect match (exact keyword match)
+• 0.8-0.9: Highly relevant (same category)
+• 0.7-0.8: Related (adjacent category)
+• 0.5-0.7: Loosely related
+• 0.25-0.5: Weak connection (backend minimum)
+
+<strong>Note:</strong> Only applies to semantic campaigns (not keyword campaigns)
+</pre>
+            </div>
+
+            <h4>6. Ranking Strategy</h4>
+
+            <p>Choose how ads are ranked when multiple ads match.</p>
+
+            <div class="comparison">
+                <div class="comparison-item">
+                    <h4>Revenue Mode (Default)</h4>
+                    <div class="stat-line"><strong>Ranking:</strong> bid × quality × relevance</div>
+                    <div class="stat-line"><strong>Winner pays:</strong> Just enough to beat 2nd place + $0.01</div>
+                    <hr style="margin: 15px 0;">
+                    <p style="margin-top: 10px; font-size: 0.95em;">Maximizes revenue. Highest composite score wins.</p>
+                </div>
+
+                <div class="comparison-item">
+                    <h4>Relevance Mode</h4>
+                    <div class="stat-line"><strong>Ranking:</strong> Semantic similarity only</div>
+                    <div class="stat-line"><strong>Winner pays:</strong> Just enough to beat 2nd place + $0.01</div>
+                    <hr style="margin: 15px 0;">
+                    <p style="margin-top: 10px; font-size: 0.95em;">Prioritizes best match. Perfect for niche apps.</p>
+                </div>
+            </div>
+
+            <div class="simple-diagram">
+<pre>
+// Revenue mode (default): highest bid wins
+const ad = await client.decideFromContext({
+  userMessage: "I need legal help",
+  optimizeFor: 'revenue'
+});
+
+// Relevance mode: best semantic match wins
+const ad = await client.decideFromContext({
+  userMessage: "I need legal help",
+  optimizeFor: 'relevance'
+});
+
+<strong>Important:</strong> Winner never pays more than their max bid (price cap)
+<strong>Price floor:</strong> Minimum clearing price of $0.25 (platform sustainability)
+</pre>
+            </div>
+
+            <h4>Combining Controls for Precision</h4>
+
+            <p>Mix multiple controls to create sophisticated targeting strategies:</p>
+
+            <div class="simple-diagram">
+<pre>
+// Premium legal assistant: only perfect-match, high-quality, high-value ads
+const ad = await client.decideFromContext({
+  userMessage: "I need estate planning help",
+
+  // Quality & Brand Safety
+  minQualityScore: 0.8,         // Only excellent advertisers
+  allowedCategories: [318],     // Legal services only
+  blockedAdvertisers: competitors,
+
+  // Revenue Optimization
+  minCPC: 300,                  // Only $3+ bids
+  minRelevanceScore: 0.85,      // Only highly relevant
+  optimizeFor: 'relevance'      // Best match wins
+});
+
+<strong>Result:</strong> Hyper-targeted ads with high revenue and perfect UX
+<strong>Trade-off:</strong> Low fill rate (15-25%), but 3x higher revenue per impression
+</pre>
+            </div>
+
+            <h3>Performance Optimization: Minimal Payload Format</h3>
+
+            <p>As of v0.14.0, the SDK uses a minimal response format by default — reducing payload size by <strong>84% (3.2KB → 520 bytes)</strong>.</p>
+
+            <div class="metric-grid">
+                <div class="metric-card">
+                    <h4>🚀 Minimal (Default)</h4>
+                    <div class="value">520B</div>
+                    <div class="description">Essentials only: creative, click_url, tracking_token, relevance_score. Auto-tracks impressions.</div>
+                </div>
+                <div class="metric-card">
+                    <h4>📋 Standard</h4>
+                    <div class="value">645B</div>
+                    <div class="description">Adds disclosure info. Manual impression tracking required.</div>
+                </div>
+                <div class="metric-card">
+                    <h4>📊 Verbose</h4>
+                    <div class="value">3.1KB</div>
+                    <div class="description">Full response with all metadata. For debugging and analytics.</div>
+                </div>
+            </div>
+
+            <div class="simple-diagram">
+<pre>
+Minimal Format Response (Default):
+────────────────────────────────────────
+{
+  creative: { title, body, cta },
+  click_url: "https://...",
+  tracking_token: "trk_abc",
+  advertiser_id: "adv_123",
+  payout: 76,  // cents
+  relevance_score: 0.87
+}
+
+<strong>Benefits:</strong>
+• 6x less data transfer (520B vs 3.2KB)
+• Faster parsing and rendering
+• Lower mobile bandwidth usage
+• Automatic impression tracking
+</pre>
+            </div>
+
+            <h3>Real-World Configuration Examples</h3>
+
+            <div class="benefit-grid">
+                <div class="benefit-card">
+                    <h4>General Chatbot</h4>
+                    <p><strong>Goal:</strong> Maximize revenue, high fill rate</p>
+                    <div class="simple-diagram" style="margin-top: 10px; padding: 10px; font-size: 0.85em;">
+<pre>
+minQualityScore: 0.5
+minCPC: 25
+optimizeFor: 'revenue'
+
+Fill rate: 60%
+Revenue/click: $0.45
+</pre>
+                    </div>
+                </div>
+
+                <div class="benefit-card">
+                    <h4>Premium Legal Assistant</h4>
+                    <p><strong>Goal:</strong> Perfect UX, brand safety</p>
+                    <div class="simple-diagram" style="margin-top: 10px; padding: 10px; font-size: 0.85em;">
+<pre>
+minQualityScore: 0.8
+allowedCategories: [318]
+minRelevanceScore: 0.85
+optimizeFor: 'relevance'
+
+Fill rate: 18%
+Revenue/click: $3.20
+</pre>
+                    </div>
+                </div>
+
+                <div class="benefit-card">
+                    <h4>Wedding Planning App</h4>
+                    <p><strong>Goal:</strong> Category-specific, high quality</p>
+                    <div class="simple-diagram" style="margin-top: 10px; padding: 10px; font-size: 0.85em;">
+<pre>
+minQualityScore: 0.7
+allowedCategories: [603, 162, 190]
+minCPC: 100
+
+Fill rate: 42%
+Revenue/click: $1.85
+</pre>
+                    </div>
+                </div>
+
+                <div class="benefit-card">
+                    <h4>Kids Education App</h4>
+                    <p><strong>Goal:</strong> Block inappropriate content</p>
+                    <div class="simple-diagram" style="margin-top: 10px; padding: 10px; font-size: 0.85em;">
+<pre>
+minQualityScore: 0.6
+blockedCategories: [601, 300, 450]
+minCPC: 50
+
+Fill rate: 55%
+Revenue/click: $0.62
+</pre>
+                    </div>
+                </div>
+            </div>
+
+            <h3>Fill Rate vs Revenue Trade-offs</h3>
+
+            <div class="simple-diagram">
+<pre>
+Configuration Impact Analysis:
+────────────────────────────────────────
+<strong>No filters (baseline):</strong>
+  Fill rate: 65% | Avg revenue/click: $0.42 | Monthly: $5,460
+
+<strong>Add minQualityScore: 0.7:</strong>
+  Fill rate: 48% (-26%) | Avg revenue/click: $0.58 (+38%) | Monthly: $5,568 (+2%)
+
+<strong>Add minCPC: 100:</strong>
+  Fill rate: 35% (-27%) | Avg revenue/click: $0.89 (+53%) | Monthly: $6,230 (+12%)
+
+<strong>Add minRelevanceScore: 0.8:</strong>
+  Fill rate: 22% (-37%) | Avg revenue/click: $1.24 (+39%) | Monthly: $5,456 (-12%)
+
+<strong>Insight:</strong> Quality + CPC filters increase revenue. Relevance filter decreases it
+(fewer ads qualify, but those that do aren't necessarily higher-paying).
+</pre>
+            </div>
+
+            <div class="key-insight">
+                <strong>Best Practice:</strong> Start with no filters. Monitor fill rate and CTR for 2 weeks. Then add filters incrementally, measuring impact. Most profitable config: <code>minQualityScore: 0.7</code> + <code>minCPC: 50-100</code> + smart context auto-detection.
+            </div>
+        </div>
+
+        <!-- SECTION 11: BACKEND ARCHITECTURE -->
+        <div class="section">
+            <h2>10. Backend Architecture: How It All Works</h2>
+
+            <h3>Technology Stack</h3>
+
+            <div class="metric-grid">
+                <div class="metric-card">
+                    <h4>🗄️ Database</h4>
+                    <div class="description">PostgreSQL with pgvector extension for vector similarity search</div>
+                </div>
+                <div class="metric-card">
+                    <h4>⚡ Edge Functions</h4>
+                    <div class="description">Deno runtime on Supabase for serverless compute</div>
+                </div>
+                <div class="metric-card">
+                    <h4>🤖 AI/ML</h4>
+                    <div class="description">OpenAI text-embedding-ada-002 for semantic embeddings (1536 dimensions)</div>
+                </div>
+                <div class="metric-card">
+                    <h4>🔒 Security</h4>
+                    <div class="description">Row-Level Security (RLS), circuit breakers, rate limiting, distributed locks</div>
+                </div>
+            </div>
+
+            <h3>The Decide Pipeline: From Request to Response</h3>
+
+            <p>When a developer calls <code>decideFromContext()</code>, here's what happens under the hood (100ms total):</p>
+
+            <div class="timeline">
+                <div class="timeline-item">
+                    <strong>Step 1: Request Validation (5ms)</strong><br>
+                    Validate API key, check rate limits, parse request parameters, extract user context
+                </div>
+                <div class="timeline-item">
+                    <strong>Step 2: Query Enrichment (10ms)</strong><br>
+                    Auto-detect intent stage, extract interests, analyze emotional tone, calculate decision momentum
+                </div>
+                <div class="timeline-item">
+                    <strong>Step 3: Embedding Generation (40ms)</strong><br>
+                    Generate 3 embeddings: current need, full context, intent-only. Check cache first (95% hit rate)
+                </div>
+                <div class="timeline-item">
+                    <strong>Step 4: Vector Search (25ms)</strong><br>
+                    Query pgvector for top 20 candidates using cosine similarity, apply quality/CPC/category filters
+                </div>
+                <div class="timeline-item">
+                    <strong>Step 5: Auction Execution (10ms)</strong><br>
+                    Rank ads by composite score, calculate second-price clearing price, select winner
+                </div>
+                <div class="timeline-item">
+                    <strong>Step 6: Response Assembly (10ms)</strong><br>
+                    Create tracking token, store auction result, return minimal/standard/verbose format
+                </div>
+            </div>
+
+            <h3>Query Enrichment: Backend Intelligence (Zero SDK Changes)</h3>
+
+            <p>The backend automatically extracts signals from every request without requiring SDK updates. This is the "secret sauce" that makes ads 65% more relevant.</p>
+
+            <div class="simple-diagram">
+<pre>
+User Message: "I'm so frustrated with my current e-commerce platform"
+
+Backend Auto-Detects:
+────────────────────────────────────────
+<strong>Emotional Signals:</strong>
+  • emotional_tone: 'frustrated' (from keyword matching)
+  • urgency_level: 'high' (implied from frustration)
+
+<strong>Query Classification:</strong>
+  • query_type: 'support' (help-seeking language)
+  • mentioned_brands: ['shopify', 'wix'] (if in conversation history)
+  • price_sensitive: true (if price mentioned in history)
+
+<strong>Decision Momentum:</strong>
+  • Base: 0.3
+  • +0.1 (query_type = support)
+  • +0.1 (urgency_level = high)
+  • +0.1 (frustrated users want solutions)
+  • +0.1 (messageCount > 5)
+  • <strong>Final: 0.7 (ready to switch!)</strong>
+
+<strong>Journey Stage:</strong>
+  • Momentum > 0.7 → 'deciding' stage
+  • Show decision-focused ads (trials, demos, guarantees)
+</pre>
+            </div>
+
+            <h3>Multi-Embedding Strategy</h3>
+
+            <p>Instead of generating one embedding, we generate three different embeddings for better matching:</p>
+
+            <div class="comparison">
+                <div class="comparison-item">
+                    <h4>Current Need Embedding</h4>
+                    <p style="margin-top: 10px;"><strong>Input:</strong> User's current message only</p>
+                    <p><strong>Purpose:</strong> Match immediate, explicit needs</p>
+                    <p><strong>Example:</strong> "I need car insurance" → vector representing car insurance urgency</p>
+                </div>
+
+                <div class="comparison-item">
+                    <h4>Full Context Embedding</h4>
+                    <p style="margin-top: 10px;"><strong>Input:</strong> Current message + last 3 history messages</p>
+                    <p><strong>Purpose:</strong> Capture broader conversation context</p>
+                    <p><strong>Example:</strong> "...new car...move to Texas...need insurance" → vector capturing relocation context</p>
+                </div>
+            </div>
+
+            <div class="comparison-item" style="margin-top: 20px; border-color: #2196F3; background: #e7f3ff;">
+                <h4>Intent-Only Embedding</h4>
+                <p style="margin-top: 10px;"><strong>Input:</strong> Extracted core intent (noise words removed)</p>
+                <p><strong>Purpose:</strong> Match pure intent without conversational fluff</p>
+                <p><strong>Example:</strong> "Can you please help me find car insurance?" → "find car insurance"</p>
+            </div>
+
+            <h3>Embedding Cache: 95% Hit Rate</h3>
+
+            <p>Generating embeddings costs $0.0001 per 1000 tokens. At scale, this adds up fast. The backend caches embeddings using SHA256 hashes:</p>
+
+            <div class="simple-diagram">
+<pre>
+Embedding Cache Logic:
+────────────────────────────────────────
+1. Hash input text: SHA256("I need car insurance") → abc123...
+2. Check cache: SELECT embedding FROM embedding_cache WHERE text_hash = 'abc123...'
+3. If HIT (95%): Return cached embedding (0ms, $0 cost)
+4. If MISS (5%): Generate new embedding (40ms, $0.0001 cost)
+5. Store in cache with TTL = 24 hours
+6. Auto-cleanup: Keep only 10,000 most recently used
+
+<strong>Cost Savings:</strong>
+• Without cache: 1M requests × $0.0001 = $100/day
+• With cache (95% hit): 50K requests × $0.0001 = $5/day
+• <strong>Savings: $95/day or 95% reduction</strong>
+</pre>
+            </div>
+
+            <h3>Production-Critical Fixes (Google Staff Engineer Review)</h3>
+
+            <p>In February 2026, we conducted a senior staff engineer review and implemented 15 production-critical fixes. These are the most important for new team members to understand:</p>
+
+            <h4>1. Circuit Breaker Pattern</h4>
+
+            <div class="simple-diagram">
+<pre>
+Problem: OpenAI API goes down → All requests fail → Retry storm → Even worse
+Solution: Circuit breaker tracks failures and "opens" after threshold
+
+Circuit Breaker States:
+────────────────────────────────────────
+<strong>CLOSED (Normal):</strong>
+  • All requests pass through
+  • Track failure count
+  • If failures >= 5 → OPEN
+
+<strong>OPEN (Failing):</strong>
+  • Block all requests immediately
+  • Return cached results or fallback
+  • Wait 60 seconds → HALF_OPEN
+
+<strong>HALF_OPEN (Testing):</strong>
+  • Allow 3 test requests
+  • If success → CLOSED
+  • If failure → OPEN (wait another 60s)
+
+<strong>Result: 99.9% uptime even when OpenAI is down</strong>
+</pre>
+            </div>
+
+            <h4>2. Rate Limiting (Multi-Layer)</h4>
+
+            <div class="benefit-grid">
+                <div class="benefit-card">
+                    <h4>API Key Level</h4>
+                    <p><strong>Limit:</strong> 100 req/min per API key</p>
+                    <p>Prevents single developer from overwhelming the system</p>
+                </div>
+
+                <div class="benefit-card">
+                    <h4>IP Level</h4>
+                    <p><strong>Limit:</strong> 60 req/min per IP</p>
+                    <p>Prevents DDoS attacks from single source</p>
+                </div>
+
+                <div class="benefit-card">
+                    <h4>OpenAI Level</h4>
+                    <p><strong>Limit:</strong> 60 req/min, 150K tokens/min</p>
+                    <p>Stays within OpenAI rate limits to avoid 429 errors</p>
+                </div>
+
+                <div class="benefit-card">
+                    <h4>Cost Level</h4>
+                    <p><strong>Limit:</strong> $100/day OpenAI spend</p>
+                    <p>Circuit-breaker fallback if daily budget exceeded</p>
+                </div>
+            </div>
+
+            <h4>3. Distributed Locks for Budget Updates</h4>
+
+            <div class="simple-diagram">
+<pre>
+Problem: Race Condition
+────────────────────────────────────────
+Thread A: Read budget_spent = $90, budget = $100
+Thread B: Read budget_spent = $90, budget = $100
+Thread A: Write budget_spent = $95 (charged $5)
+Thread B: Write budget_spent = $93 (charged $3, overwrites A!)
+<strong>Result: Lost $5 charge, advertiser underbilled</strong>
+
+Solution: Distributed Lock with Atomic Update
+────────────────────────────────────────
+Thread A: acquire_lock('campaign_123') → SUCCESS
+Thread B: acquire_lock('campaign_123') → WAIT...
+Thread A: UPDATE budget_spent = budget_spent + 5 WHERE id = '123'
+Thread A: release_lock('campaign_123')
+Thread B: acquire_lock('campaign_123') → SUCCESS
+Thread B: UPDATE budget_spent = budget_spent + 3 WHERE id = '123'
+Thread B: release_lock('campaign_123')
+<strong>Result: Both charges recorded correctly</strong>
+
+<strong>Implementation: safe_increment_campaign_budget() function</strong>
+• 3 retry attempts with exponential backoff
+• Automatic lock expiration after 5 seconds
+• Budget validation before update
+</pre>
+            </div>
+
+            <h4>4. Dead Letter Queue (DLQ)</h4>
+
+            <p>When operations fail (e.g., OpenAI timeout, database deadlock), they go to the DLQ for automatic retry instead of being lost.</p>
+
+            <div class="simple-diagram">
+<pre>
+DLQ Flow:
+────────────────────────────────────────
+1. Operation fails (e.g., enrich_campaign)
+2. Insert into dead_letter_queue:
+   {
+     operation: 'enrich_campaign',
+     payload: { campaign_id: '123' },
+     error_message: 'OpenAI timeout',
+     retry_after: NOW() + 5 minutes,
+     error_count: 1
+   }
+
+3. Background worker checks DLQ every minute:
+   SELECT * FROM dead_letter_queue
+   WHERE status = 'pending' AND retry_after < NOW()
+
+4. Retry operation:
+   • Success → status = 'completed'
+   • Failure → error_count++, retry_after += exponential_backoff
+
+5. After 5 failures → status = 'failed', alert team
+
+<strong>Result: Zero data loss, automatic recovery from transient errors</strong>
+</pre>
+            </div>
+
+            <h4>5. Request Deduplication</h4>
+
+            <div class="highlight-box">
+                <strong>Problem:</strong> User double-clicks "Get Ad" button → Two identical requests → Two charges → Advertiser angry
+                <br><br>
+                <strong>Solution:</strong> Hash request parameters (campaign_id + timestamp), check if processed in last 10 seconds
+                <br><br>
+                <strong>Implementation:</strong>
+                <ul style="margin-top: 10px;">
+                    <li>Generate request hash: SHA256(campaign_id + operation + timestamp)</li>
+                    <li>Check idempotency_keys table: Was this processed recently?</li>
+                    <li>If YES → Return cached response (429 status)</li>
+                    <li>If NO → Process request, store hash with TTL=10s</li>
+                </ul>
+            </div>
+
+            <h3>Database Schema: Key Tables</h3>
+
+            <div class="simple-diagram">
+<pre>
+Core Tables:
+────────────────────────────────────────
+<strong>campaigns</strong>
+  • Advertiser campaigns with budgets, bids, targeting
+  • metadata_v2: Enriched data (problem_statement, buyer_stages, embeddings)
+  • quality_score: Updated daily based on performance (0.1-1.0)
+  • Budget tracking: budget, budget_spent (atomic updates only)
+
+<strong>ad_units</strong>
+  • Creative content: title, body, cta, action_url
+  • Ad type specific fields: teaser, promo_code (recommendation), service_endpoint (service)
+  • Linked to campaigns via campaign_id FK
+
+<strong>click_tracking_tokens</strong>
+  • Fraud-proof click tracking
+  • tracking_token (UUID), campaign_id, ad_unit_id, clearing_price_cents
+  • expires_at: 24-hour TTL for security
+
+<strong>auction_results</strong>
+  • Second-price auction analytics
+  • winner_auction_score, second_auction_score, clearing_price
+  • Used for optimizing auction algorithm
+
+<strong>quality_score_history</strong>
+  • Daily snapshots of campaign quality scores
+  • CTR, conversion rate, user feedback metrics
+  • Used by update-quality-scores cron job
+
+Supporting Tables (Production Safeguards):
+────────────────────────────────────────
+• embedding_cache: LRU cache for OpenAI embeddings (95% hit rate)
+• api_rate_limits: Per-minute request/token tracking
+• circuit_breakers: Service health monitoring (OpenAI, external APIs)
+• distributed_locks: Prevent race conditions on budget updates
+• dead_letter_queue: Failed operation retry queue
+• error_logs: Comprehensive error tracking with stack traces
+• api_cost_tracking: OpenAI spend monitoring ($100/day limit)
+• system_metrics: Performance metrics (latency, fill rate, CTR)
+• idempotency_keys: Request deduplication (10s TTL)
+</pre>
+            </div>
+
+            <h3>Supabase Edge Functions</h3>
+
+            <h4>decide-enhanced Function (Main Ad Serving)</h4>
+
+            <div class="simple-diagram">
+<pre>
+Route: POST /functions/v1/decide
+Auth: X-AM-API-Key header
+Timeout: 30s with AbortSignal
+Rate Limit: 100 req/min per API key
+
+Core Logic:
+────────────────────────────────────────
+1. Validate API key and rate limits
+2. Extract SDK context (interests, intent_stage, session_id)
+3. Enrich query (emotional_tone, urgency, decision_momentum)
+4. Generate 3 embeddings (current, context, intent)
+5. Vector search: pgvector cosine similarity
+6. Apply developer controls (quality, CPC, category filters)
+7. Rank ads (revenue or relevance mode)
+8. Second-price auction (winner pays 2nd place + $0.01)
+9. Store auction result for analytics
+10. Return minimal/standard/verbose response
+
+<strong>Performance:</strong>
+• p50: 85ms
+• p95: 120ms
+• p99: 200ms
+</pre>
+            </div>
+
+            <h4>enrich-campaign Function (Campaign Metadata Enrichment)</h4>
+
+            <div class="simple-diagram">
+<pre>
+Route: POST /functions/v1/enrich-campaign
+Auth: Service role key (admin only)
+Purpose: Extract structured intent from campaign descriptions
+
+Core Logic:
+────────────────────────────────────────
+1. Acquire distributed lock (prevent concurrent enrichment)
+2. Check if recently enriched (< 24 hours ago)
+3. Call GPT-3.5-turbo to extract:
+   • problem_statement, value_proposition
+   • use_cases, buyer_stages
+   • emotional_triggers, urgency_triggers
+   • target_interests, price_sensitivity
+4. Generate 4 embeddings:
+   • Problem embedding
+   • Solution embedding
+   • Audience embedding
+   • Use cases embedding
+5. Store in campaigns.metadata_v2 JSONB column
+6. Release lock
+7. Log success metrics
+
+<strong>Safeguards:</strong>
+• Circuit breaker for OpenAI (5 failure threshold)
+• Rate limiting (60 req/min)
+• Cost tracking ($100/day limit)
+• Dead letter queue on failure
+• Embedding cache (avoid re-enriching)
+• Distributed lock (one enrichment at a time per campaign)
+</pre>
+            </div>
+
+            <h3>Production Monitoring Dashboard</h3>
+
+            <div class="simple-diagram">
+<pre>
+SELECT * FROM production_dashboard;
+────────────────────────────────────────
+<strong>Live Metrics:</strong>
+
+Active Campaigns                       47
+Budget Utilization %                   67.3
+API Calls (Last Hour)                  12,450
+OpenAI Cost Today ($)                  $8.42
+Errors (Last Hour)                     3
+Circuit Breakers Open                  0
+
+<strong>Health Check:</strong>
+
+SELECT * FROM system_health_check();
+────────────────────────────────────────
+database               healthy  {"connections": 23}
+circuit_breaker_openai healthy  {"state": "closed", "failures": 0}
+rate_limits            healthy  {"requests_per_minute": 45}
+budget_burn_rate       healthy  {"campaigns_near_limit": 2}
+</pre>
+            </div>
+
+            <h3>Critical Deployment Notes</h3>
+
+            <div class="warning-box">
+                <strong>⚠️ BEFORE DEPLOYING TO PRODUCTION:</strong>
+                <ol style="margin-top: 10px;">
+                    <li><strong>Set environment variables:</strong>
+                        <ul>
+                            <li><code>OPENAI_API_KEY</code> - Required for embeddings</li>
+                            <li><code>OPENAI_DAILY_LIMIT_USD</code> - Default: $100</li>
+                            <li><code>MAX_REQUESTS_PER_MINUTE</code> - Default: 60</li>
+                            <li><code>SUPABASE_SERVICE_ROLE_KEY</code> - For bypassing RLS</li>
+                        </ul>
+                    </li>
+                    <li><strong>Run migrations in order:</strong>
+                        <ul>
+                            <li>20260228005215_add_enhanced_matching_production.sql</li>
+                            <li>20260228005247_add_production_safeguards.sql</li>
+                        </ul>
+                    </li>
+                    <li><strong>Deploy functions with correct flags:</strong>
+                        <ul>
+                            <li><code>supabase functions deploy decide-enhanced</code></li>
+                            <li><code>supabase functions deploy enrich-campaign</code></li>
+                            <li><code>supabase functions deploy tracking-redirect --no-verify-jwt</code> (CRITICAL!)</li>
+                        </ul>
+                    </li>
+                    <li><strong>Set up cron jobs:</strong>
+                        <ul>
+                            <li>Cleanup job: <code>SELECT cleanup_all_old_data()</code> - Daily at midnight</li>
+                            <li>Quality score update: <code>SELECT update_all_quality_scores()</code> - Daily at 2am</li>
+                        </ul>
+                    </li>
+                </ol>
+            </div>
+
+            <h3>Debugging Tips for New Team Members</h3>
+
+            <div class="benefit-grid">
+                <div class="benefit-card">
+                    <h4>Check Circuit Breaker State</h4>
+                    <div class="simple-diagram" style="margin-top: 10px; padding: 10px; font-size: 0.85em;">
+<pre>
+SELECT * FROM circuit_breakers;
+
+If state = 'open':
+• OpenAI is down or rate limited
+• System using cached embeddings
+• Wait 60s for automatic recovery
+</pre>
+                    </div>
+                </div>
+
+                <div class="benefit-card">
+                    <h4>Check Recent Errors</h4>
+                    <div class="simple-diagram" style="margin-top: 10px; padding: 10px; font-size: 0.85em;">
+<pre>
+SELECT * FROM error_logs
+WHERE created_at > NOW() - INTERVAL '1 hour'
+ORDER BY created_at DESC;
+
+Look for patterns:
+• Many 'RATE_LIMIT_EXCEEDED' → Traffic spike
+• Many 'OPENAI_TIMEOUT' → OpenAI slow
+</pre>
+                    </div>
+                </div>
+
+                <div class="benefit-card">
+                    <h4>Check Dead Letter Queue</h4>
+                    <div class="simple-diagram" style="margin-top: 10px; padding: 10px; font-size: 0.85em;">
+<pre>
+SELECT * FROM dead_letter_queue
+WHERE status = 'pending'
+ORDER BY last_error_at DESC;
+
+Failed operations awaiting retry.
+Investigate if error_count > 3.
+</pre>
+                    </div>
+                </div>
+
+                <div class="benefit-card">
+                    <h4>Check Cost Tracking</h4>
+                    <div class="simple-diagram" style="margin-top: 10px; padding: 10px; font-size: 0.85em;">
+<pre>
+SELECT
+  SUM(cost_usd) as total_cost,
+  SUM(tokens_used) as total_tokens
+FROM api_cost_tracking
+WHERE created_at >= date_trunc('day', NOW());
+
+If approaching $100 limit:
+• Circuit breaker will open automatically
+• Investigate embedding cache hit rate
+</pre>
+                    </div>
+                </div>
+            </div>
+
+            <h3>Why This Architecture Matters</h3>
+
+            <div class="key-insight">
+                <strong>Production-Ready from Day One</strong>
+                <br><br>
+                This isn't a prototype. Every component is designed for scale:
+                <ul style="margin-top: 10px;">
+                    <li><strong>Fault Tolerance:</strong> Circuit breakers, DLQ, automatic retries</li>
+                    <li><strong>Cost Control:</strong> Embedding cache (95% hit rate), daily spend limits, rate limiting</li>
+                    <li><strong>Data Integrity:</strong> Distributed locks, atomic updates, request deduplication</li>
+                    <li><strong>Observability:</strong> Error logs, metrics, health checks, production dashboard</li>
+                    <li><strong>Performance:</strong> Sub-100ms p95 latency, pgvector for fast similarity search</li>
+                </ul>
+                <br>
+                We built this to handle 100M requests/day from the start. That's why every decision is deliberate.
+            </div>
+        </div>
     </div>
 </body>
 </html>

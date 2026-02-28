@@ -1,0 +1,307 @@
+---
+title: Personal AI Agent Setup
+sidebar_label: Personal AI Agents
+sidebar_position: 4
+---
+
+# Personal AI Agent Setup
+
+This guide is designed for autonomous AI agents (like Clawdbots) that can visit this site and set themselves up to monetize their services.
+
+## What is a Personal AI Agent?
+
+Personal AI agents are autonomous software assistants that:
+- Browse the web and interact with APIs
+- Execute tasks on behalf of users
+- Operate independently without constant human supervision
+- Can integrate new services by reading documentation
+
+Examples include Clawdbots, personal assistants, and autonomous task executors.
+
+## Self-Service Setup Guide
+
+### Step 1: Create Developer Account
+
+Visit the AttentionMarket developer portal and create your account:
+
+**Sign Up URL:** https://api.attentionmarket.ai/api/login
+
+You'll need to provide:
+- Email address
+- Password
+- Agent name (this will identify your agent in the system)
+
+### Step 2: Obtain Your Credentials
+
+After signing up and logging in, you'll receive:
+
+1. **API Key** - Used to authenticate API requests
+   - Test key format: `am_test_...` (for development/testing)
+   - Live key format: `am_live_...` (for production)
+
+2. **Agent ID** - Unique identifier for your agent
+   - Format: `agt_...`
+
+**Important:** Keep your API keys secure. Never expose them in public repositories or client-side code.
+
+### Step 3: Install the SDK
+
+If you're running in a Node.js/TypeScript environment:
+
+```bash
+npm install @the_ro_show/agent-ads-sdk
+```
+
+For Python agents:
+
+```bash
+# Python SDK coming soon
+# For now, use HTTP requests directly (see HTTP API section below)
+```
+
+### Step 4: Initialize the Client
+
+**TypeScript/JavaScript:**
+
+```typescript
+import { AttentionMarketClient } from '@the_ro_show/agent-ads-sdk';
+
+const client = new AttentionMarketClient({
+  apiKey: 'am_test_YOUR_KEY',      // Replace with your actual API key
+  agentId: 'agt_YOUR_AGENT_ID'     // Replace with your actual agent ID
+});
+```
+
+**HTTP API (any language):**
+
+```bash
+curl -X POST https://peruwnbrqkvmrldhpoom.supabase.co/functions/v1/decide \
+  -H "Content-Type: application/json" \
+  -H "X-AM-API-Key: am_test_YOUR_KEY" \
+  -d '{
+    "user_message": "I need car insurance",
+    "agent_id": "agt_YOUR_AGENT_ID",
+    "placement": "sponsored_suggestion"
+  }'
+```
+
+### Step 5: Request Your First Ad
+
+**TypeScript:**
+
+```typescript
+const ad = await client.decideFromContext({
+  userMessage: "I'm looking for car insurance",
+  placement: 'sponsored_suggestion'
+});
+
+if (ad) {
+  console.log('Ad Title:', ad.creative.title);
+  console.log('Ad Body:', ad.creative.body);
+  console.log('Click URL:', ad.click_url);
+  console.log('Payout:', ad.payout, 'cents');
+}
+```
+
+**HTTP Response:**
+
+```json
+{
+  "request_id": "req_...",
+  "decision_id": "dec_...",
+  "ad_type": "link",
+  "payout": 250,
+  "creative": {
+    "title": "Get 20% Off Car Insurance",
+    "body": "Compare quotes from top providers in minutes",
+    "cta": "Get Quote"
+  },
+  "click_url": "https://peruwnbrqkvmrldhpoom.supabase.co/functions/v1/tracking-redirect?token=...",
+  "tracking_token": "trk_...",
+  "disclosure": {
+    "label": "Sponsored",
+    "sponsor_name": "Insurance Co",
+    "explanation": "This is a paid advertisement"
+  }
+}
+```
+
+## Testing Your Setup
+
+### Verify Authentication
+
+```typescript
+// If this doesn't throw an error, your credentials are valid
+const ad = await client.decideFromContext({
+  userMessage: "test",
+  placement: 'sponsored_suggestion'
+});
+
+console.log(ad ? 'Setup successful!' : 'No ads available (normal in test mode)');
+```
+
+### Common Issues
+
+| Error | Cause | Solution |
+|-------|-------|----------|
+| `Authentication failed` | Invalid API key | Double-check your key from dashboard |
+| `Agent ID not found` | Wrong agent_id | Verify agent_id matches your account |
+| `No ads available` | Test mode, no test campaigns | This is normal - switch to live key for real ads |
+
+## How You Earn Revenue
+
+When you integrate AttentionMarket:
+
+1. **Display ads** to your users based on conversation context
+2. **Users click** the `click_url` (automatically tracked)
+3. **You earn money** - payouts range from $0.10 to $5.00+ per click
+4. **Get paid** - earnings accumulate in your developer account
+
+**Important:** As of v0.9.0, you must track impressions before clicks to earn revenue. The SDK handles this automatically.
+
+## Ad Types
+
+Your agent can show three types of ads:
+
+### 1. Link Ads
+Traditional click-through advertisements.
+
+```typescript
+const ad = await client.decideFromContext({
+  userMessage: "I need car insurance",
+  placement: 'sponsored_suggestion'
+});
+// Show: title, body, cta
+// User clicks: click_url
+// You earn: payout amount
+```
+
+### 2. Recommendation Ads
+Conversational ads with optional teaser questions.
+
+```typescript
+const ad = await client.decideFromContext({
+  userMessage: "I'm starting a business",
+  placement: 'sponsored_suggestion'
+});
+
+// If ad has teaser:
+console.log(ad.creative.teaser);  // "Interested in 20% off e-commerce tools?"
+// If user says yes:
+console.log(ad.creative.message);  // Shows promo code and details
+console.log(ad.click_url);         // User clicks to claim offer
+```
+
+### 3. Service Ads
+Your agent calls another service's API autonomously.
+
+```typescript
+const service = await client.getService({
+  taskDescription: "Translate document to Spanish"
+});
+
+// Call the service
+const result = await fetch(service.service_endpoint, {
+  method: 'POST',
+  headers: { 'Authorization': service.service_auth },
+  body: JSON.stringify({ task: "Translate..." })
+});
+
+// Report completion
+await client.logServiceResult({
+  transaction_id: service.transaction_id,
+  success: true
+});
+```
+
+## Response Format
+
+All ad responses include:
+
+```typescript
+interface AdResponse {
+  request_id: string;       // Unique request identifier
+  decision_id: string;      // Decision tracking ID
+  ad_type: string;          // 'link' | 'recommendation' | 'service'
+  payout: number;           // Earnings in cents
+
+  creative: {
+    title: string;          // Ad headline
+    body: string;           // Ad description
+    cta: string;            // Call-to-action text
+    teaser?: string;        // Optional teaser question
+    message?: string;       // Optional follow-up message
+    promo_code?: string;    // Optional promo code
+  };
+
+  click_url: string;        // Auto-tracked click URL (use this)
+  tracking_token: string;   // Manual tracking token
+
+  disclosure: {
+    label: string;          // "Sponsored", "Ad", etc.
+    sponsor_name: string;   // Advertiser name
+    explanation: string;    // Why this ad was shown
+  };
+}
+```
+
+## Developer Controls
+
+You can control ad quality and relevance:
+
+### Quality Filtering
+
+```typescript
+const client = new AttentionMarketClient({
+  apiKey: 'am_test_YOUR_KEY',
+  agentId: 'agt_YOUR_AGENT_ID',
+  minQualityScore: 0.7  // Only show high-quality ads (0.0-1.0)
+});
+```
+
+### Category Filtering
+
+```typescript
+const ad = await client.decideFromContext({
+  userMessage: "I need car insurance",
+  placement: 'sponsored_suggestion',
+  blockedCategories: ['gambling', 'alcohol']  // Never show these
+});
+```
+
+### Revenue Optimization
+
+```typescript
+const ad = await client.decideFromContext({
+  userMessage: "I need car insurance",
+  placement: 'sponsored_suggestion',
+  minPayout: 100  // Only show ads paying $1.00+ (in cents)
+});
+```
+
+## Next Steps
+
+### For Conversational Agents
+- [AI Applications Guide →](/applications/introduction) - Full integration guide for chat apps
+- [Best Practices →](/applications/best-practices) - Optimize user experience
+
+### For Autonomous Agents
+- [Autonomous Integration →](/agents/autonomous) - Service discovery and execution
+- [Tool Calling →](/agents/tool-calling) - Agent tool integration
+
+### API Reference
+- [SDK Methods →](/api/sdk) - Complete method documentation
+- [Ad Types →](/api/ad-types) - Detailed ad type specs
+- [Error Codes →](/api/errors) - Troubleshooting guide
+
+## Support
+
+Need help? We're here to assist:
+
+- **Email:** support@attentionmarket.ai
+- **GitHub Issues:** https://github.com/rtrivedi/agent-ads-sdk/issues
+- **Dashboard:** https://api.attentionmarket.ai (view earnings, manage settings)
+
+---
+
+**Ready to monetize?** [Sign up now →](https://api.attentionmarket.ai/api/login)

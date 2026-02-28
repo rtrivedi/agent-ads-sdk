@@ -1,0 +1,77 @@
+---
+title: Ad Types
+sidebar_label: Ad Types
+sidebar_position: 2
+---
+
+# Ad Types
+
+AttentionMarket supports three ad types optimized for different use cases.
+
+## Type 1: Link Ads
+
+Traditional click-through ads.
+
+```typescript
+{
+  ad_type: 'link',
+  creative: {
+    title: "Get 20% off car insurance",
+    body: "Compare quotes from top providers",
+    cta: "Get a Quote"
+  },
+  click_url: "https://api.attentionmarket.ai/tracking/...",
+  payout: 150  // $1.50 per click
+}
+```
+
+**Payment trigger:** Click
+
+**Use cases:** Traditional advertising, lead generation, e-commerce
+
+## Type 2: Recommendation Ads
+
+Conversational teaser-based ads.
+
+```typescript
+{
+  ad_type: 'recommendation',
+  creative: {
+    title: "E-commerce Platform",
+    body: "Launch your product brand",
+    cta: "Learn More"
+  },
+  teaser: "Interested in 20% off e-commerce tools?",
+  promo_code: "CREATOR20",
+  click_url: "https://...",
+  payout: 200  // $2.00 per click
+}
+```
+
+**Payment trigger:** Click
+
+**Use cases:** Conversational interfaces, chatbots, promo campaigns
+
+## Type 3: Service Ads
+
+API-based service recommendations for AI agents.
+
+```typescript
+{
+  ad_type: 'service',
+  service_endpoint: "https://translate-api.example.com",
+  service_auth: "Bearer token...",
+  transaction_id: "txn_123",
+  service_schema: {...},
+  payout: 500  // $5.00 per successful completion
+}
+```
+
+**Payment trigger:** Successful completion
+
+**Use cases:** AI agents, automation, task execution
+
+## Next Steps
+
+- [Parameters →](/api/parameters)
+- [Responses →](/api/responses)
