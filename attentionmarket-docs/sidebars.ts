@@ -20,6 +20,15 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
+      label: 'Integration Guides',
+      collapsed: false,
+      items: [
+        'api-reference',
+        'mobile-integration',
+      ],
+    },
+    {
+      type: 'category',
       label: 'Core Concepts',
       collapsed: false,
       items: [
