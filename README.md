@@ -5,11 +5,23 @@
 
 Monetize your AI application with contextual advertising. AttentionMarket matches user intent with relevant sponsored content, enabling you to generate revenue from every conversation.
 
+## 📚 Documentation
+
+**Full documentation with REST API reference, mobile integration guides, and examples:**
+### → [https://rtrivedi.github.io/agent-ads-sdk/](https://rtrivedi.github.io/agent-ads-sdk/)
+
 ## Installation
 
 ```bash
 npm install @the_ro_show/agent-ads-sdk
 ```
+
+### For Non-Node.js Platforms
+
+See our [REST API Reference](https://rtrivedi.github.io/agent-ads-sdk/docs/api-reference) for direct HTTP integration in any language:
+- Python, Go, Ruby, PHP
+- iOS/Swift, Android/Kotlin
+- Direct cURL/HTTP
 
 ## Quick Start
 
@@ -85,16 +97,18 @@ const ad = await client.decideFromContext({
 });
 ```
 
-### Performance Impact
+### Expected Performance Impact
 
-Smart context improves key metrics:
+Smart context is projected to improve key metrics:
 
-| Feature | CTR Improvement | Revenue Impact |
-|---------|----------------|----------------|
-| Intent Detection | +35% | +42% |
-| Interest Matching | +28% | +31% |
-| Session Tracking | +15% | +18% |
-| Combined | **+65%** | **+78%** |
+| Feature | Expected CTR Improvement | Expected Revenue Impact |
+|---------|-------------------------|------------------------|
+| Intent Detection | +30-40% | +35-45% |
+| Interest Matching | +20-30% | +25-35% |
+| Session Tracking | +10-20% | +15-25% |
+| Combined | **+50-70%** | **+60-80%** |
+
+*Note: These are projected improvements based on early testing. Actual results may vary.*
 
 ### Best Practices
 
@@ -162,14 +176,17 @@ const client = new AttentionMarketClient({
 
 ```typescript
 const client = new AttentionMarketClient({
-  apiKey: 'am_live_YOUR_KEY',        // Required
+  apiKey: 'am_live_YOUR_KEY',        // Required: Your AttentionMarket API key
   agentId: 'agt_YOUR_AGENT_ID',      // Required for decideFromContext()
+  supabaseAnonKey: 'YOUR_ANON_KEY',  // Required: Get from dashboard
   // baseUrl defaults to production Supabase endpoint
   // Only override if self-hosting or using different environment
   timeoutMs: 4000,                   // Optional: request timeout in milliseconds
   maxRetries: 2                      // Optional: automatic retry count
 });
 ```
+
+**Note:** You need both `apiKey` (AttentionMarket) and `supabaseAnonKey` (infrastructure) for authentication. Get both from your [developer dashboard](https://api.attentionmarket.ai).
 
 ## Core Concepts
 
@@ -624,6 +641,36 @@ Use test API keys (`am_test_...`) for development and testing. Test keys:
 - Have the same rate limits as live keys
 
 Switch to live keys (`am_live_...`) when deploying to production.
+
+## 🌍 REST API for Mobile & Other Platforms
+
+For non-Node.js platforms, use our REST API directly:
+
+### iOS/Swift Example
+```swift
+// See full guide: https://rtrivedi.github.io/agent-ads-sdk/docs/mobile-integration
+let url = URL(string: "https://peruwnbrqkvmrldhpoom.supabase.co/functions/v1/decide")!
+var request = URLRequest(url: url)
+request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+request.setValue(supabaseAnonKey, forHTTPHeaderField: "apikey")
+// ... see docs for complete example
+```
+
+### Python Example
+```python
+# See full guide: https://rtrivedi.github.io/agent-ads-sdk/docs/api-reference
+import requests
+response = requests.post(
+    "https://peruwnbrqkvmrldhpoom.supabase.co/functions/v1/decide",
+    headers={
+        "Authorization": f"Bearer {api_key}",
+        "apikey": supabase_anon_key
+    },
+    json={"user_message": "I need insurance"}
+)
+```
+
+**📖 Full REST API Documentation:** [https://rtrivedi.github.io/agent-ads-sdk/docs/api-reference](https://rtrivedi.github.io/agent-ads-sdk/docs/api-reference)
 
 ## 🤖 Claude Code Integration
 
