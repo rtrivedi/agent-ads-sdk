@@ -110,6 +110,56 @@ Should I show a recommendation?
 - Provide clear value proposition
 - Easy dismissal without consequence
 
+**Here's an example implementation:**
+
+```tsx
+// Example: React component showing contextual integration
+import React, { useState, useEffect } from 'react';
+import { AttentionMarketClient } from '@the_ro_show/agent-ads-sdk';
+
+export const ContextualRecommendation: React.FC<{ userMessage: string }> = ({ userMessage }) => {
+  const [ad, setAd] = useState(null);
+
+  useEffect(() => {
+    // Only fetch if user expresses clear intent
+    if (userMessage.match(/looking for|need|recommend|suggest/i)) {
+      fetchRecommendation();
+    }
+  }, [userMessage]);
+
+  const fetchRecommendation = async () => {
+    const client = new AttentionMarketClient({ /* your config */ });
+    const result = await client.decideFromContext({
+      userMessage,
+      placement: 'contextual_promotion'
+    });
+
+    if (result && result.relevance_score > 0.7) {
+      setAd(result);
+    }
+  };
+
+  if (!ad) return null;
+
+  // Your styling choice - this is just one approach
+  return (
+    <div style={{
+      marginTop: '1rem',
+      padding: '1rem',
+      borderLeft: '3px solid #your-brand-color',
+      background: '#your-background'
+    }}>
+      <small style={{ opacity: 0.7 }}>Sponsored</small>
+      <h4>{ad.creative.title}</h4>
+      <p>{ad.creative.body}</p>
+      <a href={ad.click_url} target="_blank" rel="sponsored">
+        {ad.creative.cta} →
+      </a>
+    </div>
+  );
+};
+```
+
 ### 2. Progressive Disclosure Pattern
 
 **Concept:** Reveal information gradually based on user interest.
@@ -127,6 +177,67 @@ Should I show a recommendation?
 
 **Why this works:** Users control their experience and feel respected.
 
+**Here's an example implementation:**
+
+```typescript
+// Example: TypeScript class for progressive disclosure
+class ProgressiveDisclosure {
+  private recommendation: Ad | null = null;
+  private state: 'idle' | 'teased' | 'revealed' = 'idle';
+
+  async handleUserMessage(message: string, context: ConversationContext) {
+    // Fetch recommendation if relevant
+    if (this.detectIntent(message)) {
+      this.recommendation = await client.decideFromContext({
+        userMessage: message,
+        conversationHistory: context.history
+      });
+    }
+
+    // Show teaser if appropriate
+    if (this.recommendation && this.shouldTease(context)) {
+      await this.showTeaser();
+    }
+  }
+
+  async showTeaser() {
+    // Example teaser - adapt to your voice
+    await displayMessage("By the way, I found a 20% discount that might help. Interested?");
+    this.state = 'teased';
+  }
+
+  async handleResponse(response: string) {
+    if (this.state !== 'teased') return;
+
+    if (response.match(/yes|sure|tell me|interested/i)) {
+      await this.revealFull();
+    } else if (response.match(/no|not interested|skip/i)) {
+      await displayMessage("No problem! Let me know if you change your mind.");
+      this.reset();
+    }
+  }
+
+  async revealFull() {
+    const rec = this.recommendation!;
+    await displayMessage(`
+      ${rec.creative.title}
+      ${rec.creative.body}
+
+      ${rec.creative.promo_code ? `Code: ${rec.creative.promo_code}` : ''}
+      Learn more: ${rec.click_url}
+
+      (Sponsored by ${rec.disclosure.sponsor_name})
+    `);
+    this.state = 'revealed';
+  }
+
+  private reset() {
+    this.recommendation = null;
+    this.state = 'idle';
+  }
+}
+```
+
 ### 3. Natural Break Pattern
 
 **Concept:** Use conversation pauses and transitions.
@@ -142,6 +253,75 @@ Should I show a recommendation?
 - Non-intrusive entry
 - Contextually relevant to recent discussion
 
+**Here's an example implementation:**
+
+```javascript
+// Example: JavaScript natural break detection
+class NaturalBreakDetector {
+  constructor(client) {
+    this.client = client;
+    this.lastMessageTime = Date.now();
+    this.pauseThreshold = 3000; // 3 seconds
+    this.pendingRecommendation = null;
+  }
+
+  onUserMessage(message) {
+    this.lastMessageTime = Date.now();
+
+    // Check for task completion signals
+    if (this.isTaskComplete(message)) {
+      setTimeout(() => this.checkForBreak(), 1500);
+    }
+  }
+
+  isTaskComplete(message) {
+    const completionSignals = [
+      /thanks|thank you/i,
+      /that('s| is) (helpful|great|perfect)/i,
+      /got it|makes sense/i,
+      /done|finished|completed/i
+    ];
+
+    return completionSignals.some(pattern => pattern.test(message));
+  }
+
+  async checkForBreak() {
+    const timeSinceLastMessage = Date.now() - this.lastMessageTime;
+
+    if (timeSinceLastMessage >= this.pauseThreshold) {
+      // Natural pause detected
+      const ad = await this.client.decideFromContext({
+        userMessage: this.lastUserMessage,
+        placement: 'natural_break'
+      });
+
+      if (ad && ad.relevance_score > 0.6) {
+        this.showBreakRecommendation(ad);
+      }
+    }
+  }
+
+  showBreakRecommendation(ad) {
+    // Your UI implementation - this is just an example
+    setTimeout(() => {
+      displayWithTransition({
+        content: `
+          <div class="break-suggestion">
+            <div class="divider">• • •</div>
+            <p>You might also find this helpful:</p>
+            <h4>${ad.creative.title}</h4>
+            <p>${ad.creative.body}</p>
+            <a href="${ad.click_url}">${ad.creative.cta}</a>
+            <small>Sponsored by ${ad.disclosure.sponsor_name}</small>
+          </div>
+        `,
+        animation: 'fade-in'
+      });
+    }, 500);
+  }
+}
+```
+
 ### 4. Deferred Suggestion Pattern
 
 **Concept:** Save recommendations for optimal future moments.
@@ -156,6 +336,90 @@ Should I show a recommendation?
 - Wait for receptive moment
 - Present when most valuable
 - May never show if not appropriate
+
+**Here's an example implementation:**
+
+```typescript
+// Example: TypeScript deferred recommendation queue
+class DeferredRecommendationQueue {
+  private queue: Array<{
+    ad: Ad;
+    fetchedAt: number;
+    context: string;
+  }> = [];
+
+  private maxQueueSize = 3;
+  private maxAge = 10 * 60 * 1000; // 10 minutes
+
+  async collectRecommendation(userMessage: string, context: ConversationContext) {
+    // Fetch but don't display immediately
+    const ad = await client.decideFromContext({
+      userMessage,
+      conversationHistory: context.history
+    });
+
+    if (ad && ad.relevance_score > 0.5) {
+      this.queue.push({
+        ad,
+        fetchedAt: Date.now(),
+        context: userMessage
+      });
+
+      // Keep queue size manageable
+      if (this.queue.length > this.maxQueueSize) {
+        this.queue.shift(); // Remove oldest
+      }
+    }
+  }
+
+  checkForOpportunity(currentContext: ConversationContext): Ad | null {
+    // Clean expired recommendations
+    this.cleanExpired();
+
+    // Check if now is a good time
+    if (!this.isGoodTiming(currentContext)) {
+      return null;
+    }
+
+    // Find most relevant deferred recommendation
+    const relevant = this.queue
+      .filter(item => this.isStillRelevant(item, currentContext))
+      .sort((a, b) => b.ad.relevance_score - a.ad.relevance_score);
+
+    if (relevant.length > 0) {
+      const selected = relevant[0];
+      // Remove from queue once shown
+      this.queue = this.queue.filter(item => item !== selected);
+      return selected.ad;
+    }
+
+    return null;
+  }
+
+  private isGoodTiming(context: ConversationContext): boolean {
+    return (
+      context.messageCount > 5 &&
+      context.userEngagement > 0.6 &&
+      !context.hasRecentError &&
+      context.timeSinceLastAd > 300000 // 5 minutes
+    );
+  }
+
+  private isStillRelevant(item: any, context: ConversationContext): boolean {
+    // Your relevance logic here
+    const topicMatch = context.currentTopic === item.context;
+    const notExpired = Date.now() - item.fetchedAt < this.maxAge;
+    return topicMatch && notExpired;
+  }
+
+  private cleanExpired() {
+    const now = Date.now();
+    this.queue = this.queue.filter(
+      item => now - item.fetchedAt < this.maxAge
+    );
+  }
+}
+```
 
 ## Platform Adaptation Principles
 
@@ -173,6 +437,82 @@ Should I show a recommendation?
 - Consider typing delays
 - Maintain personality consistency
 
+**Here's an example implementation:**
+
+```typescript
+// Example: Slack-style message format
+const formatForSlack = (ad: Ad) => ({
+  blocks: [
+    {
+      type: "section",
+      text: {
+        type: "mrkdwn",
+        text: `💡 *${ad.creative.title}*\n${ad.creative.body}`
+      }
+    },
+    {
+      type: "actions",
+      elements: [
+        {
+          type: "button",
+          text: { type: "plain_text", text: ad.creative.cta },
+          url: ad.click_url,
+          style: "primary"
+        }
+      ]
+    },
+    {
+      type: "context",
+      elements: [
+        { type: "mrkdwn", text: `_Sponsored by ${ad.disclosure.sponsor_name}_` }
+      ]
+    }
+  ]
+});
+
+// Example: WhatsApp interactive message
+const formatForWhatsApp = (ad: Ad) => ({
+  type: "interactive",
+  interactive: {
+    type: "button",
+    body: {
+      text: `${ad.creative.title}\n\n${ad.creative.body}\n\n_Sponsored_`
+    },
+    action: {
+      buttons: [
+        {
+          type: "reply",
+          reply: {
+            id: `view_${ad.id}`,
+            title: ad.creative.cta
+          }
+        }
+      ]
+    }
+  }
+});
+
+// Example: Discord embed
+const formatForDiscord = (ad: Ad) => ({
+  embeds: [{
+    title: ad.creative.title,
+    description: ad.creative.body,
+    color: 0x37FF81, // Your brand color
+    fields: [
+      {
+        name: "Special Offer",
+        value: ad.creative.promo_code || "Learn more",
+        inline: true
+      }
+    ],
+    footer: {
+      text: `Sponsored by ${ad.disclosure.sponsor_name}`
+    },
+    url: ad.click_url
+  }]
+});
+```
+
 ### Voice Interfaces
 
 **Consider the medium:**
@@ -186,6 +526,71 @@ Should I show a recommendation?
 - Brief, scannable mentions
 - Offer to send details to companion app
 - Accept voice dismissals gracefully
+
+**Here's an example implementation:**
+
+```javascript
+// Example: Alexa skill voice recommendation
+class VoiceRecommendation {
+  async handleIntentWithRecommendation(intent, session) {
+    // First, complete the user's request
+    const primaryResponse = await this.handleIntent(intent);
+
+    // Check if we should add a recommendation
+    if (this.shouldAddRecommendation(intent, session)) {
+      const ad = await this.fetchRecommendation(intent);
+
+      if (ad) {
+        return this.buildProgressiveVoiceResponse(primaryResponse, ad);
+      }
+    }
+
+    return primaryResponse;
+  }
+
+  buildProgressiveVoiceResponse(primaryResponse, ad) {
+    return {
+      speak: `
+        <speak>
+          ${primaryResponse}
+          <break time="500ms"/>
+          By the way,
+          <break time="300ms"/>
+          ${ad.creative.teaser || `I found something from ${ad.disclosure.sponsor_name} that might help.`}
+          Say "tell me more" if you're interested.
+        </speak>
+      `,
+      reprompt: "Would you like to hear about the offer?",
+      card: {
+        type: "Simple",
+        title: ad.creative.title,
+        content: `${ad.creative.body}\n\nSponsored by ${ad.disclosure.sponsor_name}`
+      },
+      shouldEndSession: false
+    };
+  }
+
+  handleTellMeMore(session) {
+    const ad = session.attributes.pendingRecommendation;
+
+    return {
+      speak: `
+        <speak>
+          ${ad.creative.body}
+          <break time="500ms"/>
+          I've sent the details to your Alexa app.
+          ${ad.creative.promo_code ? `The promo code is <say-as interpret-as="spell-out">${ad.creative.promo_code}</say-as>` : ''}
+        </speak>
+      `,
+      card: {
+        type: "LinkAccount",
+        title: ad.creative.title,
+        url: ad.click_url
+      }
+    };
+  }
+}
+```
 
 ### Mobile Applications
 
@@ -201,6 +606,113 @@ Should I show a recommendation?
 - Consider thumb reachability
 - Optimize for quick scanning
 
+**Here's an example implementation:**
+
+```swift
+// Example: SwiftUI expandable card for iOS
+import SwiftUI
+
+struct SmartRecommendationCard: View {
+    let ad: AttentionMarketAd
+    @State private var isExpanded = false
+    @State private var hasTrackedImpression = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            // Subtle header
+            HStack {
+                Image(systemName: "sparkle")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                Text("Suggestion")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                Spacer()
+                Text("Sponsored")
+                    .font(.caption2)
+                    .foregroundColor(.tertiary)
+            }
+
+            // Main content
+            VStack(alignment: .leading, spacing: 8) {
+                Text(ad.creative.title)
+                    .font(.headline)
+
+                if isExpanded {
+                    Text(ad.creative.body)
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                        .transition(.opacity)
+
+                    Button(action: {
+                        trackClick()
+                        openURL(ad.clickUrl)
+                    }) {
+                        HStack {
+                            Text(ad.creative.cta)
+                            Image(systemName: "arrow.right.circle")
+                        }
+                    }
+                    .buttonStyle(.borderedProminent)
+                }
+            }
+            .onTapGesture {
+                withAnimation(.spring()) {
+                    isExpanded.toggle()
+                }
+            }
+        }
+        .padding()
+        .background(Color(.systemBackground))
+        .cornerRadius(12)
+        .shadow(radius: isExpanded ? 4 : 2)
+        .onAppear {
+            if !hasTrackedImpression {
+                trackImpression()
+                hasTrackedImpression = true
+            }
+        }
+    }
+}
+
+// Example: React Native for cross-platform
+const MobileRecommendation = ({ ad }) => {
+  const [expanded, setExpanded] = useState(false);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  const toggleExpand = () => {
+    setExpanded(!expanded);
+    Animated.timing(fadeAnim, {
+      toValue: expanded ? 0 : 1,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  return (
+    <TouchableOpacity onPress={toggleExpand} activeOpacity={0.7}>
+      <View style={styles.card}>
+        <View style={styles.header}>
+          <Text style={styles.sponsored}>Sponsored</Text>
+        </View>
+        <Text style={styles.title}>{ad.creative.title}</Text>
+        {expanded && (
+          <Animated.View style={{ opacity: fadeAnim }}>
+            <Text style={styles.body}>{ad.creative.body}</Text>
+            <TouchableOpacity
+              style={styles.ctaButton}
+              onPress={() => Linking.openURL(ad.click_url)}
+            >
+              <Text style={styles.ctaText}>{ad.creative.cta}</Text>
+            </TouchableOpacity>
+          </Animated.View>
+        )}
+      </View>
+    </TouchableOpacity>
+  );
+};
+```
+
 ### Command Line Interfaces
 
 **Consider the medium:**
@@ -214,6 +726,125 @@ Should I show a recommendation?
 - Use ASCII formatting sparingly
 - Keep messages concise
 - Provide quick skip commands
+
+**Here's an example implementation:**
+
+```typescript
+// Example: Node.js CLI tool with chalk
+import chalk from 'chalk';
+import ora from 'ora';
+
+class CLIRecommendations {
+  display(ad: Ad, options = {}) {
+    const { minimal = false, color = true } = options;
+
+    if (minimal) {
+      // Minimal mode for power users
+      console.log(`\n💡 ${ad.creative.title} - ${ad.click_url} (sponsored)`);
+      return;
+    }
+
+    // Standard display with formatting
+    const c = color ? chalk : {
+      dim: (s) => s,
+      blue: (s) => s,
+      cyan: (s) => s,
+      bold: (s) => s
+    };
+
+    console.log('\n' + c.dim('─'.repeat(50)));
+    console.log(c.blue('💡 Suggestion') + ' ' + c.dim('(Sponsored)'));
+    console.log(c.bold(ad.creative.title));
+    console.log(ad.creative.body);
+
+    if (ad.creative.promo_code) {
+      console.log(c.cyan(`Code: ${ad.creative.promo_code}`));
+    }
+
+    console.log(c.cyan(`→ ${ad.creative.cta}: ${ad.click_url}`));
+    console.log(c.dim(`From: ${ad.disclosure.sponsor_name}`));
+    console.log(c.dim('─'.repeat(50)) + '\n');
+  }
+
+  async showWithProgress(fetchPromise: Promise<Ad>) {
+    const spinner = ora('Finding relevant suggestions...').start();
+
+    try {
+      const ad = await fetchPromise;
+
+      if (ad && ad.relevance_score > 0.7) {
+        spinner.succeed('Found a relevant suggestion:');
+        this.display(ad);
+      } else {
+        spinner.stop();
+        // Don't show anything if not relevant
+      }
+    } catch (error) {
+      spinner.stop();
+      // Silently fail - don't interrupt user's workflow
+    }
+  }
+
+  // Interactive mode for CLI tools
+  async interactive(ad: Ad) {
+    const inquirer = require('inquirer');
+
+    const { action } = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'action',
+        message: `💡 ${ad.creative.title} (Sponsored)`,
+        choices: [
+          { name: 'View details', value: 'view' },
+          { name: 'Open in browser', value: 'open' },
+          { name: 'Copy link', value: 'copy' },
+          { name: 'Skip', value: 'skip' }
+        ]
+      }
+    ]);
+
+    switch (action) {
+      case 'view':
+        console.log(`\n${ad.creative.body}`);
+        if (ad.creative.promo_code) {
+          console.log(`Promo Code: ${ad.creative.promo_code}`);
+        }
+        console.log(`Link: ${ad.click_url}\n`);
+        break;
+      case 'open':
+        require('open')(ad.click_url);
+        console.log('Opening in browser...');
+        break;
+      case 'copy':
+        require('clipboardy').writeSync(ad.click_url);
+        console.log('Link copied to clipboard!');
+        break;
+      case 'skip':
+        // Do nothing
+        break;
+    }
+  }
+}
+
+// Usage in a CLI command
+const cli = new CLIRecommendations();
+
+// After completing a task
+async function afterTaskCompletion(task) {
+  console.log('✅ Task completed successfully!');
+
+  // Fetch recommendation based on task context
+  const ad = await client.decideFromContext({
+    userMessage: task.description,
+    placement: 'cli_completion'
+  });
+
+  if (ad) {
+    // Show after a brief delay
+    setTimeout(() => cli.display(ad, { minimal: process.env.MINIMAL }), 1000);
+  }
+}
+```
 
 ## Intelligence for AI Agents
 
@@ -259,6 +890,147 @@ If not appropriate:
 4. **Graceful exit:** Move on if not
 
 **Why this works:** Mimics human helpfulness rather than advertising.
+
+**Here's an example implementation:**
+
+```typescript
+// Example: AI agent with smart recommendation capabilities
+class AIAgentWithRecommendations {
+  private client: AttentionMarketClient;
+  private conversationState = {
+    messageCount: 0,
+    lastAdAt: 0,
+    pendingRecommendation: null,
+    userSentiment: 'neutral' as 'positive' | 'neutral' | 'negative'
+  };
+
+  async processUserMessage(message: string, history: string[]) {
+    this.conversationState.messageCount++;
+
+    // Step 1: Always complete user's request first
+    const primaryResponse = await this.generateResponse(message, history);
+
+    // Step 2: Evaluate if we should fetch a recommendation
+    const shouldFetch = this.evaluateContext(message);
+
+    if (shouldFetch) {
+      const recommendation = await this.fetchSmartRecommendation(message, history);
+
+      if (recommendation) {
+        // Step 3: Choose presentation strategy
+        return this.formatWithRecommendation(primaryResponse, recommendation);
+      }
+    }
+
+    return primaryResponse;
+  }
+
+  evaluateContext(message: string): boolean {
+    // Don't show too early
+    if (this.conversationState.messageCount < 3) return false;
+
+    // Respect frequency
+    const messagesSinceLastAd = this.conversationState.messageCount - this.conversationState.lastAdAt;
+    if (messagesSinceLastAd < 5) return false;
+
+    // Check sentiment
+    if (this.conversationState.userSentiment === 'negative') return false;
+
+    // Detect commercial intent
+    const hasIntent = /need|looking for|recommend|suggest|help with|best/.test(message.toLowerCase());
+
+    return hasIntent;
+  }
+
+  async fetchSmartRecommendation(message: string, history: string[]) {
+    const ad = await this.client.decideFromContext({
+      userMessage: message,
+      conversationHistory: history,
+      placement: 'ai_conversation'
+    });
+
+    // Only return if highly relevant
+    return ad && ad.relevance_score > 0.75 ? ad : null;
+  }
+
+  formatWithRecommendation(primaryResponse: string, ad: Ad) {
+    this.conversationState.pendingRecommendation = ad;
+    this.conversationState.lastAdAt = this.conversationState.messageCount;
+
+    // Progressive disclosure approach
+    return {
+      message: primaryResponse,
+      followUp: {
+        delay: 1500,
+        content: `By the way, ${ad.creative.teaser || "I found something that might help with this."}`,
+        awaitResponse: true
+      }
+    };
+  }
+
+  handleFollowUpResponse(userResponse: string) {
+    const ad = this.conversationState.pendingRecommendation;
+    if (!ad) return null;
+
+    // Check for interest
+    if (userResponse.match(/yes|sure|tell me|what is it|interested/i)) {
+      return this.revealRecommendation(ad);
+    } else if (userResponse.match(/no|not interested|skip/i)) {
+      this.conversationState.pendingRecommendation = null;
+      return "No problem! Let me know if you need anything else.";
+    }
+
+    // Ambiguous response - continue normally
+    return null;
+  }
+
+  revealRecommendation(ad: Ad) {
+    return `
+${ad.creative.title}
+
+${ad.creative.body}
+
+${ad.creative.promo_code ? `Promo code: ${ad.creative.promo_code}` : ''}
+
+You can learn more here: ${ad.click_url}
+
+(Sponsored by ${ad.disclosure.sponsor_name})
+    `.trim();
+  }
+}
+
+// Example: System prompt for LLMs like Claude or ChatGPT
+const SMART_RECOMMENDATION_SYSTEM_PROMPT = `
+You have access to sponsored recommendations via AttentionMarket.
+
+RULES:
+1. ALWAYS complete the user's request FIRST before considering recommendations
+2. Only show recommendations that are genuinely helpful and relevant
+3. Use progressive disclosure - tease first, reveal only if interested
+4. Clearly disclose sponsorship when revealing
+5. Never push if user shows disinterest
+
+WHEN TO SHOW:
+- User expresses a need or problem
+- After successfully helping (not before)
+- When commercial intent is detected
+- During natural conversation breaks
+
+HOW TO SHOW:
+1. Complete their request
+2. Brief pause/transition
+3. "By the way, I found [teaser]"
+4. If interested → full details + disclosure
+5. If not → move on gracefully
+
+EXAMPLE:
+User: "I need to book a flight to Paris"
+You: [Complete flight booking help first]
+You: "By the way, I found a 15% discount code for Paris hotels. Interested?"
+User: "Sure!"
+You: "[Full details with sponsor disclosure]"
+`;
+```
 
 ## Measurement Without Prescription
 
