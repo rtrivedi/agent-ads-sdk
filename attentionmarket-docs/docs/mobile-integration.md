@@ -19,12 +19,14 @@ import Foundation
 class AttentionMarketClient {
     private let apiKey: String
     private let agentId: String
-    private let baseURL = "https://api.attentionmarket.ai/v1"
+    private let supabaseAnonKey: String
+    private let baseURL = "https://peruwnbrqkvmrldhpoom.supabase.co/functions/v1"
     private let session: URLSession
 
-    init(apiKey: String, agentId: String) {
+    init(apiKey: String, agentId: String, supabaseAnonKey: String) {
         self.apiKey = apiKey
         self.agentId = agentId
+        self.supabaseAnonKey = supabaseAnonKey
 
         // Configure session with caching
         let config = URLSessionConfiguration.default
@@ -41,8 +43,8 @@ class AttentionMarketClient {
         let url = URL(string: "\(baseURL)/decide")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        request.setValue(apiKey, forHTTPHeaderField: "X-API-Key")
-        request.setValue(agentId, forHTTPHeaderField: "X-Agent-ID")
+        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        request.setValue(supabaseAnonKey, forHTTPHeaderField: "apikey")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
         let payload = [
@@ -429,9 +431,10 @@ import java.io.IOException
 
 class AttentionMarketClient(
     private val apiKey: String,
-    private val agentId: String
+    private val agentId: String,
+    private val supabaseAnonKey: String
 ) {
-    private val baseUrl = "https://api.attentionmarket.ai/v1"
+    private val baseUrl = "https://peruwnbrqkvmrldhpoom.supabase.co/functions/v1"
     private val client = OkHttpClient.Builder()
         .connectTimeout(10, TimeUnit.SECONDS)
         .readTimeout(10, TimeUnit.SECONDS)
@@ -457,8 +460,8 @@ class AttentionMarketClient(
         val request = Request.Builder()
             .url("$baseUrl/decide")
             .post(payload.toString().toRequestBody(json))
-            .addHeader("X-API-Key", apiKey)
-            .addHeader("X-Agent-ID", agentId)
+            .addHeader("Authorization", "Bearer $apiKey")
+            .addHeader("apikey", supabaseAnonKey)
             .addHeader("Content-Type", "application/json")
             .build()
 

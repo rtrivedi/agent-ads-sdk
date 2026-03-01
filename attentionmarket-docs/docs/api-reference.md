@@ -11,7 +11,7 @@ Direct HTTP API integration for any platform or language. Use this reference whe
 
 ### Endpoint
 ```
-https://api.attentionmarket.ai/v1
+https://peruwnbrqkvmrldhpoom.supabase.co/functions/v1
 ```
 
 ### Authentication
@@ -19,10 +19,12 @@ https://api.attentionmarket.ai/v1
 All requests require authentication via headers:
 
 ```http
-X-API-Key: YOUR_API_KEY
-X-Agent-ID: YOUR_AGENT_ID
+Authorization: Bearer YOUR_API_KEY
+apikey: YOUR_SUPABASE_ANON_KEY
 Content-Type: application/json
 ```
+
+**Note:** The SDK handles authentication automatically. For direct API calls, you need both the Authorization header (with your AttentionMarket API key) and the apikey header (Supabase anon key).
 
 ### Rate Limits
 - **Development (test keys)**: 100 requests/minute
@@ -100,54 +102,31 @@ POST /decide
 }
 ```
 
-### Track Click
+### Track Event (Click/Impression/Conversion)
 
-Report when a user clicks on a promotion (only needed if using direct_url instead of click_url).
+Report user interactions with ads. The SDK's `trackClick()` method uses this internally.
 
 ```http
-POST /track/click
+POST /event
 ```
 
 #### Request Body
 
 ```json
 {
+  "event_id": "evt_abc123",
+  "event_type": "click" | "impression" | "conversion",
   "tracking_token": "tk_def456",
-  "click_context": {
-    "timestamp": "2024-02-28T10:30:00Z",
+  "agent_id": "agt_xyz789",
+  "timestamp": "2024-02-28T10:30:00Z",
+  "context": {
     "device_type": "mobile",
-    "user_agent": "Mozilla/5.0..."
-  }
-}
-```
-
-#### Response
-
-```json
-{
-  "success": true,
-  "click_id": "clk_ghi789"
-}
-```
-
-### Track Conversion
-
-Report when a user completes a desired action after clicking.
-
-```http
-POST /track/conversion
-```
-
-#### Request Body
-
-```json
-{
-  "tracking_token": "tk_def456",
-  "conversion_type": "signup" | "purchase" | "custom",
-  "conversion_value": 2999,
+    "user_agent": "Mozilla/5.0...",
+    "session_id": "sess_123"
+  },
   "metadata": {
-    "product_id": "prod_123",
-    "quantity": 1
+    "conversion_value": 2999,
+    "product_id": "prod_123"
   }
 }
 ```
@@ -156,49 +135,63 @@ POST /track/conversion
 
 ```json
 {
-  "success": true,
-  "conversion_id": "cnv_jkl012"
+  "status": "success",
+  "event_id": "evt_abc123"
 }
 ```
+
+**Note:** The SDK automatically handles click tracking when you use the `click_url` field from ad responses. Only use this endpoint if implementing custom tracking.
 
 ### Get Service (Agent-to-Agent)
 
-Request a specialized AI service for a specific task.
+Request a specialized AI service. **Note:** This uses the `/decide` endpoint with special parameters to filter for service ads only.
 
 ```http
-POST /service/request
+POST /decide
 ```
 
-#### Request Body
+#### Request Body (for Service Ads)
 
 ```json
 {
-  "task_description": "Translate this document to Spanish",
-  "task_context": {
-    "input_language": "en",
-    "output_language": "es",
-    "document_type": "technical"
+  "request_id": "req_abc123",
+  "agent_id": "agt_xyz789",
+  "placement": {
+    "type": "sponsored_suggestion",
+    "surface": "service_request"
   },
-  "max_bid": 500,
-  "timeout_ms": 30000
+  "opportunity": {
+    "intent": {
+      "taxonomy": "services.agent_to_agent",
+      "query": "Translate this document to Spanish"
+    },
+    "constraints": {
+      "max_units": 1,
+      "allowed_unit_types": ["sponsored_suggestion"]
+    }
+  },
+  "context": "Need Spanish translation for technical document",
+  "user_intent": "Translate this document to Spanish"
 }
 ```
 
-#### Response
+#### Response (Service Ad)
 
 ```json
 {
-  "service": {
+  "units": [{
+    "ad_type": "service",
     "transaction_id": "txn_mno345",
-    "service_endpoint": "https://api.translator.ai/v1/translate",
-    "service_auth": "Bearer svc_token_xyz",
-    "expected_cost": 300,
-    "timeout_ms": 30000,
-    "provider": {
-      "name": "TranslateAI Pro",
-      "rating": 4.8
+    "suggestion": {
+      "service_endpoint": "https://api.translator.ai/v1/translate",
+      "service_auth": "Bearer svc_token_xyz",
+      "service_description": "Professional translation service"
+    },
+    "payout": 300,
+    "disclosure": {
+      "sponsor_name": "TranslateAI Pro"
     }
-  }
+  }]
 }
 ```
 
@@ -207,7 +200,7 @@ POST /service/request
 Report the outcome of a service call.
 
 ```http
-POST /service/result
+POST /service-result
 ```
 
 #### Request Body
@@ -234,15 +227,16 @@ import requests
 import os
 
 class AttentionMarketClient:
-    def __init__(self, api_key, agent_id):
+    def __init__(self, api_key, agent_id, supabase_anon_key):
         self.api_key = api_key
         self.agent_id = agent_id
-        self.base_url = "https://api.attentionmarket.ai/v1"
+        self.supabase_anon_key = supabase_anon_key
+        self.base_url = "https://peruwnbrqkvmrldhpoom.supabase.co/functions/v1"
 
     def get_ad(self, user_message, conversation_history=None):
         headers = {
-            "X-API-Key": self.api_key,
-            "X-Agent-ID": self.agent_id,
+            "Authorization": f"Bearer {self.api_key}",
+            "apikey": self.supabase_anon_key,
             "Content-Type": "application/json"
         }
 
@@ -282,19 +276,21 @@ import Foundation
 class AttentionMarketClient {
     private let apiKey: String
     private let agentId: String
-    private let baseURL = "https://api.attentionmarket.ai/v1"
+    private let supabaseAnonKey: String
+    private let baseURL = "https://peruwnbrqkvmrldhpoom.supabase.co/functions/v1"
 
-    init(apiKey: String, agentId: String) {
+    init(apiKey: String, agentId: String, supabaseAnonKey: String) {
         self.apiKey = apiKey
         self.agentId = agentId
+        self.supabaseAnonKey = supabaseAnonKey
     }
 
     func getAd(userMessage: String, conversationHistory: [String]? = nil) async throws -> Ad? {
         let url = URL(string: "\(baseURL)/decide")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        request.setValue(apiKey, forHTTPHeaderField: "X-API-Key")
-        request.setValue(agentId, forHTTPHeaderField: "X-Agent-ID")
+        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        request.setValue(supabaseAnonKey, forHTTPHeaderField: "apikey")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
         let payload = DecideRequest(
@@ -436,23 +432,33 @@ type Creative struct {
 
 ```bash
 # Get a contextual ad
-curl -X POST https://api.attentionmarket.ai/v1/decide \
-  -H "X-API-Key: YOUR_API_KEY" \
-  -H "X-Agent-ID: YOUR_AGENT_ID" \
+curl -X POST https://peruwnbrqkvmrldhpoom.supabase.co/functions/v1/decide \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "apikey: YOUR_SUPABASE_ANON_KEY" \
   -H "Content-Type: application/json" \
   -d '{
-    "user_message": "I need car insurance",
-    "conversation_history": ["I just got my license"],
-    "placement": "sponsored_suggestion"
+    "agent_id": "YOUR_AGENT_ID",
+    "placement": {
+      "type": "sponsored_suggestion"
+    },
+    "opportunity": {
+      "intent": {
+        "query": "I need car insurance"
+      }
+    },
+    "context": "I need car insurance",
+    "user_intent": "I need car insurance"
   }'
 
-# Track a click
-curl -X POST https://api.attentionmarket.ai/v1/track/click \
-  -H "X-API-Key: YOUR_API_KEY" \
-  -H "X-Agent-ID: YOUR_AGENT_ID" \
+# Track a click event
+curl -X POST https://peruwnbrqkvmrldhpoom.supabase.co/functions/v1/event \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "apikey: YOUR_SUPABASE_ANON_KEY" \
   -H "Content-Type: application/json" \
   -d '{
-    "tracking_token": "tk_def456"
+    "event_type": "click",
+    "tracking_token": "tk_def456",
+    "agent_id": "YOUR_AGENT_ID"
   }'
 ```
 
