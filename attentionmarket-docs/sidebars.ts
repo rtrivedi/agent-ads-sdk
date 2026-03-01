@@ -19,13 +19,19 @@ const sidebars: SidebarsConfig = {
       label: 'Quickstart',
     },
     {
-      type: 'category',
-      label: 'Integration Guides',
-      collapsed: false,
-      items: [
-        'api-reference',
-        'mobile-integration',
-      ],
+      type: 'doc',
+      id: 'api-reference',
+      label: 'REST API Reference',
+    },
+    {
+      type: 'doc',
+      id: 'mobile-integration',
+      label: 'Mobile Integration',
+    },
+    {
+      type: 'doc',
+      id: 'smart-display-templates',
+      label: 'Smart Display Concepts',
     },
     {
       type: 'category',

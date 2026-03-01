@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simplified Campaign Wizard - Visual Test</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Custom styles to simulate your theme */
+    :root {
+      --background: #ffffff;
+      --foreground: #0a0a0a;
+      --muted: #f4f4f5;
+      --muted-foreground: #71717a;
+      --primary: #3b82f6;
+      --primary-foreground: #ffffff;
+      --destructive: #ef4444;
+      --border: #e4e4e7;
+    }
+
+    .dark {
+      --background: #0a0a0a;
+      --foreground: #fafafa;
+      --muted: #27272a;
+      --muted-foreground: #a1a1aa;
+      --primary: #3b82f6;
+      --primary-foreground: #ffffff;
+      --destructive: #ef4444;
+      --border: #27272a;
+    }
+
+    body {
+      background: var(--background);
+      color: var(--foreground);
+    }
+  </style>
+</head>
+<body>
+  <div class="min-h-screen bg-white dark:bg-gray-900">
+    <!-- Header -->
+    <header class="border-b border-gray-200 dark:border-gray-800">
+      <div class="container max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div class="text-sm text-gray-500">Step 1 of 6</div>
+        <button class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container max-w-3xl mx-auto px-6 py-8">
+      <!-- Progress Dots -->
+      <div class="flex items-center justify-center gap-2 py-4">
+        <div class="w-8 h-2 bg-blue-500 rounded-full"></div>
+        <div class="w-2 h-2 bg-gray-300 rounded-full"></div>
+        <div class="w-2 h-2 bg-gray-300 rounded-full"></div>
+        <div class="w-2 h-2 bg-gray-300 rounded-full"></div>
+        <div class="w-2 h-2 bg-gray-300 rounded-full"></div>
+        <div class="w-2 h-2 bg-gray-300 rounded-full"></div>
+      </div>
+
+      <!-- Step 1: Basics -->
+      <div class="mt-8 space-y-6">
+        <div>
+          <h2 class="text-2xl font-semibold">Let's start with the basics</h2>
+          <p class="text-gray-500 mt-2">Just a few quick details to get started</p>
+        </div>
+
+        <div class="space-y-6">
+          <!-- Campaign Name -->
+          <div class="space-y-2">
+            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Campaign Name <span class="text-red-500">*</span>
+            </label>
+            <input type="text" placeholder="e.g., Summer Launch"
+              class="w-full h-12 px-4 text-base bg-gray-50 dark:bg-gray-800 rounded-lg outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+          </div>
+
+          <!-- Budget and CPC -->
+          <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-2">
+              <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Budget <span class="text-red-500">*</span>
+              </label>
+              <div class="relative">
+                <span class="absolute left-3 top-3.5 text-gray-500">$</span>
+                <input type="number" value="10"
+                  class="w-full h-12 pl-8 text-base bg-gray-50 dark:bg-gray-800 rounded-lg outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Cost per Click <span class="text-red-500">*</span>
+              </label>
+              <div class="relative">
+                <span class="absolute left-3 top-3.5 text-gray-500">$</span>
+                <input type="number" value="0.50" step="0.10"
+                  class="w-full h-12 pl-8 text-base bg-gray-50 dark:bg-gray-800 rounded-lg outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
+              </div>
+            </div>
+          </div>
+
+          <!-- Performance Indicator -->
+          <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+            <div class="flex items-center justify-between">
+              <span class="text-sm text-gray-600 dark:text-gray-400">Estimated clicks</span>
+              <span class="text-lg font-semibold">~20</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <div class="mt-12 flex items-center justify-between">
+        <div></div>
+        <button class="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium flex items-center gap-2 transition-colors">
+          Continue
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </button>
+      </div>
+    </main>
+  </div>
+
+  <!-- Example of Step 3 with Simplified Tags -->
+  <div class="min-h-screen bg-white dark:bg-gray-900 mt-8 border-t-4 border-gray-200">
+    <main class="container max-w-3xl mx-auto px-6 py-8">
+      <h2 class="text-2xl font-semibold mb-2">When should your ad appear?</h2>
+      <p class="text-gray-500 mb-6">We match based on context, not keywords</p>
+
+      <!-- Tag Input Example -->
+      <div class="space-y-6">
+        <div>
+          <label class="text-sm font-medium mb-3 block">
+            Trigger contexts <span class="text-red-500">*</span>
+          </label>
+
+          <!-- Tags -->
+          <div class="space-y-2">
+            <div class="flex flex-wrap gap-2">
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-sm font-medium">
+                user asking about code reviews
+                <button class="hover:bg-blue-200 dark:hover:bg-blue-800 rounded-full p-0.5 transition-colors">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                  </svg>
+                </button>
+              </span>
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-sm font-medium">
+                improving development workflow
+                <button class="hover:bg-blue-200 dark:hover:bg-blue-800 rounded-full p-0.5 transition-colors">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                  </svg>
+                </button>
+              </span>
+            </div>
+
+            <!-- Input -->
+            <div class="relative">
+              <input type="text" placeholder="Add another..."
+                class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-lg outline-none focus:bg-white dark:focus:bg-gray-900 focus:ring-2 focus:ring-blue-500/20 transition-all">
+              <span class="absolute right-3 top-3.5 text-xs text-gray-400 animate-pulse">Press Enter</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Collapsible Optional Section -->
+        <div class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+          <button class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center justify-between text-sm font-medium">
+            Advanced targeting (optional)
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Dark mode toggle -->
+  <button onclick="document.body.classList.toggle('dark')"
+    class="fixed bottom-4 right-4 p-3 bg-gray-200 dark:bg-gray-800 rounded-lg">
+    🌓 Toggle Dark Mode
+  </button>
+</body>
+</html>
