@@ -13,6 +13,17 @@ Get AttentionMarket integrated in your AI application in just 5 minutes. This gu
 - An AI application (chatbot, assistant, agent, etc.)
 - 5 minutes of your time
 
+:::tip 🤖 Using Claude Code?
+Skip the manual steps! Use our [Claude Code Quick Start](/docs/claude-code-quickstart) for automated integration in under 5 minutes.
+
+Just paste this prompt with your credentials:
+```
+Integrate AttentionMarket SDK. Credentials: am_test_YOUR_KEY, agt_YOUR_ID
+```
+
+Claude Code will detect your framework and generate production-ready code automatically.
+:::
+
 ## Step 1: Get Your API Keys
 
 First, sign up for free at [developers.attentionmarket.ai](https://developers.attentionmarket.ai) to get your credentials:

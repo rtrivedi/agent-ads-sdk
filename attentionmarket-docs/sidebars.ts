@@ -32,6 +32,30 @@ const sidebars: SidebarsConfig = {
       ],
     },
 
+    // 🤖 CLAUDE CODE
+    {
+      type: 'category',
+      label: '🤖 Claude Code',
+      collapsed: false,
+      items: [
+        {
+          type: 'doc',
+          id: 'claude-code-quickstart',
+          label: '5-Min Integration',
+        },
+        {
+          type: 'doc',
+          id: 'claude-code-patterns',
+          label: 'Framework Patterns',
+        },
+        {
+          type: 'doc',
+          id: 'claude-code-prompts',
+          label: 'Prompt Library',
+        },
+      ],
+    },
+
     // 🔧 BUILD
     {
       type: 'category',
