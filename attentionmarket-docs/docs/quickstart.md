@@ -115,6 +115,10 @@ const result = await handleUserMessage("I need car insurance");
 console.log(result);
 ```
 
+:::warning REVENUE REQUIREMENT
+Always use `decideFromContext()` to automatically track impressions. **Without impression tracking, clicks will not generate revenue.** The SDK handles this automatically—no additional code needed.
+:::
+
 ## Step 5: Display the Ad
 
 How you display the ad depends on your platform:
