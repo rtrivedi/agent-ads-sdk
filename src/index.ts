@@ -67,7 +67,6 @@ export {
   generateTimestamp,
   createOpportunity,
   createImpressionEvent,
-  createClickEvent,
   escapeHTML,
   sanitizeURL,
 } from './utils.js';
@@ -75,7 +74,6 @@ export {
 export type {
   CreateOpportunityParams,
   CreateImpressionEventParams,
-  CreateClickEventParams,
   SanitizeURLOptions,
 } from './utils.js';
 

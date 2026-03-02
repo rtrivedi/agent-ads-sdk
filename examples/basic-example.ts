@@ -30,13 +30,10 @@ async function main() {
 
   const displayMessage = `[Sponsored] ${ad.disclosure.sponsor_name}\n${ad.creative.title}\n${ad.creative.body}\n→ ${ad.creative.cta}`;
 
-  // When user clicks, track it (ultra-simple!)
-  await client.trackClickFromAd(ad, {
-    click_context: displayMessage
-  });
-
-  console.log('✓ Click tracked');
-  console.log('✓ Opening:', ad.click_url);
+  // Click tracking happens automatically when user clicks the URL!
+  // The click_url contains an HMAC-signed tracking token that ensures fraud prevention.
+  // Simply redirect the user to ad.click_url when they click.
+  console.log('✓ Click URL ready (tracking built-in):', ad.click_url);
 }
 
 main().catch(console.error);

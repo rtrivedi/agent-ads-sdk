@@ -4,7 +4,7 @@
  */
 
 import { HTTPClient } from './http.js';
-import { createImpressionEvent, createClickEvent, generateUUID } from './utils.js';
+import { createImpressionEvent, generateUUID } from './utils.js';
 import {
   detectIntentStage,
   extractInterests,
@@ -34,7 +34,7 @@ import type {
   GetCategoriesParams,
   CategoryTaxonomyResponse,
 } from './types.js';
-import type { CreateImpressionEventParams, CreateClickEventParams } from './utils.js';
+import type { CreateImpressionEventParams } from './utils.js';
 
 // Default configuration (points to AttentionMarket production API)
 // Developers can override with their own backend if self-hosting
@@ -555,67 +555,6 @@ export class AttentionMarketClient {
   ): Promise<EventIngestResponse> {
     const event = createImpressionEvent(params);
     return await this.track(event);
-  }
-
-  /**
-   * Convenience method to track a click event.
-   * Creates a click event using createClickEvent() and calls track().
-   */
-  async trackClick(
-    params: Omit<CreateClickEventParams, 'occurred_at'> & { occurred_at?: string },
-  ): Promise<EventIngestResponse> {
-    const event = createClickEvent(params);
-    return await this.track(event);
-  }
-
-  /**
-   * Ultra-simple method to track a click from an ad returned by decideFromContext().
-   * Automatically extracts all required fields from the ad object.
-   *
-   * @param ad - The ad object returned by decideFromContext()
-   * @param options - Just click_context (what you showed the user)
-   *
-   * @example
-   * ```typescript
-   * const ad = await client.decideFromContext({ userMessage: "I need car insurance" });
-   * if (ad) {
-   *   await client.trackClickFromAd(ad, {
-   *     click_context: "Progressive: Get 20% off - Compare quotes"
-   *   });
-   * }
-   * ```
-   */
-  async trackClickFromAd(
-    ad: import('./types.js').AdResponse,
-    options: {
-      click_context: string;
-      metadata?: Record<string, unknown>;
-      occurred_at?: string;
-    },
-  ): Promise<EventIngestResponse> {
-    if (!this.agentId) {
-      throw new Error('agentId is required for trackClickFromAd(). Set it in the constructor.');
-    }
-
-    const trackParams: any = {
-      agent_id: this.agentId,
-      request_id: ad.request_id,
-      decision_id: ad.decision_id,
-      unit_id: ad._ad.unit_id,
-      tracking_token: ad.tracking_token,
-      href: ad.click_url,
-      click_context: options.click_context,
-    };
-
-    // Only add optional fields if they're provided
-    if (options.metadata) {
-      trackParams.metadata = options.metadata;
-    }
-    if (options.occurred_at) {
-      trackParams.occurred_at = options.occurred_at;
-    }
-
-    return await this.trackClick(trackParams);
   }
 
   /**

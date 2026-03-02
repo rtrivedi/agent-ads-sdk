@@ -38,7 +38,7 @@ async function main() {
   console.log('- Sharing in chat apps (WhatsApp, Telegram, iMessage)');
   console.log('- Sending via email or SMS');
   console.log('- Posting in messages/feeds');
-  console.log('- Any scenario where you can\'t execute trackClick()');
+  console.log('- Any scenario where you need server-side redirect tracking');
 }
 
 main().catch(console.error);

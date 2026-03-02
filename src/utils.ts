@@ -142,53 +142,6 @@ export function createImpressionEvent(params: CreateImpressionEventParams): Even
   return event;
 }
 
-export interface CreateClickEventParams {
-  agent_id: string;
-  request_id: string;
-  decision_id: string;
-  unit_id: string;
-  tracking_token: string;
-  href: string;
-  click_context: string;  // Required: The message shown to user that they clicked
-  occurred_at?: string;
-  metadata?: Record<string, unknown>;
-}
-
-/**
- * Helper to create a click event payload.
- *
- * @param params - Event parameters (snake_case to match API)
- * @returns EventIngestRequest ready to pass to client.track()
- */
-export function createClickEvent(params: CreateClickEventParams): EventIngestRequest {
-  const event: EventIngestRequest = {
-    event_id: generateUUID(),
-    occurred_at: params.occurred_at ?? generateTimestamp(),
-    agent_id: params.agent_id,
-    request_id: params.request_id,
-    decision_id: params.decision_id,
-    unit_id: params.unit_id,
-    event_type: 'click',
-    tracking_token: params.tracking_token,
-  };
-
-  // Include href and click_context in metadata
-  if (params.metadata !== undefined) {
-    event.metadata = {
-      ...params.metadata,
-      href: params.href,
-      click_context: params.click_context,
-    };
-  } else {
-    event.metadata = {
-      href: params.href,
-      click_context: params.click_context,
-    };
-  }
-
-  return event;
-}
-
 // ============================================================================
 // Security & Sanitization Helpers
 // ============================================================================

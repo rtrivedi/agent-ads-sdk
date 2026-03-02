@@ -177,8 +177,8 @@ const ad = await client.decideFromContext({
   placement: 'sponsored_suggestion'
 });
 
-// Track click (if using direct_url instead of click_url)
-await client.trackClick(ad.tracking_token, { /* click_context */ });
+// Clicks are tracked automatically via click_url redirect
+// No manual click tracking needed (removed for security)
 
 // Track conversion
 await client.trackConversion(ad.tracking_token);
@@ -312,11 +312,19 @@ Before deploying to production:
 
 ---
 
-**Last Updated:** 2026-02-26 (v0.15.0 - Smart Context with intent detection + user profiling)
+**Last Updated:** 2026-03-01 (v0.16.0 - Security Hardening - Removed manual click tracking)
 
 ---
 
 ## Version History
+
+### v0.16.0 (2026-03-01) - Security Hardening
+- **BREAKING CHANGE:** Removed manual click tracking methods for security
+  - Removed `trackClick()` and `trackClickFromAd()` methods
+  - All clicks must now go through HMAC-signed redirect URLs
+- Updated `/event` endpoint to reject manual click submissions
+- Prevents click fraud by enforcing server-side redirect tracking
+- Improved security posture for production deployment
 
 ### v0.15.0 (2026-02-26) - Smart Context Features
 - Added automatic intent stage detection (research → comparison → ready_to_buy)

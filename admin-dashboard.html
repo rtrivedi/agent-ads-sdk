@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AttentionMarket Admin Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f8f9fa;
+            color: #202124;
+        }
+
+        .header {
+            background: white;
+            border-bottom: 1px solid #e0e0e0;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: 500;
+        }
+
+        .header .status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #34a853;
+        }
+
+        .status-indicator.error {
+            background: #ea4335;
+        }
+
+        .status-indicator.warning {
+            background: #fbbc04;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .metric-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            transition: box-shadow 0.2s;
+        }
+
+        .metric-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: #5f6368;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .metric-value {
+            font-size: 32px;
+            font-weight: 300;
+            color: #202124;
+            line-height: 1;
+        }
+
+        .metric-change {
+            font-size: 14px;
+            color: #34a853;
+            margin-top: 8px;
+        }
+
+        .metric-change.negative {
+            color: #ea4335;
+        }
+
+        .section {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .section-header {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 2px solid #e0e0e0;
+            font-weight: 500;
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #5f6368;
+        }
+
+        .table td {
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+        }
+
+        .table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .badge.active {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .badge.paused {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        .badge.error {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .activity-feed {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .activity-item {
+            padding: 12px;
+            border-left: 3px solid transparent;
+            margin-bottom: 8px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        .activity-item.click {
+            border-left-color: #4285f4;
+        }
+
+        .activity-item.impression {
+            border-left-color: #34a853;
+        }
+
+        .activity-item.conversion {
+            border-left-color: #fbbc04;
+        }
+
+        .fraud-warning {
+            background: #fff3e0;
+            border: 1px solid #ffb74d;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .fraud-warning h3 {
+            color: #e65100;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #5f6368;
+        }
+
+        .error-message {
+            background: #ffebee;
+            border: 1px solid #ef5350;
+            color: #c62828;
+            padding: 16px;
+            border-radius: 8px;
+            margin: 16px;
+        }
+
+        .refresh-btn {
+            background: #4285f4;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .refresh-btn:hover {
+            background: #3367d6;
+        }
+
+        .chart-container {
+            height: 300px;
+            margin-top: 20px;
+        }
+
+        .progress-bar {
+            background: #e0e0e0;
+            border-radius: 4px;
+            height: 8px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+
+        .progress-fill {
+            background: #4285f4;
+            height: 100%;
+            transition: width 0.3s;
+        }
+
+        .progress-fill.warning {
+            background: #fbbc04;
+        }
+
+        .progress-fill.danger {
+            background: #ea4335;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎯 AttentionMarket Admin Dashboard</h1>
+        <div class="status">
+            <span id="connection-status">Connecting...</span>
+            <div class="status-indicator" id="status-indicator"></div>
+            <button class="refresh-btn" onclick="refreshDashboard()">↻ Refresh</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- System Health Metrics -->
+        <div class="metrics-grid" id="health-metrics">
+            <div class="metric-card">
+                <div class="metric-label">Active Campaigns</div>
+                <div class="metric-value" id="active-campaigns">--</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Today's Revenue</div>
+                <div class="metric-value" id="revenue-today">--</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Fill Rate</div>
+                <div class="metric-value" id="fill-rate">--</div>
+                <div class="metric-change">Target: >80%</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Click Rate</div>
+                <div class="metric-value" id="ctr">--</div>
+                <div class="metric-change">Industry avg: 2-3%</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Decisions/Hour</div>
+                <div class="metric-value" id="decisions-per-hour">--</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Active Agents (24h)</div>
+                <div class="metric-value" id="active-agents">--</div>
+            </div>
+        </div>
+
+        <!-- Fraud Detection Warnings -->
+        <div id="fraud-warnings"></div>
+
+        <!-- Financial Overview -->
+        <div class="section">
+            <div class="section-header">
+                💰 Financial Overview (Last 30 Days)
+            </div>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-label">Total Revenue</div>
+                    <div class="metric-value" id="total-revenue">--</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Developer Earnings</div>
+                    <div class="metric-value" id="developer-earnings">--</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Platform Fees</div>
+                    <div class="metric-value" id="platform-fees">--</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Active Budget</div>
+                    <div class="metric-value" id="active-budget">--</div>
+                </div>
+            </div>
+            <div id="top-advertisers"></div>
+            <div id="top-developers"></div>
+        </div>
+
+        <!-- Campaign Performance -->
+        <div class="section">
+            <div class="section-header">
+                📊 Campaign Performance
+            </div>
+            <div id="campaign-alerts"></div>
+            <div id="campaign-tables"></div>
+        </div>
+
+        <!-- Real-time Activity Feed -->
+        <div class="section">
+            <div class="section-header">
+                ⚡ Real-time Activity
+            </div>
+            <div class="activity-feed" id="activity-feed">
+                <div class="loading">Loading activity...</div>
+            </div>
+        </div>
+
+        <!-- API Performance -->
+        <div class="section">
+            <div class="section-header">
+                🚀 API Performance
+            </div>
+            <div id="api-metrics"></div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const SUPABASE_URL = 'https://peruwnbrqkvmrldhpoom.supabase.co';
+        const ADMIN_KEY = 'am_admin_secret_key_2026'; // Replace with your admin key
+        const REFRESH_INTERVAL = 30000; // 30 seconds
+
+        let refreshTimer;
+
+        // Format currency
+        function formatCurrency(amount) {
+            if (amount === null || amount === undefined) return '$0';
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: amount < 1 ? 4 : 2,
+                maximumFractionDigits: amount < 1 ? 4 : 2
+            }).format(amount);
+        }
+
+        // Format number
+        function formatNumber(num) {
+            if (num === null || num === undefined) return '0';
+            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+            return num.toLocaleString();
+        }
+
+        // Format percentage
+        function formatPercent(num) {
+            if (num === null || num === undefined) return '0%';
+            return num.toFixed(1) + '%';
+        }
+
+        // Fetch dashboard data
+        async function fetchDashboardData() {
+            try {
+                const response = await fetch(`${SUPABASE_URL}/functions/v1/admin-analytics/all`, {
+                    headers: {
+                        'x-admin-key': ADMIN_KEY,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error('Failed to fetch dashboard data:', error);
+                throw error;
+            }
+        }
+
+        // Update health metrics
+        function updateHealthMetrics(health) {
+            document.getElementById('active-campaigns').textContent = formatNumber(health.active_campaigns);
+            document.getElementById('revenue-today').textContent = formatCurrency(health.revenue_today);
+            document.getElementById('fill-rate').textContent = formatPercent(health.fill_rate);
+            document.getElementById('ctr').textContent = formatPercent(health.ctr);
+            document.getElementById('decisions-per-hour').textContent = formatNumber(health.decisions_per_hour);
+            document.getElementById('active-agents').textContent = formatNumber(health.active_agents_24h);
+
+            // Update status indicator
+            const indicator = document.getElementById('status-indicator');
+            const status = document.getElementById('connection-status');
+
+            if (health.errors_today > 10) {
+                indicator.className = 'status-indicator error';
+                status.textContent = `System Issues (${health.errors_today} errors)`;
+            } else if (health.fill_rate < 50) {
+                indicator.className = 'status-indicator warning';
+                status.textContent = 'Low Fill Rate';
+            } else {
+                indicator.className = 'status-indicator';
+                status.textContent = 'All Systems Operational';
+            }
+        }
+
+        // Update financial metrics
+        function updateFinancialMetrics(financial) {
+            if (!financial || !financial.summary) return;
+
+            document.getElementById('total-revenue').textContent = formatCurrency(financial.summary.total_revenue_30d);
+            document.getElementById('developer-earnings').textContent = formatCurrency(financial.summary.total_developer_earnings_30d);
+            document.getElementById('platform-fees').textContent = formatCurrency(financial.summary.total_platform_fees_30d);
+            document.getElementById('active-budget').textContent = formatCurrency(financial.summary.total_advertiser_budget);
+
+            // Top advertisers table
+            if (financial.top_advertisers && financial.top_advertisers.length > 0) {
+                const advertisersHtml = `
+                    <h3 style="margin-top: 20px; margin-bottom: 12px;">Top Advertisers</h3>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Advertiser</th>
+                                <th>Campaigns</th>
+                                <th>Total Spent</th>
+                                <th>Daily Budget</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${financial.top_advertisers.slice(0, 5).map(adv => `
+                                <tr>
+                                    <td>${adv.advertiser_name}</td>
+                                    <td>${adv.campaign_count}</td>
+                                    <td>${formatCurrency(adv.total_spent)}</td>
+                                    <td>${formatCurrency(adv.daily_budget)}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+                document.getElementById('top-advertisers').innerHTML = advertisersHtml;
+            }
+
+            // Top developers table
+            if (financial.top_developers && financial.top_developers.length > 0) {
+                const developersHtml = `
+                    <h3 style="margin-top: 20px; margin-bottom: 12px;">Top Earning Developers</h3>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Developer</th>
+                                <th>Agent ID</th>
+                                <th>Total Earned</th>
+                                <th>Campaigns</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${financial.top_developers.slice(0, 5).map(dev => `
+                                <tr>
+                                    <td>${dev.developer_email || 'Unknown'}</td>
+                                    <td><code>${dev.agent_id}</code></td>
+                                    <td>${formatCurrency(dev.total_earned)}</td>
+                                    <td>${dev.campaigns_monetized}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+                document.getElementById('top-developers').innerHTML = developersHtml;
+            }
+        }
+
+        // Update campaign analytics
+        function updateCampaignAnalytics(campaigns) {
+            if (!campaigns) return;
+
+            let alertsHtml = '';
+
+            // Campaigns near budget limit
+            if (campaigns.campaigns_near_budget_limit && campaigns.campaigns_near_budget_limit.length > 0) {
+                alertsHtml += `
+                    <div class="fraud-warning">
+                        <h3>⚠️ Campaigns Near Budget Limit</h3>
+                        <ul>
+                            ${campaigns.campaigns_near_budget_limit.slice(0, 3).map(c =>
+                                `<li>${c.name} - ${formatPercent(c.budget_used_pct)} of budget used</li>`
+                            ).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            document.getElementById('campaign-alerts').innerHTML = alertsHtml;
+
+            // Performance tables
+            let tablesHtml = '';
+
+            if (campaigns.high_performing_campaigns && campaigns.high_performing_campaigns.length > 0) {
+                tablesHtml += `
+                    <h3 style="margin-bottom: 12px;">🌟 High Performing Campaigns</h3>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Campaign</th>
+                                <th>Advertiser</th>
+                                <th>CTR</th>
+                                <th>Clicks</th>
+                                <th>Budget Used</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${campaigns.high_performing_campaigns.slice(0, 5).map(c => `
+                                <tr>
+                                    <td>${c.name}</td>
+                                    <td>${c.advertiser_name}</td>
+                                    <td><strong>${formatPercent(c.ctr)}</strong></td>
+                                    <td>${formatNumber(c.clicks)}</td>
+                                    <td>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill ${c.budget_used_pct > 90 ? 'danger' : c.budget_used_pct > 70 ? 'warning' : ''}"
+                                                 style="width: ${c.budget_used_pct}%"></div>
+                                        </div>
+                                        ${formatPercent(c.budget_used_pct)}
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            }
+
+            document.getElementById('campaign-tables').innerHTML = tablesHtml;
+        }
+
+        // Update fraud indicators
+        function updateFraudIndicators(fraud) {
+            if (!fraud) return;
+
+            let warningsHtml = '';
+
+            // High velocity clickers
+            if (fraud.high_velocity_clickers && fraud.high_velocity_clickers.length > 0) {
+                warningsHtml += `
+                    <div class="fraud-warning">
+                        <h3>🚨 Suspicious Click Activity Detected</h3>
+                        <p>The following agents have unusually high click rates:</p>
+                        <ul>
+                            ${fraud.high_velocity_clickers.slice(0, 3).map(agent =>
+                                `<li>Agent ${agent.agent_id}: ${agent.clicks_per_minute} clicks/minute (${agent.total_clicks} total)</li>`
+                            ).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            // 100% CTR agents
+            if (fraud.suspicious_100pct_ctr && fraud.suspicious_100pct_ctr.length > 0) {
+                warningsHtml += `
+                    <div class="fraud-warning">
+                        <h3>⚠️ Agents with 100% Click Rate</h3>
+                        <p>These agents click every ad they see (potential fraud):</p>
+                        <ul>
+                            ${fraud.suspicious_100pct_ctr.slice(0, 3).map(agent =>
+                                `<li>Agent ${agent.agent_id}: ${agent.clicks}/${agent.impressions} clicks</li>`
+                            ).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            document.getElementById('fraud-warnings').innerHTML = warningsHtml;
+        }
+
+        // Update activity feed
+        function updateActivityFeed(activity) {
+            if (!activity || !activity.recent_events) return;
+
+            const feedHtml = activity.recent_events.slice(0, 20).map(event => {
+                const time = new Date(event.created_at).toLocaleTimeString();
+                const eventClass = event.event_type || 'default';
+                return `
+                    <div class="activity-item ${eventClass}">
+                        <strong>${event.event_type}</strong> -
+                        ${event.campaign_name || 'Unknown Campaign'} -
+                        Agent: ${event.agent_id.substring(0, 8)}... -
+                        ${event.amount ? formatCurrency(event.amount) : ''} -
+                        <span style="color: #5f6368">${time}</span>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('activity-feed').innerHTML = feedHtml || '<div class="loading">No recent activity</div>';
+        }
+
+        // Update API metrics
+        function updateAPIMetrics(api) {
+            if (!api) return;
+
+            let metricsHtml = `
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-label">Current QPS</div>
+                        <div class="metric-value">${api.current_qps ? api.current_qps.toFixed(2) : '0'}</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">24h Fill Rate</div>
+                        <div class="metric-value">${formatPercent(api.fill_rate_24h)}</div>
+                    </div>
+                </div>
+            `;
+
+            if (api.endpoint_stats) {
+                metricsHtml += `
+                    <h3 style="margin-top: 20px; margin-bottom: 12px;">Endpoint Statistics (24h)</h3>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Endpoint</th>
+                                <th>Requests</th>
+                                <th>Success Rate</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${api.endpoint_stats.map(ep => `
+                                <tr>
+                                    <td>/functions/v1/${ep.endpoint}</td>
+                                    <td>${formatNumber(ep.requests_24h)}</td>
+                                    <td>${formatPercent(ep.success_rate)}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            }
+
+            document.getElementById('api-metrics').innerHTML = metricsHtml;
+        }
+
+        // Main refresh function
+        async function refreshDashboard() {
+            try {
+                const startTime = Date.now();
+                const data = await fetchDashboardData();
+                const loadTime = Date.now() - startTime;
+
+                // Update all sections
+                updateHealthMetrics(data.health || {});
+                updateFinancialMetrics(data.financial || {});
+                updateCampaignAnalytics(data.campaigns || {});
+                updateFraudIndicators(data.fraud || {});
+                updateActivityFeed(data.activity || {});
+                updateAPIMetrics(data.api || {});
+
+                // Update last refresh time
+                const status = document.getElementById('connection-status');
+                const currentStatus = status.textContent;
+                status.textContent = `${currentStatus} (${loadTime}ms)`;
+
+            } catch (error) {
+                console.error('Dashboard refresh failed:', error);
+                document.getElementById('connection-status').textContent = 'Connection Error';
+                document.getElementById('status-indicator').className = 'status-indicator error';
+
+                // Show error message
+                const container = document.querySelector('.container');
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error-message';
+                errorDiv.innerHTML = `
+                    <strong>Failed to load dashboard data</strong><br>
+                    ${error.message}<br>
+                    <small>Make sure the admin-analytics function is deployed and your admin key is correct.</small>
+                `;
+                container.insertBefore(errorDiv, container.firstChild);
+
+                // Remove error after 5 seconds
+                setTimeout(() => errorDiv.remove(), 5000);
+            }
+        }
+
+        // Initialize dashboard
+        async function initDashboard() {
+            await refreshDashboard();
+
+            // Set up auto-refresh
+            refreshTimer = setInterval(refreshDashboard, REFRESH_INTERVAL);
+        }
+
+        // Start the dashboard
+        initDashboard();
+
+        // Clean up on page unload
+        window.addEventListener('beforeunload', () => {
+            if (refreshTimer) clearInterval(refreshTimer);
+        });
+    </script>
+</body>
+</html>

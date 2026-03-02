@@ -545,27 +545,19 @@ const ad = await client.decideFromContext({
 
 ### Click Tracking
 
-Clicks are automatically tracked when users visit `click_url`. For manual tracking:
+Clicks are automatically and securely tracked when users visit the `click_url`.
+
+**Important:** Always use the provided `click_url` or `tracking_url` for click tracking. These URLs contain HMAC-signed tokens that prevent click fraud and ensure accurate attribution.
 
 ```typescript
-await client.trackClick({
-  agent_id: 'agt_YOUR_AGENT_ID',
-  request_id: ad.request_id,
-  decision_id: ad.decision_id,
-  unit_id: ad._ad.unit_id,
-  tracking_token: ad.tracking_token,
-  href: ad.click_url,
-  click_context: "User clicked 'Get a Quote' button"
-});
+// When user clicks the ad, redirect them to:
+window.location.href = ad.click_url;
+
+// Or in a chat/messaging context, share:
+const shareableLink = ad.tracking_url;
 ```
 
-Simplified tracking from ad object:
-
-```typescript
-await client.trackClickFromAd(ad, {
-  click_context: "User clicked on sponsored suggestion"
-});
-```
+Manual click tracking has been removed for security reasons. All clicks must go through the redirect URLs to ensure fraud prevention and accurate tracking.
 
 ### Conversion Tracking
 

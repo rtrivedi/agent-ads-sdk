@@ -1,0 +1,37 @@
+--- a/supabase/supabase/functions/decide/index.ts
++++ b/supabase/supabase/functions/decide/index.ts
+@@ -813,7 +813,33 @@
+           const rawRelevance = ad.semantic_similarity ?? 0.5;
+           relevance = (ad.semantic_similarity != null && rawRelevance < SEMANTIC_THRESHOLD) ? 0 : rawRelevance;
+           const bidAmount = parseFloat(campaign.bid_cpc) || parseFloat(campaign.bid_cpm) || 1.0;
+-          const quality = parseFloat(campaign.quality_score) || 1.0;
++
++          // === New Campaign Boost (fix for established campaign bias) ===
++          // Give new campaigns (< 100 impressions) a fair chance to compete
++          let quality = parseFloat(campaign.quality_score) || 1.0;
++          const impressions = parseInt(campaign.impressions) || 0;
++          const clicks = parseInt(campaign.clicks) || 0;
++
++          // New campaign boost logic:
++          // - Campaigns with < 10 impressions: Use minimum quality of 0.7
++          // - Campaigns with 10-100 impressions: Gradual quality ramp
++          // - Campaigns with > 100 impressions: Use actual quality score
++          if (impressions < 10) {
++            // Brand new campaigns get benefit of the doubt
++            quality = Math.max(quality, 0.7);
++            console.log(`New campaign boost applied: ${campaign.name} (${impressions} impressions) - quality boosted to ${quality}`);
++          } else if (impressions < 100) {
++            // Gradual ramp: interpolate between 0.7 and actual quality
++            const rampFactor = (impressions - 10) / 90; // 0 at 10 impressions, 1 at 100
++            const minQuality = 0.7 - (rampFactor * 0.2); // Gradually reduce minimum from 0.7 to 0.5
++            quality = Math.max(quality, minQuality);
++            console.log(`Campaign ramp applied: ${campaign.name} (${impressions} impressions) - quality minimum ${minQuality}`);
++          }
++
++          // Also boost bid weight for new campaigns to overcome quality disadvantage
++          const bidMultiplier = impressions < 100 ? 1.2 : 1.0; // 20% bid boost for new campaigns
++          const effectiveBidAmount = bidAmount * bidMultiplier;
++
+           compositeScore = relevance * bidAmount * quality;
+         } else {
+           relevance = calculateTaxonomyRelevance(taxonomy, campaign.targeting_taxonomies || []);

@@ -1,0 +1,18 @@
+{
+  "creative": {
+    "title": "Automatically capture UGC for TikTok",
+    "body": "Social listening for TikTok",
+    "cta": "Learn More"
+  },
+  "click_url": "https://peruwnbrqkvmrldhpoom.supabase.co/functions/v1/track-click/eyJ1IjoiY2UxY2IwZmUtYWU1Yi00NGFmLTllNjMtMGY3YTgzZDJiMWE3IiwiYSI6ImFndF9EMEQ0RjFDUDAxSEFHOUFXTlI1TSIsInQiOjE3NzIzODg2ODMsInAiOjI1fQ.DkgS3KFiYwqYyZJ7NmE0j_irhbYPb0rfNDMbeOzPIuU",
+  "tracking_token": "trk_01cc9f12-e7af-4efe-8faf-517b37d5f31b",
+  "advertiser_id": "34fdade4-15e0-4550-853e-baaf27113847",
+  "payout": 25,
+  "relevance_score": 0.38408388089134,
+  "_meta": {
+    "unit_id": "ce1cb0fe-ae5b-44af-9e63-0f7a83d2b1a7",
+    "request_id": "req_e5ae860d-6982-4cdd-baa5-0d6ce0cd423c",
+    "decision_id": "dec_ae2f19b7-741d-4303-ba80-cb5dd7f20a27",
+    "campaign_id": "0bd6de48-2407-45a0-bde9-87d6a11c3536"
+  }
+}

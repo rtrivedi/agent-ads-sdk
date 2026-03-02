@@ -1,0 +1,37 @@
+--- a/supabase/functions/decide/index.ts
++++ b/supabase/functions/decide/index.ts
+@@ -999,6 +999,32 @@ serve(async (req) => {
+     }).then(({ error }) => {
+       // Fire-and-forget: decisions logging is non-critical; don't let it crash the response
+       if (error) console.warn('[decide] Failed to log decision (non-fatal):', error.message);
++
++      // CRITICAL FIX: Server-side impression tracking
++      // Don't rely on SDK to track impressions - do it here to ensure 100% coverage
++      if (matchingAds.length > 0 && firstAd) {
++        const impressionId = `evt_${crypto.randomUUID()}`;
++        supabase.from('events').insert({
++          id: crypto.randomUUID(),
++          event_id: impressionId,
++          event_type: 'impression',  // Standardized event type
++          occurred_at: new Date().toISOString(),
++          agent_id,
++          request_id,
++          decision_id,
++          ad_unit_id: firstAd.unit_id || firstAd.id,
++          campaign_id: firstAd.campaign_id,
++          tracking_token: trackingToken,
++          metadata: {
++            server_side: true,
++            auto_tracked: true,
++            relevance_score: firstAd._score?.relevance || firstAd._relevance_score,
++            clearing_price_cents: clearingPriceCents,
++            response_format: responseFormat,
++            match_method: useSemanticMatching ? 'semantic' : 'taxonomy'
++          }
++        }).then(({ error }) => {
++          if (error) console.warn('[decide] Failed to track impression (non-fatal):', error.message);
++        });
++      }
+     });
+
+     // Second, log second-price auction results with revenue safeguards
