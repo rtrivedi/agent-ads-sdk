@@ -103,7 +103,8 @@ export interface DecideFromContextRequest {
 
   /**
    * Optional category hint (e.g., 'legal', 'insurance', 'travel').
-   * Used as fallback if semantic matching fails.
+   * Defaults to 'general.query'. Only used as fallback - semantic matching
+   * uses conversation context, not taxonomy.
    */
   suggestedCategory?: string;
 
