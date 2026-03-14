@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AttentionMarket — List Your Business</title>
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --card: #141414;
+    --card-border: #232323;
+    --text: #e8e8e8;
+    --text-muted: #888;
+    --text-dim: #555;
+    --accent: #4f8cff;
+    --accent-hover: #6ba0ff;
+    --green: #34d399;
+    --green-dim: #064e36;
+    --yellow: #fbbf24;
+    --yellow-dim: #78350f;
+    --red: #f87171;
+    --input-bg: #1a1a1a;
+    --input-border: #2a2a2a;
+    --input-focus: #4f8cff33;
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* Layout */
+  .page {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+  }
+
+  .page-header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .page-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+  }
+
+  .page-header p {
+    color: var(--text-muted);
+    font-size: 15px;
+  }
+
+  /* Cards */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+    padding: 32px;
+    margin-bottom: 24px;
+  }
+
+  .card-section {
+    margin-bottom: 28px;
+  }
+
+  .card-section:last-child { margin-bottom: 0; }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-dim);
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--card-border);
+  }
+
+  /* Inputs */
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="number"],
+  input[type="url"],
+  textarea {
+    width: 100%;
+    padding: 10px 12px;
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  input:focus, textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--input-focus);
+  }
+
+  textarea { resize: vertical; min-height: 60px; }
+
+  .field { margin-bottom: 16px; }
+  .field:last-child { margin-bottom: 0; }
+
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .field-helper {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+
+  /* URL input group */
+  .url-group {
+    display: flex;
+    gap: 8px;
+  }
+
+  .url-group input { flex: 1; }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 20px;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+  }
+
+  .btn-secondary {
+    background: var(--input-bg);
+    color: var(--text);
+    border: 1px solid var(--input-border);
+  }
+
+  .btn-secondary:hover { border-color: var(--text-dim); }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .btn-primary:hover { background: var(--accent-hover); }
+
+  .btn-go-live {
+    width: 100%;
+    padding: 14px 24px;
+    font-size: 16px;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), #7c5cff);
+    color: #fff;
+    border-radius: var(--radius);
+    letter-spacing: 0.3px;
+  }
+
+  .btn-go-live:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 20px rgba(79, 140, 255, 0.3);
+  }
+
+  .btn-go-live:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* Budget pills */
+  .budget-pills {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+
+  .budget-pill {
+    padding: 8px 20px;
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: 100px;
+    color: var(--text-muted);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+
+  .budget-pill:hover { border-color: var(--text-dim); color: var(--text); }
+
+  .budget-pill.selected {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  .budget-estimate {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-top: 8px;
+  }
+
+  .budget-estimate span { color: var(--text-muted); }
+
+  /* Payment mock */
+  .payment-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 12px;
+  }
+
+  .payment-note {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 12px;
+    text-align: center;
+  }
+
+  /* Loading state */
+  .loading-bar {
+    height: 3px;
+    background: var(--input-border);
+    border-radius: 2px;
+    overflow: hidden;
+    margin: 16px 0;
+    display: none;
+  }
+
+  .loading-bar.active { display: block; }
+
+  .loading-bar-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent), #7c5cff);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+  }
+
+  .loading-text {
+    font-size: 13px;
+    color: var(--text-dim);
+    text-align: center;
+    display: none;
+  }
+
+  .loading-text.active { display: block; }
+
+  /* Auto-filled fields */
+  .auto-filled-section {
+    display: none;
+    animation: fadeIn 0.4s ease;
+  }
+
+  .auto-filled-section.visible { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Card 2 */
+  #card2 {
+    display: none;
+    animation: slideUp 0.5s ease;
+  }
+
+  #card2.visible { display: block; }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .success-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: var(--green-dim);
+    border: 1px solid #0d9462;
+    border-radius: var(--radius-sm);
+    margin-bottom: 24px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--green);
+  }
+
+  /* Chat preview */
+  .chat-preview {
+    background: #0d0d0d;
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+
+  .chat-preview-label {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 14px;
+    font-weight: 500;
+  }
+
+  .chat-msg {
+    margin-bottom: 14px;
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  .chat-msg:last-child { margin-bottom: 0; }
+
+  .chat-role {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 3px;
+  }
+
+  .chat-role.user { color: var(--text-dim); }
+  .chat-role.agent { color: var(--accent); }
+
+  .chat-content { color: var(--text-muted); }
+
+  .chat-gap {
+    background: #1a1207;
+    border: 1px solid #78350f;
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    margin-top: 4px;
+  }
+
+  .chat-gap .chat-content { color: var(--yellow); }
+
+  .chat-gap-label {
+    font-size: 11px;
+    color: var(--yellow);
+    font-weight: 600;
+    margin-top: 6px;
+    opacity: 0.8;
+  }
+
+  /* Enhancement cards */
+  .enhance-card {
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: var(--radius);
+    margin-bottom: 10px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .enhance-card:hover { border-color: var(--text-dim); }
+
+  .enhance-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .enhance-header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .enhance-icon {
+    font-size: 18px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--card);
+    border-radius: var(--radius-sm);
+  }
+
+  .enhance-title {
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .enhance-subtitle {
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  .enhance-chevron {
+    color: var(--text-dim);
+    transition: transform 0.2s;
+    font-size: 14px;
+  }
+
+  .enhance-card.open .enhance-chevron { transform: rotate(90deg); }
+
+  .enhance-body {
+    display: none;
+    padding: 0 16px 16px;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .enhance-card.open .enhance-body { display: block; }
+
+  /* Dropzone */
+  .dropzone {
+    border: 2px dashed var(--input-border);
+    border-radius: var(--radius);
+    padding: 24px;
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 10px;
+  }
+
+  .dropzone:hover {
+    border-color: var(--accent);
+    color: var(--text-muted);
+    background: rgba(79, 140, 255, 0.03);
+  }
+
+  .dropzone-icon { font-size: 24px; margin-bottom: 6px; }
+
+  /* Template cards */
+  .template-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .template-card {
+    padding: 12px;
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+  }
+
+  .template-card:hover {
+    border-color: var(--accent);
+    background: rgba(79, 140, 255, 0.05);
+  }
+
+  .template-card.selected {
+    border-color: var(--accent);
+    background: rgba(79, 140, 255, 0.08);
+  }
+
+  .template-emoji { font-size: 20px; margin-bottom: 4px; }
+  .template-name { font-size: 13px; font-weight: 600; }
+  .template-desc { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+
+  /* Capability editor */
+  .cap-editor {
+    display: none;
+    margin-top: 12px;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .cap-editor.visible { display: block; }
+
+  /* Skip section */
+  .skip-section {
+    text-align: center;
+    padding-top: 8px;
+  }
+
+  .skip-text {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+  }
+
+  .btn-dashboard {
+    background: transparent;
+    border: 1px solid var(--input-border);
+    color: var(--text-muted);
+    padding: 10px 24px;
+  }
+
+  .btn-dashboard:hover {
+    border-color: var(--text-dim);
+    color: var(--text);
+  }
+
+  /* Card 1 dimmed state */
+  #card1.dimmed {
+    opacity: 0.4;
+    pointer-events: none;
+    transition: opacity 0.5s;
+  }
+
+  /* Uploaded file chips */
+  .file-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  .file-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 100px;
+    font-size: 12px;
+    color: var(--text-muted);
+    animation: fadeIn 0.3s ease;
+  }
+
+  .file-chip-status { color: var(--green); font-size: 10px; }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+    padding: 12px 20px;
+    font-size: 14px;
+    color: var(--text);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+    transition: transform 0.3s ease;
+    z-index: 100;
+  }
+
+  .toast.visible { transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <div class="page-header">
+    <h1>List your business on the agent internet</h1>
+    <p>AI agents will recommend you to users in real conversations.</p>
+  </div>
+
+  <!-- ===== CARD 1: GET LISTED ===== -->
+  <div class="card" id="card1">
+
+    <!-- YOUR BUSINESS -->
+    <div class="card-section">
+      <div class="section-label">Your Business</div>
+
+      <div class="field">
+        <label for="url">Website URL</label>
+        <div class="url-group">
+          <input type="url" id="url" placeholder="https://yoursite.com" value="https://acme-ecommerce.com">
+          <button class="btn btn-secondary" id="analyzeBtn" onclick="analyzeURL()">Analyze</button>
+        </div>
+      </div>
+
+      <div class="loading-bar" id="loadingBar">
+        <div class="loading-bar-fill" id="loadingBarFill"></div>
+      </div>
+      <div class="loading-text" id="loadingText">Reading your website...</div>
+
+      <div class="auto-filled-section" id="autoFilled">
+        <div class="field-row">
+          <div class="field">
+            <label for="bizName">Business Name</label>
+            <input type="text" id="bizName">
+          </div>
+          <div class="field">
+            <label for="bizCategory">Category (detected)</label>
+            <input type="text" id="bizCategory" disabled>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="bizDesc">What you do</label>
+          <textarea id="bizDesc" rows="2"></textarea>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="bizPricing">Pricing</label>
+            <input type="text" id="bizPricing">
+          </div>
+          <div class="field">
+            <label for="bizGeo">Ships to / Serves</label>
+            <input type="text" id="bizGeo">
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="idealCustomer">Who's your ideal customer?</label>
+          <textarea id="idealCustomer" rows="2" placeholder="e.g., Solo creators who want to sell physical products online"></textarea>
+        </div>
+
+        <div class="field">
+          <label for="notIdeal">Who's NOT a good fit? <span style="color: var(--text-dim)">(saves you money)</span></label>
+          <textarea id="notIdeal" rows="2" placeholder="e.g., Large teams, anyone selling digital-only products"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- BUDGET -->
+    <div class="auto-filled-section card-section" id="budgetSection">
+      <div class="section-label">Budget</div>
+
+      <label>Daily budget</label>
+      <div class="budget-pills">
+        <button class="budget-pill" onclick="selectBudget(this, 10)">$10</button>
+        <button class="budget-pill selected" onclick="selectBudget(this, 25)">$25</button>
+        <button class="budget-pill" onclick="selectBudget(this, 50)">$50</button>
+        <button class="budget-pill" onclick="selectBudget(this, 100)">$100</button>
+      </div>
+      <div class="budget-estimate">
+        You only pay when a user takes action.<br>
+        Estimated: <span id="budgetEstimate">15–40 conversations/day</span>
+      </div>
+    </div>
+
+    <!-- PAYMENT -->
+    <div class="auto-filled-section card-section" id="paymentSection">
+      <div class="section-label">Payment</div>
+
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" placeholder="you@company.com">
+      </div>
+
+      <div class="payment-row">
+        <div class="field">
+          <label>Card number</label>
+          <input type="text" placeholder="4242 4242 4242 4242">
+        </div>
+        <div class="field">
+          <label>Expiry</label>
+          <input type="text" placeholder="12/28">
+        </div>
+        <div class="field">
+          <label>CVC</label>
+          <input type="text" placeholder="123">
+        </div>
+      </div>
+      <div class="payment-note">You won't be charged until agents start recommending you. Cancel anytime.</div>
+    </div>
+
+    <!-- GO LIVE -->
+    <div class="auto-filled-section card-section" id="goLiveSection" style="text-align: center;">
+      <button class="btn btn-go-live" id="goLiveBtn" onclick="goLive()">Go Live</button>
+    </div>
+
+  </div>
+
+  <!-- ===== CARD 2: KEEP GOING ===== -->
+  <div class="card" id="card2">
+
+    <div class="success-banner">
+      <span style="font-size: 18px;">&#10003;</span>
+      You're live! Agents can now recommend your business.
+    </div>
+
+    <!-- Preview conversation -->
+    <div class="chat-preview">
+      <div class="chat-preview-label">Here's what it looks like when an agent recommends you:</div>
+
+      <div class="chat-msg">
+        <div class="chat-role user">User</div>
+        <div class="chat-content" id="previewUser1"></div>
+      </div>
+
+      <div class="chat-msg">
+        <div class="chat-role agent">Agent</div>
+        <div class="chat-content" id="previewAgent1"></div>
+      </div>
+
+      <div class="chat-msg">
+        <div class="chat-role user">User</div>
+        <div class="chat-content" id="previewUser2"></div>
+      </div>
+
+      <div class="chat-msg">
+        <div class="chat-gap">
+          <div class="chat-role agent">Agent</div>
+          <div class="chat-content" id="previewAgent2"></div>
+          <div class="chat-gap-label" id="previewGapLabel"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Enhancements -->
+    <div class="card-section">
+      <div class="section-label">Give your agent more to work with</div>
+      <p style="font-size: 13px; color: var(--text-dim); margin-bottom: 16px;">
+        Right now, agents can only say what's on your website. Help them close the deal:
+      </p>
+
+      <!-- Upload Documents -->
+      <div class="enhance-card" id="enhanceDocs">
+        <div class="enhance-header" onclick="toggleEnhance('enhanceDocs')">
+          <div class="enhance-header-left">
+            <div class="enhance-icon">&#128196;</div>
+            <div>
+              <div class="enhance-title">Upload Documents</div>
+              <div class="enhance-subtitle">FAQ, pricing details, return policy, case studies</div>
+            </div>
+          </div>
+          <div class="enhance-chevron">&#9654;</div>
+        </div>
+        <div class="enhance-body">
+          <div class="dropzone" id="dropzone" onclick="mockUpload()">
+            <div class="dropzone-icon">&#128206;</div>
+            <div>Drop files here or click to upload</div>
+            <div style="font-size: 11px; margin-top: 4px; color: var(--text-dim);">PDF, DOCX, TXT, or Markdown</div>
+          </div>
+          <div class="file-chips" id="fileChips"></div>
+          <div style="text-align: center; margin-top: 6px; color: var(--text-dim); font-size: 12px;">or</div>
+          <div class="field" style="margin-top: 8px;">
+            <textarea rows="3" placeholder="Paste your FAQ, return policy, or any other info here..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Smart Capabilities -->
+      <div class="enhance-card" id="enhanceCaps">
+        <div class="enhance-header" onclick="toggleEnhance('enhanceCaps')">
+          <div class="enhance-header-left">
+            <div class="enhance-icon">&#9881;</div>
+            <div>
+              <div class="enhance-title">Add Smart Capabilities</div>
+              <div class="enhance-subtitle">Let agents calculate quotes, check availability, recommend plans</div>
+            </div>
+          </div>
+          <div class="enhance-chevron">&#9654;</div>
+        </div>
+        <div class="enhance-body">
+          <div class="template-grid">
+            <div class="template-card" onclick="selectTemplate(this, 'quote')">
+              <div class="template-emoji">&#128178;</div>
+              <div class="template-name">Quote Calculator</div>
+              <div class="template-desc">Exact pricing for specific configs</div>
+            </div>
+            <div class="template-card" onclick="selectTemplate(this, 'recommend')">
+              <div class="template-emoji">&#127919;</div>
+              <div class="template-name">Plan Recommender</div>
+              <div class="template-desc">Which plan fits their needs</div>
+            </div>
+            <div class="template-card" onclick="selectTemplate(this, 'compat')">
+              <div class="template-emoji">&#128268;</div>
+              <div class="template-name">Compatibility Check</div>
+              <div class="template-desc">Works with their tools?</div>
+            </div>
+            <div class="template-card" onclick="selectTemplate(this, 'avail')">
+              <div class="template-emoji">&#128197;</div>
+              <div class="template-name">Availability Check</div>
+              <div class="template-desc">Open slots, service areas</div>
+            </div>
+          </div>
+          <div class="cap-editor" id="capEditor">
+            <div class="field">
+              <label id="capEditorLabel">Pricing rules</label>
+              <textarea id="capEditorRules" rows="5" placeholder="Describe your pricing logic in plain language..."></textarea>
+              <div class="field-helper">Write your rules in plain English. Agents will use these to give exact answers.</div>
+            </div>
+            <div style="margin-top: 10px;">
+              <button class="btn btn-secondary" onclick="saveCapability()">Save Capability</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Conversation Triggers -->
+      <div class="enhance-card" id="enhanceTriggers">
+        <div class="enhance-header" onclick="toggleEnhance('enhanceTriggers')">
+          <div class="enhance-header-left">
+            <div class="enhance-icon">&#127919;</div>
+            <div>
+              <div class="enhance-title">Set Conversation Triggers</div>
+              <div class="enhance-subtitle">When should agents recommend you — and when shouldn't they</div>
+            </div>
+          </div>
+          <div class="enhance-chevron">&#9654;</div>
+        </div>
+        <div class="enhance-body">
+          <div class="field">
+            <label>When should agents recommend you?</label>
+            <textarea rows="3" placeholder="e.g., User is looking for an e-commerce platform, user wants to sell physical products, user is a small business owner"></textarea>
+          </div>
+          <div class="field" style="margin-top: 12px;">
+            <label>When should agents NOT recommend you?</label>
+            <textarea rows="3" placeholder="e.g., User needs digital product delivery, user is enterprise with 500+ employees, user wants B2B wholesale"></textarea>
+          </div>
+          <div style="margin-top: 10px;">
+            <button class="btn btn-secondary" onclick="saveTriggers()">Save Triggers</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Skip -->
+    <div class="skip-section">
+      <div class="skip-text">
+        Skip this for now? No problem — we'll show you exactly what questions agents can't answer in your dashboard.
+      </div>
+      <button class="btn btn-dashboard" onclick="showToast('Dashboard coming soon')">Go to Dashboard &rarr;</button>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+  // ===== Mock data =====
+  const MOCK_SCRAPE = {
+    name: 'Acme E-Commerce',
+    category: 'E-Commerce Platform',
+    description: 'All-in-one platform for creators to launch and sell physical products online. Handles sourcing, fulfillment, custom packaging, and international shipping.',
+    pricing: '$29/mo – $299/mo (3 tiers, 14-day free trial)',
+    geography: 'US, Canada, UK, EU',
+  };
+
+  const BUDGET_ESTIMATES = {
+    10: '5–15 conversations/day',
+    25: '15–40 conversations/day',
+    50: '35–80 conversations/day',
+    100: '70–160 conversations/day',
+  };
+
+  const MOCK_PREVIEW = {
+    user1: "I want to start selling handmade candles online. I need something that handles shipping and lets me use custom packaging.",
+    agent1: "",  // set dynamically from form
+    user2: "That sounds great. What's their return policy? And can I return custom-packaged items?",
+    agent2: "",  // set dynamically
+    gapLabel: "&#9888; This is where you lose the customer",
+  };
+
+  const CAP_TEMPLATES = {
+    quote: { label: 'Pricing rules', placeholder: 'e.g., Starter is $29/mo for 1-2 users. Growth is $99/mo for 3-10 users with API access. Annual billing gets 20% off. Promo SPRING20 gives additional 20% off for 3 months.' },
+    recommend: { label: 'Plan recommendation logic', placeholder: 'e.g., If user needs API access → Growth plan. If user needs SSO or priority support → Pro. Solo creator, US only → Starter.' },
+    compat: { label: 'Supported integrations', placeholder: 'e.g., Native: Shopify, WooCommerce, Stripe, PayPal. Via Zapier: 200+ tools. Not supported: custom self-hosted platforms.' },
+    avail: { label: 'Availability rules', placeholder: 'e.g., Open Mon-Fri 9am-6pm EST. Service area: US and Canada. Same-day setup available for Starter plan.' },
+  };
+
+  // ===== Card 1: Analyze URL =====
+  function analyzeURL() {
+    const btn = document.getElementById('analyzeBtn');
+    const bar = document.getElementById('loadingBar');
+    const barFill = document.getElementById('loadingBarFill');
+    const text = document.getElementById('loadingText');
+
+    btn.disabled = true;
+    btn.textContent = '...';
+    bar.classList.add('active');
+    text.classList.add('active');
+
+    // Animate loading bar
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += Math.random() * 25;
+      if (progress > 95) progress = 95;
+      barFill.style.width = progress + '%';
+    }, 300);
+
+    setTimeout(() => {
+      clearInterval(interval);
+      barFill.style.width = '100%';
+
+      setTimeout(() => {
+        bar.classList.remove('active');
+        text.classList.remove('active');
+        btn.textContent = 'Analyze';
+        btn.disabled = false;
+
+        // Fill in fields
+        document.getElementById('bizName').value = MOCK_SCRAPE.name;
+        document.getElementById('bizCategory').value = MOCK_SCRAPE.category;
+        document.getElementById('bizDesc').value = MOCK_SCRAPE.description;
+        document.getElementById('bizPricing').value = MOCK_SCRAPE.pricing;
+        document.getElementById('bizGeo').value = MOCK_SCRAPE.geography;
+
+        // Show all auto-filled sections
+        document.querySelectorAll('.auto-filled-section').forEach(el => {
+          el.classList.add('visible');
+        });
+      }, 300);
+    }, 1800);
+  }
+
+  // ===== Budget selection =====
+  function selectBudget(el, amount) {
+    document.querySelectorAll('.budget-pill').forEach(p => p.classList.remove('selected'));
+    el.classList.add('selected');
+    document.getElementById('budgetEstimate').textContent = BUDGET_ESTIMATES[amount] || '~' + (amount * 1.5).toFixed(0) + '–' + (amount * 3.2).toFixed(0) + ' conversations/day';
+  }
+
+  // ===== Go Live =====
+  function goLive() {
+    const btn = document.getElementById('goLiveBtn');
+    btn.disabled = true;
+    btn.textContent = 'Going live...';
+
+    // Build preview from form data
+    const name = document.getElementById('bizName').value || 'your business';
+    const desc = document.getElementById('bizDesc').value || '';
+    const pricing = document.getElementById('bizPricing').value || '';
+    const geo = document.getElementById('bizGeo').value || '';
+
+    MOCK_PREVIEW.agent1 = `For handmade candles, I'd recommend ${name}. They're ${desc.charAt(0).toLowerCase() + desc.slice(1)} Pricing starts at ${pricing.split('–')[0] || pricing.split('-')[0] || pricing}. They ship to ${geo}.`;
+    MOCK_PREVIEW.agent2 = `I don't have specific details on ${name}'s return policy, especially for custom-packaged items. You'd need to check their website for that information.`;
+
+    setTimeout(() => {
+      // Dim card 1
+      document.getElementById('card1').classList.add('dimmed');
+
+      // Populate preview
+      document.getElementById('previewUser1').textContent = MOCK_PREVIEW.user1;
+      document.getElementById('previewAgent1').textContent = MOCK_PREVIEW.agent1;
+      document.getElementById('previewUser2').textContent = MOCK_PREVIEW.user2;
+      document.getElementById('previewAgent2').textContent = MOCK_PREVIEW.agent2;
+      document.getElementById('previewGapLabel').innerHTML = MOCK_PREVIEW.gapLabel;
+
+      // Show card 2
+      const card2 = document.getElementById('card2');
+      card2.classList.add('visible');
+
+      // Scroll to card 2
+      setTimeout(() => {
+        card2.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }, 1200);
+  }
+
+  // ===== Card 2: Enhance cards =====
+  function toggleEnhance(id) {
+    const card = document.getElementById(id);
+    card.classList.toggle('open');
+  }
+
+  // ===== Mock file upload =====
+  const mockFiles = ['FAQ.pdf', 'Pricing-Details.pdf', 'Return-Policy.pdf', 'Shipping-Guide.pdf'];
+  let fileIndex = 0;
+
+  function mockUpload() {
+    if (fileIndex >= mockFiles.length) {
+      showToast('All sample files uploaded');
+      return;
+    }
+
+    const chip = document.createElement('div');
+    chip.className = 'file-chip';
+    chip.innerHTML = `<span class="file-chip-status">&#10003;</span> ${mockFiles[fileIndex]}`;
+    document.getElementById('fileChips').appendChild(chip);
+    fileIndex++;
+
+    if (fileIndex === mockFiles.length) {
+      showToast('Agents can now answer 47 new questions about your business');
+    }
+  }
+
+  // ===== Template selection =====
+  function selectTemplate(el, templateKey) {
+    document.querySelectorAll('.template-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+
+    const editor = document.getElementById('capEditor');
+    const label = document.getElementById('capEditorLabel');
+    const rules = document.getElementById('capEditorRules');
+    const tmpl = CAP_TEMPLATES[templateKey];
+
+    label.textContent = tmpl.label;
+    rules.placeholder = tmpl.placeholder;
+    rules.value = '';
+    editor.classList.add('visible');
+  }
+
+  function saveCapability() {
+    showToast('Capability saved — agents can now use it');
+    document.getElementById('capEditor').classList.remove('visible');
+    document.querySelectorAll('.template-card').forEach(c => c.classList.remove('selected'));
+  }
+
+  function saveTriggers() {
+    showToast('Triggers saved — agents know when to recommend you');
+  }
+
+  // ===== Toast =====
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.classList.add('visible');
+    setTimeout(() => toast.classList.remove('visible'), 3000);
+  }
+</script>
+
+</body>
+</html>
