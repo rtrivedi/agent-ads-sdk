@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AttentionMarket — List Your Business</title>
+<title>AttentionMarket — Set Up Your Business Agent</title>
 <style>
   :root {
     --bg: #0a0a0a;
@@ -14,6 +14,7 @@
     --text-dim: #555;
     --accent: #4f8cff;
     --accent-hover: #6ba0ff;
+    --accent-dim: rgba(79, 140, 255, 0.12);
     --green: #34d399;
     --green-dim: #064e36;
     --yellow: #fbbf24;
@@ -38,7 +39,7 @@
 
   /* Layout */
   .page {
-    max-width: 640px;
+    max-width: 660px;
     margin: 0 auto;
     padding: 40px 20px 80px;
   }
@@ -58,6 +59,8 @@
   .page-header p {
     color: var(--text-muted);
     font-size: 15px;
+    max-width: 440px;
+    margin: 0 auto;
   }
 
   /* Cards */
@@ -69,10 +72,7 @@
     margin-bottom: 24px;
   }
 
-  .card-section {
-    margin-bottom: 28px;
-  }
-
+  .card-section { margin-bottom: 28px; }
   .card-section:last-child { margin-bottom: 0; }
 
   .section-label {
@@ -99,7 +99,8 @@
   input[type="email"],
   input[type="number"],
   input[type="url"],
-  textarea {
+  textarea,
+  select {
     width: 100%;
     padding: 10px 12px;
     background: var(--input-bg);
@@ -112,7 +113,7 @@
     transition: border-color 0.2s, box-shadow 0.2s;
   }
 
-  input:focus, textarea:focus {
+  input:focus, textarea:focus, select:focus {
     border-color: var(--accent);
     box-shadow: 0 0 0 3px var(--input-focus);
   }
@@ -134,12 +135,7 @@
     margin-top: 4px;
   }
 
-  /* URL input group */
-  .url-group {
-    display: flex;
-    gap: 8px;
-  }
-
+  .url-group { display: flex; gap: 8px; }
   .url-group input { flex: 1; }
 
   /* Buttons */
@@ -162,17 +158,15 @@
     color: var(--text);
     border: 1px solid var(--input-border);
   }
-
   .btn-secondary:hover { border-color: var(--text-dim); }
 
   .btn-primary {
     background: var(--accent);
     color: #fff;
   }
-
   .btn-primary:hover { background: var(--accent-hover); }
 
-  .btn-go-live {
+  .btn-launch {
     width: 100%;
     padding: 14px 24px;
     font-size: 16px;
@@ -182,26 +176,50 @@
     border-radius: var(--radius);
     letter-spacing: 0.3px;
   }
-
-  .btn-go-live:hover {
+  .btn-launch:hover {
     transform: translateY(-1px);
     box-shadow: 0 4px 20px rgba(79, 140, 255, 0.3);
   }
-
-  .btn-go-live:disabled {
+  .btn-launch:disabled {
     opacity: 0.4;
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
   }
 
-  /* Budget pills */
-  .budget-pills {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 12px;
-    flex-wrap: wrap;
+  /* Business type selector */
+  .biz-type-selector {
+    display: none;
+    animation: fadeIn 0.4s ease;
+    margin-bottom: 20px;
   }
+  .biz-type-selector.visible { display: block; }
+
+  .biz-type-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+
+  .biz-type-card {
+    padding: 12px 8px;
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+  }
+  .biz-type-card:hover { border-color: var(--text-dim); }
+  .biz-type-card.selected {
+    border-color: var(--accent);
+    background: var(--accent-dim);
+  }
+  .biz-type-emoji { font-size: 22px; margin-bottom: 4px; }
+  .biz-type-name { font-size: 12px; font-weight: 600; }
+
+  /* Budget pills */
+  .budget-pills { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
 
   .budget-pill {
     padding: 8px 20px;
@@ -215,72 +233,29 @@
     transition: all 0.15s;
     font-family: inherit;
   }
-
   .budget-pill:hover { border-color: var(--text-dim); color: var(--text); }
-
   .budget-pill.selected {
     background: var(--accent);
     border-color: var(--accent);
     color: #fff;
   }
 
-  .budget-estimate {
-    font-size: 13px;
-    color: var(--text-dim);
-    margin-top: 8px;
-  }
-
+  .budget-estimate { font-size: 13px; color: var(--text-dim); margin-top: 8px; }
   .budget-estimate span { color: var(--text-muted); }
 
-  /* Payment mock */
-  .payment-row {
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr;
-    gap: 12px;
-  }
+  /* Payment */
+  .payment-row { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; }
+  .payment-note { font-size: 12px; color: var(--text-dim); margin-top: 12px; text-align: center; }
 
-  .payment-note {
-    font-size: 12px;
-    color: var(--text-dim);
-    margin-top: 12px;
-    text-align: center;
-  }
-
-  /* Loading state */
-  .loading-bar {
-    height: 3px;
-    background: var(--input-border);
-    border-radius: 2px;
-    overflow: hidden;
-    margin: 16px 0;
-    display: none;
-  }
-
+  /* Loading */
+  .loading-bar { height: 3px; background: var(--input-border); border-radius: 2px; overflow: hidden; margin: 16px 0; display: none; }
   .loading-bar.active { display: block; }
-
-  .loading-bar-fill {
-    height: 100%;
-    width: 0%;
-    background: linear-gradient(90deg, var(--accent), #7c5cff);
-    border-radius: 2px;
-    transition: width 0.3s ease;
-  }
-
-  .loading-text {
-    font-size: 13px;
-    color: var(--text-dim);
-    text-align: center;
-    display: none;
-  }
-
+  .loading-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), #7c5cff); border-radius: 2px; transition: width 0.3s ease; }
+  .loading-text { font-size: 13px; color: var(--text-dim); text-align: center; display: none; }
   .loading-text.active { display: block; }
 
-  /* Auto-filled fields */
-  .auto-filled-section {
-    display: none;
-    animation: fadeIn 0.4s ease;
-  }
-
+  /* Auto-filled */
+  .auto-filled-section { display: none; animation: fadeIn 0.4s ease; }
   .auto-filled-section.visible { display: block; }
 
   @keyframes fadeIn {
@@ -288,12 +263,8 @@
     to { opacity: 1; transform: translateY(0); }
   }
 
-  /* Card 2 */
-  #card2 {
-    display: none;
-    animation: slideUp 0.5s ease;
-  }
-
+  /* ====== CARD 2 ====== */
+  #card2 { display: none; animation: slideUp 0.5s ease; }
   #card2.visible { display: block; }
 
   @keyframes slideUp {
@@ -315,41 +286,70 @@
     color: var(--green);
   }
 
+  /* Agent level indicator */
+  .agent-levels {
+    display: flex;
+    gap: 0;
+    margin-bottom: 24px;
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .agent-level {
+    flex: 1;
+    padding: 14px 12px;
+    text-align: center;
+    background: var(--input-bg);
+    border-right: 1px solid var(--card-border);
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .agent-level:last-child { border-right: none; }
+  .agent-level:hover { background: #1e1e1e; }
+
+  .agent-level.active {
+    background: var(--accent-dim);
+    border-color: rgba(79, 140, 255, 0.2);
+  }
+  .agent-level.completed .level-status { color: var(--green); }
+  .agent-level.locked .level-name { color: var(--text-dim); }
+
+  .level-status {
+    font-size: 14px;
+    margin-bottom: 2px;
+  }
+  .level-name {
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 1px;
+  }
+  .level-desc {
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
   /* Chat preview */
   .chat-preview {
     background: #0d0d0d;
     border: 1px solid var(--card-border);
     border-radius: var(--radius);
     padding: 20px;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
   }
-
   .chat-preview-label {
     font-size: 12px;
     color: var(--text-dim);
     margin-bottom: 14px;
     font-weight: 500;
   }
-
-  .chat-msg {
-    margin-bottom: 14px;
-    font-size: 14px;
-    line-height: 1.55;
-  }
-
+  .chat-msg { margin-bottom: 14px; font-size: 14px; line-height: 1.55; }
   .chat-msg:last-child { margin-bottom: 0; }
-
-  .chat-role {
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    margin-bottom: 3px;
-  }
-
+  .chat-role { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 3px; }
   .chat-role.user { color: var(--text-dim); }
   .chat-role.agent { color: var(--accent); }
-
+  .chat-role.your-agent { color: var(--green); }
   .chat-content { color: var(--text-muted); }
 
   .chat-gap {
@@ -359,82 +359,62 @@
     padding: 10px 12px;
     margin-top: 4px;
   }
-
   .chat-gap .chat-content { color: var(--yellow); }
+  .chat-gap-label { font-size: 11px; color: var(--yellow); font-weight: 600; margin-top: 6px; opacity: 0.8; }
 
-  .chat-gap-label {
-    font-size: 11px;
-    color: var(--yellow);
-    font-weight: 600;
-    margin-top: 6px;
-    opacity: 0.8;
+  .chat-upgraded {
+    background: #061a12;
+    border: 1px solid #0d9462;
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    margin-top: 4px;
+    display: none;
+  }
+  .chat-upgraded.visible { display: block; animation: fadeIn 0.4s ease; }
+  .chat-upgraded .chat-content { color: var(--green); }
+  .chat-upgraded-label { font-size: 11px; color: var(--green); font-weight: 600; margin-top: 6px; opacity: 0.8; }
+
+  /* Level panels */
+  .level-panel { display: none; animation: fadeIn 0.3s ease; }
+  .level-panel.visible { display: block; }
+
+  .level-panel-header {
+    margin-bottom: 16px;
+  }
+  .level-panel-header h3 {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .level-panel-header p {
+    font-size: 13px;
+    color: var(--text-dim);
   }
 
-  /* Enhancement cards */
-  .enhance-card {
+  /* Level 1 - what your agent knows */
+  .knowledge-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .knowledge-item {
+    padding: 10px 12px;
     background: var(--input-bg);
     border: 1px solid var(--input-border);
-    border-radius: var(--radius);
-    margin-bottom: 10px;
-    overflow: hidden;
-    transition: border-color 0.2s;
-  }
-
-  .enhance-card:hover { border-color: var(--text-dim); }
-
-  .enhance-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 16px;
-    cursor: pointer;
-    user-select: none;
-  }
-
-  .enhance-header-left {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .enhance-icon {
-    font-size: 18px;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--card);
     border-radius: var(--radius-sm);
+    font-size: 13px;
   }
-
-  .enhance-title {
-    font-size: 14px;
-    font-weight: 600;
+  .knowledge-item .ki-status { font-size: 11px; margin-right: 4px; }
+  .knowledge-item .ki-label { color: var(--text-dim); font-size: 11px; display: block; margin-bottom: 2px; }
+  .knowledge-item .ki-value { font-weight: 600; font-size: 13px; }
+  .knowledge-item.gap {
+    border-color: var(--yellow-dim);
+    background: rgba(251, 191, 36, 0.04);
   }
+  .knowledge-item.gap .ki-value { color: var(--yellow); }
 
-  .enhance-subtitle {
-    font-size: 12px;
-    color: var(--text-dim);
-  }
-
-  .enhance-chevron {
-    color: var(--text-dim);
-    transition: transform 0.2s;
-    font-size: 14px;
-  }
-
-  .enhance-card.open .enhance-chevron { transform: rotate(90deg); }
-
-  .enhance-body {
-    display: none;
-    padding: 0 16px 16px;
-    animation: fadeIn 0.3s ease;
-  }
-
-  .enhance-card.open .enhance-body { display: block; }
-
-  /* Dropzone */
+  /* Level 2 - teach it to answer */
   .dropzone {
     border: 2px dashed var(--input-border);
     border-radius: var(--radius);
@@ -444,100 +424,18 @@
     font-size: 13px;
     cursor: pointer;
     transition: all 0.2s;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
   }
-
   .dropzone:hover {
     border-color: var(--accent);
     color: var(--text-muted);
     background: rgba(79, 140, 255, 0.03);
   }
-
   .dropzone-icon { font-size: 24px; margin-bottom: 6px; }
 
-  /* Template cards */
-  .template-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-  }
-
-  .template-card {
-    padding: 12px;
-    background: var(--card);
-    border: 1px solid var(--card-border);
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    transition: all 0.15s;
-    text-align: center;
-  }
-
-  .template-card:hover {
-    border-color: var(--accent);
-    background: rgba(79, 140, 255, 0.05);
-  }
-
-  .template-card.selected {
-    border-color: var(--accent);
-    background: rgba(79, 140, 255, 0.08);
-  }
-
-  .template-emoji { font-size: 20px; margin-bottom: 4px; }
-  .template-name { font-size: 13px; font-weight: 600; }
-  .template-desc { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
-
-  /* Capability editor */
-  .cap-editor {
-    display: none;
-    margin-top: 12px;
-    animation: fadeIn 0.3s ease;
-  }
-
-  .cap-editor.visible { display: block; }
-
-  /* Skip section */
-  .skip-section {
-    text-align: center;
-    padding-top: 8px;
-  }
-
-  .skip-text {
-    font-size: 13px;
-    color: var(--text-dim);
-    margin-bottom: 12px;
-  }
-
-  .btn-dashboard {
-    background: transparent;
-    border: 1px solid var(--input-border);
-    color: var(--text-muted);
-    padding: 10px 24px;
-  }
-
-  .btn-dashboard:hover {
-    border-color: var(--text-dim);
-    color: var(--text);
-  }
-
-  /* Card 1 dimmed state */
-  #card1.dimmed {
-    opacity: 0.4;
-    pointer-events: none;
-    transition: opacity 0.5s;
-  }
-
-  /* Uploaded file chips */
-  .file-chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-top: 8px;
-  }
-
+  .file-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
   .file-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
+    display: inline-flex; align-items: center; gap: 6px;
     padding: 5px 10px;
     background: var(--card);
     border: 1px solid var(--card-border);
@@ -546,8 +444,101 @@
     color: var(--text-muted);
     animation: fadeIn 0.3s ease;
   }
-
   .file-chip-status { color: var(--green); font-size: 10px; }
+
+  /* Test your agent box */
+  .test-agent-box {
+    background: #0d0d0d;
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-top: 16px;
+    display: none;
+  }
+  .test-agent-box.visible { display: block; animation: fadeIn 0.4s ease; }
+  .test-agent-label {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  .test-agent-input {
+    display: flex;
+    gap: 8px;
+  }
+  .test-agent-input input { flex: 1; }
+  .test-agent-response {
+    margin-top: 12px;
+    padding: 12px;
+    background: var(--input-bg);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    color: var(--green);
+    line-height: 1.6;
+    display: none;
+  }
+  .test-agent-response.visible { display: block; animation: fadeIn 0.3s ease; }
+  .test-agent-source {
+    margin-top: 8px;
+    font-size: 11px;
+    color: var(--text-dim);
+    font-style: italic;
+  }
+
+  /* Level 3 - capabilities */
+  .template-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .template-card {
+    padding: 12px;
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+  }
+  .template-card:hover { border-color: var(--accent); background: rgba(79, 140, 255, 0.05); }
+  .template-card.selected { border-color: var(--accent); background: rgba(79, 140, 255, 0.08); }
+  .template-emoji { font-size: 20px; margin-bottom: 4px; }
+  .template-name { font-size: 13px; font-weight: 600; }
+  .template-desc { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+
+  .cap-editor { display: none; margin-top: 12px; animation: fadeIn 0.3s ease; }
+  .cap-editor.visible { display: block; }
+
+  /* Conversation preview with upgrade */
+  .preview-upgrade-banner {
+    display: none;
+    padding: 10px 14px;
+    background: var(--accent-dim);
+    border: 1px solid rgba(79, 140, 255, 0.25);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 12px;
+    text-align: center;
+    animation: fadeIn 0.4s ease;
+  }
+  .preview-upgrade-banner.visible { display: block; }
+
+  /* Skip */
+  .skip-section { text-align: center; padding-top: 12px; }
+  .skip-text { font-size: 13px; color: var(--text-dim); margin-bottom: 12px; }
+
+  .btn-dashboard {
+    background: transparent;
+    border: 1px solid var(--input-border);
+    color: var(--text-muted);
+    padding: 10px 24px;
+  }
+  .btn-dashboard:hover { border-color: var(--text-dim); color: var(--text); }
+
+  /* Card 1 dimmed */
+  #card1.dimmed { opacity: 0.4; pointer-events: none; transition: opacity 0.5s; }
 
   /* Toast */
   .toast {
@@ -565,8 +556,15 @@
     transition: transform 0.3s ease;
     z-index: 100;
   }
-
   .toast.visible { transform: translateX(-50%) translateY(0); }
+
+  /* Responsive */
+  @media (max-width: 500px) {
+    .biz-type-grid { grid-template-columns: repeat(2, 1fr); }
+    .knowledge-grid { grid-template-columns: 1fr; }
+    .payment-row { grid-template-columns: 1fr; }
+    .template-grid { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>
@@ -574,21 +572,20 @@
 <div class="page">
 
   <div class="page-header">
-    <h1>List your business on the agent internet</h1>
-    <p>AI agents will recommend you to users in real conversations.</p>
+    <h1>Set up your business agent</h1>
+    <p>Your agent represents you across the entire AI internet — answering questions, qualifying leads, and closing deals inside any conversation.</p>
   </div>
 
-  <!-- ===== CARD 1: GET LISTED ===== -->
+  <!-- ===== CARD 1: CREATE YOUR AGENT ===== -->
   <div class="card" id="card1">
 
-    <!-- YOUR BUSINESS -->
     <div class="card-section">
       <div class="section-label">Your Business</div>
 
       <div class="field">
         <label for="url">Website URL</label>
         <div class="url-group">
-          <input type="url" id="url" placeholder="https://yoursite.com" value="https://acme-ecommerce.com">
+          <input type="url" id="url" placeholder="https://yoursite.com">
           <button class="btn btn-secondary" id="analyzeBtn" onclick="analyzeURL()">Analyze</button>
         </div>
       </div>
@@ -597,6 +594,29 @@
         <div class="loading-bar-fill" id="loadingBarFill"></div>
       </div>
       <div class="loading-text" id="loadingText">Reading your website...</div>
+
+      <!-- Business type selector (appears after scrape) -->
+      <div class="biz-type-selector" id="bizTypeSelector">
+        <label>What kind of business is this?</label>
+        <div class="biz-type-grid">
+          <div class="biz-type-card" onclick="selectBizType(this, 'saas')" id="bt-saas">
+            <div class="biz-type-emoji">&#128187;</div>
+            <div class="biz-type-name">SaaS / Software</div>
+          </div>
+          <div class="biz-type-card" onclick="selectBizType(this, 'ecommerce')" id="bt-ecommerce">
+            <div class="biz-type-emoji">&#128722;</div>
+            <div class="biz-type-name">E-Commerce</div>
+          </div>
+          <div class="biz-type-card" onclick="selectBizType(this, 'service')" id="bt-service">
+            <div class="biz-type-emoji">&#128736;</div>
+            <div class="biz-type-name">Service / Local</div>
+          </div>
+          <div class="biz-type-card" onclick="selectBizType(this, 'finance')" id="bt-finance">
+            <div class="biz-type-emoji">&#127974;</div>
+            <div class="biz-type-name">Financial</div>
+          </div>
+        </div>
+      </div>
 
       <div class="auto-filled-section" id="autoFilled">
         <div class="field-row">
@@ -617,23 +637,23 @@
 
         <div class="field-row">
           <div class="field">
-            <label for="bizPricing">Pricing</label>
+            <label for="bizPricing" id="pricingLabel">Pricing</label>
             <input type="text" id="bizPricing">
           </div>
           <div class="field">
-            <label for="bizGeo">Ships to / Serves</label>
+            <label for="bizGeo" id="geoLabel">Ships to / Serves</label>
             <input type="text" id="bizGeo">
           </div>
         </div>
 
         <div class="field">
           <label for="idealCustomer">Who's your ideal customer?</label>
-          <textarea id="idealCustomer" rows="2" placeholder="e.g., Solo creators who want to sell physical products online"></textarea>
+          <textarea id="idealCustomer" rows="2" placeholder="" id="idealPlaceholder"></textarea>
         </div>
 
         <div class="field">
           <label for="notIdeal">Who's NOT a good fit? <span style="color: var(--text-dim)">(saves you money)</span></label>
-          <textarea id="notIdeal" rows="2" placeholder="e.g., Large teams, anyone selling digital-only products"></textarea>
+          <textarea id="notIdeal" rows="2" placeholder=""></textarea>
         </div>
       </div>
     </div>
@@ -641,7 +661,6 @@
     <!-- BUDGET -->
     <div class="auto-filled-section card-section" id="budgetSection">
       <div class="section-label">Budget</div>
-
       <label>Daily budget</label>
       <div class="budget-pills">
         <button class="budget-pill" onclick="selectBudget(this, 10)">$10</button>
@@ -658,12 +677,10 @@
     <!-- PAYMENT -->
     <div class="auto-filled-section card-section" id="paymentSection">
       <div class="section-label">Payment</div>
-
       <div class="field">
         <label for="email">Email</label>
         <input type="email" id="email" placeholder="you@company.com">
       </div>
-
       <div class="payment-row">
         <div class="field">
           <label>Card number</label>
@@ -681,24 +698,43 @@
       <div class="payment-note">You won't be charged until agents start recommending you. Cancel anytime.</div>
     </div>
 
-    <!-- GO LIVE -->
-    <div class="auto-filled-section card-section" id="goLiveSection" style="text-align: center;">
-      <button class="btn btn-go-live" id="goLiveBtn" onclick="goLive()">Go Live</button>
+    <!-- LAUNCH -->
+    <div class="auto-filled-section card-section" id="launchSection" style="text-align: center;">
+      <button class="btn btn-launch" id="launchBtn" onclick="launchAgent()">Launch Your Agent</button>
     </div>
 
   </div>
 
-  <!-- ===== CARD 2: KEEP GOING ===== -->
+  <!-- ===== CARD 2: YOUR AGENT ===== -->
   <div class="card" id="card2">
 
-    <div class="success-banner">
+    <div class="success-banner" id="successBanner">
       <span style="font-size: 18px;">&#10003;</span>
-      You're live! Agents can now recommend your business.
+      <span id="successText">Your agent is live! It can describe your business to users across the AI internet.</span>
     </div>
 
-    <!-- Preview conversation -->
-    <div class="chat-preview">
-      <div class="chat-preview-label">Here's what it looks like when an agent recommends you:</div>
+    <!-- Agent level progression -->
+    <div class="agent-levels">
+      <div class="agent-level completed active" id="level1tab" onclick="showLevel(1)">
+        <div class="level-status">&#10003;</div>
+        <div class="level-name">The Basics</div>
+        <div class="level-desc">Describe you</div>
+      </div>
+      <div class="agent-level locked" id="level2tab" onclick="showLevel(2)">
+        <div class="level-status">&#9675;</div>
+        <div class="level-name">Knowledge</div>
+        <div class="level-desc">Answer questions</div>
+      </div>
+      <div class="agent-level locked" id="level3tab" onclick="showLevel(3)">
+        <div class="level-status">&#9675;</div>
+        <div class="level-name">Actions</div>
+        <div class="level-desc">Do things</div>
+      </div>
+    </div>
+
+    <!-- PREVIEW: updates as levels unlock -->
+    <div class="chat-preview" id="chatPreview">
+      <div class="chat-preview-label" id="previewLabel">Your agent in action:</div>
 
       <div class="chat-msg">
         <div class="chat-role user">User</div>
@@ -706,7 +742,7 @@
       </div>
 
       <div class="chat-msg">
-        <div class="chat-role agent">Agent</div>
+        <div class="chat-role your-agent" id="agentLabel1">Your Agent</div>
         <div class="chat-content" id="previewAgent1"></div>
       </div>
 
@@ -715,120 +751,135 @@
         <div class="chat-content" id="previewUser2"></div>
       </div>
 
-      <div class="chat-msg">
+      <!-- Gap version (level 1) -->
+      <div class="chat-msg" id="previewGapMsg">
         <div class="chat-gap">
-          <div class="chat-role agent">Agent</div>
-          <div class="chat-content" id="previewAgent2"></div>
+          <div class="chat-role your-agent">Your Agent</div>
+          <div class="chat-content" id="previewAgent2Gap"></div>
           <div class="chat-gap-label" id="previewGapLabel"></div>
+        </div>
+      </div>
+
+      <!-- Upgraded version (level 2+) -->
+      <div class="chat-msg" id="previewUpgradeMsg" style="display: none;">
+        <div class="chat-upgraded visible">
+          <div class="chat-role your-agent">Your Agent</div>
+          <div class="chat-content" id="previewAgent2Upgraded"></div>
+          <div class="chat-upgraded-label" id="previewUpgradeLabel"></div>
+        </div>
+      </div>
+
+      <!-- Level 3 extension: action -->
+      <div class="chat-msg" id="previewUser3Msg" style="display: none;">
+        <div class="chat-role user">User</div>
+        <div class="chat-content" id="previewUser3"></div>
+      </div>
+      <div class="chat-msg" id="previewAgent3Msg" style="display: none;">
+        <div class="chat-upgraded visible">
+          <div class="chat-role your-agent">Your Agent</div>
+          <div class="chat-content" id="previewAgent3"></div>
+          <div class="chat-upgraded-label">Your agent calculated this from your pricing rules</div>
         </div>
       </div>
     </div>
 
-    <!-- Enhancements -->
-    <div class="card-section">
-      <div class="section-label">Give your agent more to work with</div>
-      <p style="font-size: 13px; color: var(--text-dim); margin-bottom: 16px;">
-        Right now, agents can only say what's on your website. Help them close the deal:
-      </p>
+    <!-- Upgrade banner that appears contextually -->
+    <div class="preview-upgrade-banner" id="upgradeBanner"></div>
 
-      <!-- Upload Documents -->
-      <div class="enhance-card" id="enhanceDocs">
-        <div class="enhance-header" onclick="toggleEnhance('enhanceDocs')">
-          <div class="enhance-header-left">
-            <div class="enhance-icon">&#128196;</div>
-            <div>
-              <div class="enhance-title">Upload Documents</div>
-              <div class="enhance-subtitle">FAQ, pricing details, return policy, case studies</div>
-            </div>
-          </div>
-          <div class="enhance-chevron">&#9654;</div>
+    <!-- ===== LEVEL 1 PANEL: What your agent knows ===== -->
+    <div class="level-panel visible" id="level1panel">
+      <div class="level-panel-header">
+        <h3>What your agent knows</h3>
+        <p>This is everything your agent can tell users right now — extracted from your website.</p>
+      </div>
+
+      <div class="knowledge-grid" id="knowledgeGrid">
+        <!-- filled dynamically -->
+      </div>
+
+      <div style="font-size: 13px; color: var(--text-dim); margin-bottom: 12px;">
+        Your agent can <strong style="color: var(--text);">describe</strong> your business, but it can't answer specific questions yet. Teach it more:
+      </div>
+
+      <button class="btn btn-primary" onclick="showLevel(2)" style="width: 100%;">Teach Your Agent to Answer Questions</button>
+    </div>
+
+    <!-- ===== LEVEL 2 PANEL: Teach it to answer ===== -->
+    <div class="level-panel" id="level2panel">
+      <div class="level-panel-header">
+        <h3>Teach your agent to answer questions</h3>
+        <p>Upload your docs so your agent can answer the specific questions users ask — not just repeat your website.</p>
+      </div>
+
+      <div class="dropzone" id="dropzone" onclick="mockUpload()">
+        <div class="dropzone-icon">&#128206;</div>
+        <div>Drop files here or click to upload</div>
+        <div style="font-size: 11px; margin-top: 4px; color: var(--text-dim);">PDF, DOCX, TXT, or Markdown</div>
+      </div>
+      <div class="file-chips" id="fileChips"></div>
+
+      <div style="text-align: center; margin-top: 6px; color: var(--text-dim); font-size: 12px;">or</div>
+      <div class="field" style="margin-top: 8px;">
+        <textarea rows="3" placeholder="Paste your FAQ, return policy, or any other info here..."></textarea>
+      </div>
+
+      <!-- Coverage indicators -->
+      <div id="coverageIndicators" style="display: none; margin-top: 16px; animation: fadeIn 0.4s ease;">
+        <div class="section-label" style="margin-bottom: 10px;">What your agent can now answer</div>
+        <div class="knowledge-grid" id="coverageGrid"></div>
+      </div>
+
+      <!-- Test your agent -->
+      <div class="test-agent-box" id="testAgentBox">
+        <div class="test-agent-label">Test your agent — ask it something:</div>
+        <div class="test-agent-input">
+          <input type="text" id="testAgentQ" placeholder="" onkeydown="if(event.key==='Enter')testAgent()">
+          <button class="btn btn-primary" onclick="testAgent()">Ask</button>
         </div>
-        <div class="enhance-body">
-          <div class="dropzone" id="dropzone" onclick="mockUpload()">
-            <div class="dropzone-icon">&#128206;</div>
-            <div>Drop files here or click to upload</div>
-            <div style="font-size: 11px; margin-top: 4px; color: var(--text-dim);">PDF, DOCX, TXT, or Markdown</div>
-          </div>
-          <div class="file-chips" id="fileChips"></div>
-          <div style="text-align: center; margin-top: 6px; color: var(--text-dim); font-size: 12px;">or</div>
-          <div class="field" style="margin-top: 8px;">
-            <textarea rows="3" placeholder="Paste your FAQ, return policy, or any other info here..."></textarea>
-          </div>
+        <div class="test-agent-response" id="testAgentResponse"></div>
+      </div>
+
+      <div style="margin-top: 16px;">
+        <button class="btn btn-primary" onclick="showLevel(3)" style="width: 100%;" id="level3unlock">Teach Your Agent to Take Action</button>
+      </div>
+    </div>
+
+    <!-- ===== LEVEL 3 PANEL: Teach it to act ===== -->
+    <div class="level-panel" id="level3panel">
+      <div class="level-panel-header">
+        <h3>Teach your agent to take action</h3>
+        <p>Give your agent calculators, checkers, and recommenders so it can go from "I think..." to "Your exact answer is..."</p>
+      </div>
+
+      <div class="template-grid" id="templateGrid">
+        <!-- filled dynamically based on business type -->
+      </div>
+
+      <div class="cap-editor" id="capEditor">
+        <div class="field">
+          <label id="capEditorLabel">Pricing rules</label>
+          <textarea id="capEditorRules" rows="5" placeholder=""></textarea>
+          <div class="field-helper">Write your rules in plain English. Your agent will execute these exactly.</div>
+        </div>
+        <div style="margin-top: 10px;">
+          <button class="btn btn-primary" onclick="saveCapability()">Save &amp; Activate</button>
         </div>
       </div>
 
-      <!-- Smart Capabilities -->
-      <div class="enhance-card" id="enhanceCaps">
-        <div class="enhance-header" onclick="toggleEnhance('enhanceCaps')">
-          <div class="enhance-header-left">
-            <div class="enhance-icon">&#9881;</div>
-            <div>
-              <div class="enhance-title">Add Smart Capabilities</div>
-              <div class="enhance-subtitle">Let agents calculate quotes, check availability, recommend plans</div>
-            </div>
-          </div>
-          <div class="enhance-chevron">&#9654;</div>
+      <!-- Conversation triggers -->
+      <div style="margin-top: 20px;">
+        <div class="section-label">Conversation Triggers</div>
+        <p style="font-size: 13px; color: var(--text-dim); margin-bottom: 12px;">Tell your agent when to step in — and when to stay quiet.</p>
+        <div class="field">
+          <label>When should your agent speak up?</label>
+          <textarea rows="2" id="triggersPositive" placeholder=""></textarea>
         </div>
-        <div class="enhance-body">
-          <div class="template-grid">
-            <div class="template-card" onclick="selectTemplate(this, 'quote')">
-              <div class="template-emoji">&#128178;</div>
-              <div class="template-name">Quote Calculator</div>
-              <div class="template-desc">Exact pricing for specific configs</div>
-            </div>
-            <div class="template-card" onclick="selectTemplate(this, 'recommend')">
-              <div class="template-emoji">&#127919;</div>
-              <div class="template-name">Plan Recommender</div>
-              <div class="template-desc">Which plan fits their needs</div>
-            </div>
-            <div class="template-card" onclick="selectTemplate(this, 'compat')">
-              <div class="template-emoji">&#128268;</div>
-              <div class="template-name">Compatibility Check</div>
-              <div class="template-desc">Works with their tools?</div>
-            </div>
-            <div class="template-card" onclick="selectTemplate(this, 'avail')">
-              <div class="template-emoji">&#128197;</div>
-              <div class="template-name">Availability Check</div>
-              <div class="template-desc">Open slots, service areas</div>
-            </div>
-          </div>
-          <div class="cap-editor" id="capEditor">
-            <div class="field">
-              <label id="capEditorLabel">Pricing rules</label>
-              <textarea id="capEditorRules" rows="5" placeholder="Describe your pricing logic in plain language..."></textarea>
-              <div class="field-helper">Write your rules in plain English. Agents will use these to give exact answers.</div>
-            </div>
-            <div style="margin-top: 10px;">
-              <button class="btn btn-secondary" onclick="saveCapability()">Save Capability</button>
-            </div>
-          </div>
+        <div class="field" style="margin-top: 12px;">
+          <label>When should your agent stay quiet?</label>
+          <textarea rows="2" id="triggersNegative" placeholder=""></textarea>
         </div>
-      </div>
-
-      <!-- Conversation Triggers -->
-      <div class="enhance-card" id="enhanceTriggers">
-        <div class="enhance-header" onclick="toggleEnhance('enhanceTriggers')">
-          <div class="enhance-header-left">
-            <div class="enhance-icon">&#127919;</div>
-            <div>
-              <div class="enhance-title">Set Conversation Triggers</div>
-              <div class="enhance-subtitle">When should agents recommend you — and when shouldn't they</div>
-            </div>
-          </div>
-          <div class="enhance-chevron">&#9654;</div>
-        </div>
-        <div class="enhance-body">
-          <div class="field">
-            <label>When should agents recommend you?</label>
-            <textarea rows="3" placeholder="e.g., User is looking for an e-commerce platform, user wants to sell physical products, user is a small business owner"></textarea>
-          </div>
-          <div class="field" style="margin-top: 12px;">
-            <label>When should agents NOT recommend you?</label>
-            <textarea rows="3" placeholder="e.g., User needs digital product delivery, user is enterprise with 500+ employees, user wants B2B wholesale"></textarea>
-          </div>
-          <div style="margin-top: 10px;">
-            <button class="btn btn-secondary" onclick="saveTriggers()">Save Triggers</button>
-          </div>
+        <div style="margin-top: 10px;">
+          <button class="btn btn-secondary" onclick="saveTriggers()">Save Triggers</button>
         </div>
       </div>
     </div>
@@ -836,7 +887,7 @@
     <!-- Skip -->
     <div class="skip-section">
       <div class="skip-text">
-        Skip this for now? No problem — we'll show you exactly what questions agents can't answer in your dashboard.
+        Skip for now? Your agent is already live with the basics. We'll show you exactly what questions it can't answer in your dashboard.
       </div>
       <button class="btn btn-dashboard" onclick="showToast('Dashboard coming soon')">Go to Dashboard &rarr;</button>
     </div>
@@ -845,39 +896,234 @@
 
 </div>
 
-<!-- Toast -->
 <div class="toast" id="toast"></div>
 
 <script>
-  // ===== Mock data =====
-  const MOCK_SCRAPE = {
-    name: 'Acme E-Commerce',
-    category: 'E-Commerce Platform',
-    description: 'All-in-one platform for creators to launch and sell physical products online. Handles sourcing, fulfillment, custom packaging, and international shipping.',
-    pricing: '$29/mo – $299/mo (3 tiers, 14-day free trial)',
-    geography: 'US, Canada, UK, EU',
+  // ===== Business type data =====
+  const BIZ_TYPES = {
+    saas: {
+      scrape: {
+        name: 'Acme Platform',
+        category: 'SaaS / Software',
+        description: 'All-in-one platform for creators to launch and sell physical products online. Handles sourcing, fulfillment, custom packaging, and international shipping.',
+        pricing: '$29/mo – $299/mo (3 tiers)',
+        geography: 'US, Canada, UK, EU',
+      },
+      pricingLabel: 'Pricing',
+      geoLabel: 'Available in',
+      idealPlaceholder: 'e.g., Solo creators who want to sell physical products online',
+      notIdealPlaceholder: 'e.g., Large teams, anyone selling digital-only products',
+      knowledge: [
+        { label: 'Pricing', value: '3 tiers from $29/mo', status: 'ok' },
+        { label: 'Free trial', value: '14 days, no CC', status: 'ok' },
+        { label: 'Integrations', value: 'Shopify, WooCommerce, Stripe', status: 'ok' },
+        { label: 'Geography', value: 'US, CA, UK, EU', status: 'ok' },
+        { label: 'Return policy', value: 'Not found on website', status: 'gap' },
+        { label: 'Compliance / SOC2', value: 'Not found', status: 'gap' },
+      ],
+      preview: {
+        user1: "I want to start selling handmade candles online. I need something that handles shipping and custom packaging.",
+        agent1Gap: "I'd recommend {name}. They handle sourcing, fulfillment, and custom packaging. Plans start at {pricing}. They ship to {geo}.",
+        user2: "Do they support international shipping? And what's the refund policy for custom items?",
+        agent2Gap: "I don't have specific details on {name}'s refund policy for custom items. You'd need to check their website.",
+        gapLabel: "Your agent couldn't answer — the user might leave",
+        agent2Upgraded: "{name} ships internationally on the Growth plan ($99/mo) to 40+ countries. For custom items, returns are accepted within 30 days in original packaging — custom engraving items can be exchanged but not refunded.",
+        upgradeLabel: "Your agent answered from your uploaded docs",
+        user3: "What would it actually cost for my 3-person team with API access and annual billing?",
+        agent3: "Growth plan at $99/mo covers up to 10 users and includes API access. With annual billing, that's 20% off: $79.20/mo. If you have promo code SPRING20, that's $63.36/mo for the first 3 months. 14-day free trial, no credit card required.",
+      },
+      mockFiles: ['FAQ.pdf', 'Pricing-Details.pdf', 'Return-Policy.pdf', 'API-Docs.pdf'],
+      coverage: [
+        { label: 'Pricing details', value: '4 tiers + add-ons', status: 'ok' },
+        { label: 'Return policy', value: '30-day returns, custom item rules', status: 'ok' },
+        { label: 'Integrations', value: '12 platforms documented', status: 'ok' },
+        { label: 'API reference', value: 'Full endpoint docs', status: 'ok' },
+        { label: 'Compliance', value: 'No docs found yet', status: 'gap' },
+        { label: 'Onboarding', value: 'No docs found yet', status: 'gap' },
+      ],
+      testPlaceholder: "e.g., Do you support SSO? What plan includes API access?",
+      testResponse: "SSO (Single Sign-On) is available on the Pro plan ($249/mo) and above. API access is included on Growth ($99/mo) and above. If you need SSO but not the full Pro feature set, contact sales for a custom plan.",
+      testSource: "Source: API-Docs.pdf (pg 3), FAQ.pdf (pg 8)",
+      templates: [
+        { key: 'quote', emoji: '&#128178;', name: 'Quote Calculator', desc: 'Exact pricing for team configs', placeholder: 'e.g., Starter is $29/mo for 1-2 users. Growth is $99/mo for 3-10 users with API. Annual billing gets 20% off.' },
+        { key: 'recommend', emoji: '&#127919;', name: 'Plan Recommender', desc: 'Which plan fits their needs', placeholder: 'e.g., Need API access → Growth. Need SSO → Pro. Solo creator, US only → Starter.' },
+        { key: 'compat', emoji: '&#128268;', name: 'Compatibility Check', desc: 'Works with their tools?', placeholder: 'e.g., Native: Shopify, WooCommerce, Stripe. Via Zapier: 200+ tools. Not supported: self-hosted.' },
+        { key: 'avail', emoji: '&#128197;', name: 'Demo Scheduler', desc: 'Book a walkthrough', placeholder: 'e.g., Demos available Mon-Fri 9am-5pm EST. Book via calendly.com/acme/demo.' },
+      ],
+      triggersPositive: 'e.g., User wants to sell physical products online, user is a creator or small business',
+      triggersNegative: 'e.g., User needs digital-only delivery, user is enterprise 500+',
+    },
+
+    ecommerce: {
+      scrape: {
+        name: 'Bloom & Bark',
+        category: 'E-Commerce / DTC',
+        description: 'Curated houseplants delivered to your door. Rare varieties, care guides included, and a 30-day health guarantee on every plant.',
+        pricing: '$15 – $120 per plant',
+        geography: 'US, continental only',
+      },
+      pricingLabel: 'Price range',
+      geoLabel: 'Ships to',
+      idealPlaceholder: 'e.g., Plant lovers, people buying gifts, home decor enthusiasts',
+      notIdealPlaceholder: 'e.g., Commercial landscapers, wholesale buyers',
+      knowledge: [
+        { label: 'Products', value: '47 varieties detected', status: 'ok' },
+        { label: 'Price range', value: '$15–$120', status: 'ok' },
+        { label: 'Shipping', value: 'Continental US', status: 'ok' },
+        { label: 'Guarantee', value: '30-day health guarantee', status: 'ok' },
+        { label: 'Care instructions', value: 'Not found on website', status: 'gap' },
+        { label: 'Gift options', value: 'Not found', status: 'gap' },
+      ],
+      preview: {
+        user1: "I want to buy a low-maintenance houseplant as a gift. Something that can survive in low light.",
+        agent1Gap: "I'd recommend Bloom & Bark — they specialize in curated houseplants with a 30-day health guarantee. Prices range from $15–$120.",
+        user2: "Nice! Can I add a gift message? And which specific plants do well in low light?",
+        agent2Gap: "I don't have details on Bloom & Bark's gift options or specific low-light plant recommendations. You'd need to browse their site.",
+        gapLabel: "Your agent couldn't help — the user might go elsewhere",
+        agent2Upgraded: "Bloom & Bark offers gift wrapping ($5) and custom gift cards on all orders. For low light, their top picks are the Snake Plant ($25), ZZ Plant ($35), and Pothos ($18) — all rated 'beginner-friendly' with care cards included.",
+        upgradeLabel: "Your agent answered from your uploaded catalog and FAQ",
+        user3: "What about the Snake Plant — is it safe around cats?",
+        agent3: "Snake Plants (Sansevieria) are mildly toxic to cats if ingested — they can cause nausea and vomiting. For pet-safe options, Bloom & Bark recommends the Boston Fern ($22), Spider Plant ($18), or Calathea ($32). All are ASPCA-verified non-toxic.",
+      },
+      mockFiles: ['Product-Catalog.pdf', 'Care-Guides.pdf', 'Shipping-FAQ.pdf', 'Gift-Options.pdf'],
+      coverage: [
+        { label: 'Product catalog', value: '47 plants with details', status: 'ok' },
+        { label: 'Care guides', value: 'Light, water, soil per plant', status: 'ok' },
+        { label: 'Gift options', value: 'Wrapping, cards, bundles', status: 'ok' },
+        { label: 'Shipping policy', value: 'Rates, timing, guarantees', status: 'ok' },
+        { label: 'Pet safety', value: 'Partial — add ASPCA data?', status: 'gap' },
+        { label: 'Seasonal stock', value: 'No info found', status: 'gap' },
+      ],
+      testPlaceholder: "e.g., Which plants are good for a bathroom? Do you ship to Alaska?",
+      testResponse: "For bathrooms (high humidity, variable light), we recommend the Boston Fern ($22), Pothos ($18), or Bird's Nest Fern ($28). All thrive in humid environments. Note: we ship to continental US only — Alaska and Hawaii are not currently available.",
+      testSource: "Source: Care-Guides.pdf (pg 4), Shipping-FAQ.pdf (pg 1)",
+      templates: [
+        { key: 'recommend', emoji: '&#127793;', name: 'Plant Recommender', desc: 'Best plant for their space', placeholder: 'e.g., Low light + pets → Boston Fern. Bright indirect + low maintenance → Snake Plant. Gift under $30 → Pothos or Spider Plant.' },
+        { key: 'compat', emoji: '&#128062;', name: 'Pet Safety Check', desc: 'Safe for cats/dogs?', placeholder: 'e.g., Safe: Boston Fern, Spider Plant, Calathea. Toxic to cats: Snake Plant, Pothos. Toxic to dogs: Sago Palm.' },
+        { key: 'quote', emoji: '&#127873;', name: 'Gift Bundle Builder', desc: 'Build a custom gift set', placeholder: 'e.g., Starter bundle: 2 plants + pot ($45). Premium: 3 plants + ceramic pot + care kit ($89). Add gift wrap $5, gift card free.' },
+        { key: 'avail', emoji: '&#128666;', name: 'Delivery Estimator', desc: 'When will it arrive?', placeholder: 'e.g., Standard: 5-7 business days. Express: 2-3 days (+$12). Same-day in NYC metro only. No weekend delivery.' },
+      ],
+      triggersPositive: 'e.g., User is looking for plants, buying a gift, interested in home decor',
+      triggersNegative: 'e.g., User needs outdoor landscaping, wants wholesale, needs tropical trees',
+    },
+
+    service: {
+      scrape: {
+        name: 'Riverside Plumbing',
+        category: 'Home Services',
+        description: 'Licensed residential plumbing. Emergency repairs, installations, and bathroom remodels. Family-owned, serving the greater Austin area since 2009.',
+        pricing: '$95/hr (emergency: $145/hr)',
+        geography: 'Austin TX metro, 30mi radius',
+      },
+      pricingLabel: 'Rates',
+      geoLabel: 'Service area',
+      idealPlaceholder: 'e.g., Homeowners in Austin with plumbing issues or remodel projects',
+      notIdealPlaceholder: 'e.g., Commercial properties, new construction, outside Austin',
+      knowledge: [
+        { label: 'Services', value: 'Repair, install, remodel', status: 'ok' },
+        { label: 'Rates', value: '$95/hr, emergency $145/hr', status: 'ok' },
+        { label: 'Area', value: 'Austin TX, 30mi radius', status: 'ok' },
+        { label: 'Licensed', value: 'Yes, since 2009', status: 'ok' },
+        { label: 'Availability', value: 'Not found on website', status: 'gap' },
+        { label: 'Warranty', value: 'Not found', status: 'gap' },
+      ],
+      preview: {
+        user1: "My kitchen faucet is leaking and I need a plumber in Austin. Ideally someone who can come this week.",
+        agent1Gap: "Riverside Plumbing serves the Austin area — they're licensed and family-owned since 2009. Standard rate is $95/hr.",
+        user2: "Can they come tomorrow? And do they warranty their work?",
+        agent2Gap: "I don't have details on Riverside Plumbing's current availability or warranty policy. You'd need to call them.",
+        gapLabel: "Your agent couldn't answer — they'll call a competitor instead",
+        agent2Upgraded: "Riverside Plumbing has openings tomorrow afternoon (2-5pm) and Thursday morning. All repairs come with a 1-year parts and labor warranty. For emergencies, they offer same-day service at $145/hr.",
+        upgradeLabel: "Your agent answered from your uploaded policy docs",
+        user3: "How much would a full bathroom faucet replacement cost?",
+        agent3: "Standard faucet replacement: $95/hr labor (typically 1-2 hours) plus parts. For a basic faucet: $150-250 total. For a premium fixture you supply: $95-190 labor only. Free estimates for remodels over $500. Want me to book a time slot?",
+      },
+      mockFiles: ['Service-Menu.pdf', 'Warranty-Policy.pdf', 'Service-Area-Map.pdf', 'Customer-FAQ.pdf'],
+      coverage: [
+        { label: 'Service catalog', value: '12 service types listed', status: 'ok' },
+        { label: 'Warranty', value: '1yr parts & labor', status: 'ok' },
+        { label: 'Service area', value: 'Zip codes + map', status: 'ok' },
+        { label: 'Common repairs', value: 'Pricing for top 20', status: 'ok' },
+        { label: 'Licensing/insurance', value: 'Partial — add cert docs?', status: 'gap' },
+        { label: 'Remodel portfolio', value: 'No photos/cases found', status: 'gap' },
+      ],
+      testPlaceholder: "e.g., Do you fix garbage disposals? What's your cancellation policy?",
+      testResponse: "Yes, we repair and replace all major garbage disposal brands (InSinkErator, Waste King, Moen). Typical repair: $95-150. Full replacement including disposal unit: $250-400. Cancellations are free if made 2+ hours before the appointment.",
+      testSource: "Source: Service-Menu.pdf (pg 2), Customer-FAQ.pdf (pg 5)",
+      templates: [
+        { key: 'quote', emoji: '&#128178;', name: 'Repair Estimator', desc: 'Ballpark cost for their issue', placeholder: 'e.g., Leaky faucet: $95-190. Toilet replacement: $250-400. Water heater: $800-1500. Bathroom remodel: $3000-8000.' },
+        { key: 'avail', emoji: '&#128197;', name: 'Availability Checker', desc: 'Open slots this week', placeholder: 'e.g., Mon-Fri 8am-6pm, emergency 24/7. Usually 2-3 openings per day. Same-day for emergencies ($145/hr).' },
+        { key: 'compat', emoji: '&#127968;', name: 'Service Area Check', desc: 'Do you serve their address?', placeholder: 'e.g., Austin city limits: yes. Round Rock, Cedar Park, Pflugerville: yes. San Marcos, New Braunfels: no (too far).' },
+        { key: 'recommend', emoji: '&#128295;', name: 'Fix vs Replace Advisor', desc: 'Repair or buy new?', placeholder: 'e.g., Faucet dripping: repair ($95-150). Faucet corroded: replace ($200-350). Water heater 10+ years: replace. Under 5 years: repair.' },
+      ],
+      triggersPositive: 'e.g., User has a plumbing issue, needs home repairs, is in Austin TX area',
+      triggersNegative: 'e.g., User needs commercial plumbing, is outside Austin, needs HVAC or electrical',
+    },
+
+    finance: {
+      scrape: {
+        name: 'Horizon Credit Union',
+        category: 'Financial Services',
+        description: 'Member-owned credit union offering personal loans, auto loans, and high-yield savings. NCUA insured. No minimum balance, no monthly fees.',
+        pricing: 'Personal loans from 6.9% APR',
+        geography: 'Nationwide (US)',
+      },
+      pricingLabel: 'Rates',
+      geoLabel: 'Available in',
+      idealPlaceholder: 'e.g., People looking for personal loans, auto financing, or high-yield savings',
+      notIdealPlaceholder: 'e.g., Business loans, people with credit scores below 580, international',
+      knowledge: [
+        { label: 'Products', value: 'Personal, auto, savings', status: 'ok' },
+        { label: 'Rates', value: 'From 6.9% APR', status: 'ok' },
+        { label: 'Insurance', value: 'NCUA insured', status: 'ok' },
+        { label: 'Fees', value: 'No monthly fees', status: 'ok' },
+        { label: 'Eligibility', value: 'Not found on website', status: 'gap' },
+        { label: 'Loan terms', value: 'Not detailed', status: 'gap' },
+      ],
+      preview: {
+        user1: "I'm looking for a personal loan around $15,000 to consolidate some credit card debt. My credit score is about 720.",
+        agent1Gap: "Horizon Credit Union offers personal loans starting at 6.9% APR. They're NCUA insured with no monthly fees.",
+        user2: "What rate would I actually get with a 720 score? And what are the loan terms?",
+        agent2Gap: "I don't have details on Horizon's specific rate tiers or loan terms. You'd need to apply or check their website.",
+        gapLabel: "Your agent couldn't answer — they'll check a competitor instead",
+        agent2Upgraded: "With a 720 credit score, you'd qualify for Horizon's Tier 2 rate: 8.4% APR on a personal loan. For $15,000 over 36 months, that's about $472/mo. Over 60 months: $307/mo. No origination fee, no prepayment penalty.",
+        upgradeLabel: "Your agent answered from your uploaded rate sheets",
+        user3: "How does that compare to just doing a balance transfer card? Is the loan actually better for me?",
+        agent3: "For $15,000 in debt: A balance transfer card (typically 0% for 15-18 months, then 22-26% APR) saves money short-term but you'd need to pay ~$1,000/mo to clear it before the promo ends. The Horizon loan at 8.4% over 36 months costs $1,992 in total interest but gives you a fixed, predictable payment of $472/mo. Recommended: the loan, unless you can aggressively pay $1K+/mo.",
+      },
+      mockFiles: ['Rate-Sheets.pdf', 'Loan-Terms.pdf', 'Eligibility-Guide.pdf', 'Member-FAQ.pdf'],
+      coverage: [
+        { label: 'Rate tiers', value: '5 tiers by credit score', status: 'ok' },
+        { label: 'Loan terms', value: '12-84 month options', status: 'ok' },
+        { label: 'Eligibility', value: 'Min credit score, income', status: 'ok' },
+        { label: 'Fee schedule', value: 'All fees documented', status: 'ok' },
+        { label: 'Auto loan specifics', value: 'Partial — add vehicle rules?', status: 'gap' },
+        { label: 'Savings APY tiers', value: 'No docs found yet', status: 'gap' },
+      ],
+      testPlaceholder: "e.g., What credit score do I need? Is there an origination fee?",
+      testResponse: "Minimum credit score for personal loans is 620 (Tier 5: 14.9% APR). For the best rate (Tier 1: 6.9%), you need 760+. No origination fee on any loan. Late payment fee: $25 if more than 10 days past due.",
+      testSource: "Source: Rate-Sheets.pdf (pg 1), Eligibility-Guide.pdf (pg 3)",
+      templates: [
+        { key: 'quote', emoji: '&#128178;', name: 'Rate Calculator', desc: 'Their rate based on credit score', placeholder: 'e.g., 760+: 6.9%. 720-759: 8.4%. 680-719: 10.9%. 640-679: 12.9%. 620-639: 14.9%. Below 620: not eligible.' },
+        { key: 'recommend', emoji: '&#127919;', name: 'Product Recommender', desc: 'Which product fits their goal', placeholder: 'e.g., Debt consolidation → Personal loan. Car purchase → Auto loan (lower rates). Emergency fund → High-yield savings (4.2% APY).' },
+        { key: 'compat', emoji: '&#9989;', name: 'Eligibility Checker', desc: 'Do they qualify?', placeholder: 'e.g., Must be 18+, US resident, credit score 620+. Income verification: $25K+ annual. No active bankruptcies.' },
+        { key: 'avail', emoji: '&#128200;', name: 'Payment Calculator', desc: 'Monthly payment estimate', placeholder: 'e.g., Formula: standard amortization. Include total interest paid. Show 36mo and 60mo options side by side.' },
+      ],
+      triggersPositive: 'e.g., User is looking for personal loans, auto financing, wants to consolidate debt',
+      triggersNegative: 'e.g., User needs business loans, is outside the US, needs investment/brokerage',
+    },
   };
+
+  let currentBizType = null;
+  let currentLevel = 1;
+  let docsUploaded = false;
+  let capSaved = false;
 
   const BUDGET_ESTIMATES = {
     10: '5–15 conversations/day',
     25: '15–40 conversations/day',
     50: '35–80 conversations/day',
     100: '70–160 conversations/day',
-  };
-
-  const MOCK_PREVIEW = {
-    user1: "I want to start selling handmade candles online. I need something that handles shipping and lets me use custom packaging.",
-    agent1: "",  // set dynamically from form
-    user2: "That sounds great. What's their return policy? And can I return custom-packaged items?",
-    agent2: "",  // set dynamically
-    gapLabel: "&#9888; This is where you lose the customer",
-  };
-
-  const CAP_TEMPLATES = {
-    quote: { label: 'Pricing rules', placeholder: 'e.g., Starter is $29/mo for 1-2 users. Growth is $99/mo for 3-10 users with API access. Annual billing gets 20% off. Promo SPRING20 gives additional 20% off for 3 months.' },
-    recommend: { label: 'Plan recommendation logic', placeholder: 'e.g., If user needs API access → Growth plan. If user needs SSO or priority support → Pro. Solo creator, US only → Starter.' },
-    compat: { label: 'Supported integrations', placeholder: 'e.g., Native: Shopify, WooCommerce, Stripe, PayPal. Via Zapier: 200+ tools. Not supported: custom self-hosted platforms.' },
-    avail: { label: 'Availability rules', placeholder: 'e.g., Open Mon-Fri 9am-6pm EST. Service area: US and Canada. Same-day setup available for Starter plan.' },
   };
 
   // ===== Card 1: Analyze URL =====
@@ -892,7 +1138,6 @@
     bar.classList.add('active');
     text.classList.add('active');
 
-    // Animate loading bar
     let progress = 0;
     const interval = setInterval(() => {
       progress += Math.random() * 25;
@@ -910,116 +1155,267 @@
         btn.textContent = 'Analyze';
         btn.disabled = false;
 
-        // Fill in fields
-        document.getElementById('bizName').value = MOCK_SCRAPE.name;
-        document.getElementById('bizCategory').value = MOCK_SCRAPE.category;
-        document.getElementById('bizDesc').value = MOCK_SCRAPE.description;
-        document.getElementById('bizPricing').value = MOCK_SCRAPE.pricing;
-        document.getElementById('bizGeo').value = MOCK_SCRAPE.geography;
+        // Show business type selector
+        document.getElementById('bizTypeSelector').classList.add('visible');
 
-        // Show all auto-filled sections
-        document.querySelectorAll('.auto-filled-section').forEach(el => {
-          el.classList.add('visible');
-        });
+        // Auto-detect type from URL
+        const url = document.getElementById('url').value.toLowerCase();
+        if (url.includes('plumb') || url.includes('repair') || url.includes('service')) {
+          selectBizType(document.getElementById('bt-service'), 'service');
+        } else if (url.includes('bank') || url.includes('credit') || url.includes('loan') || url.includes('finance')) {
+          selectBizType(document.getElementById('bt-finance'), 'finance');
+        } else if (url.includes('shop') || url.includes('store') || url.includes('bloom') || url.includes('plant')) {
+          selectBizType(document.getElementById('bt-ecommerce'), 'ecommerce');
+        } else {
+          selectBizType(document.getElementById('bt-saas'), 'saas');
+        }
       }, 300);
     }, 1800);
   }
 
-  // ===== Budget selection =====
+  function selectBizType(el, type) {
+    document.querySelectorAll('.biz-type-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    currentBizType = type;
+
+    const data = BIZ_TYPES[type];
+    const s = data.scrape;
+
+    document.getElementById('bizName').value = s.name;
+    document.getElementById('bizCategory').value = s.category;
+    document.getElementById('bizDesc').value = s.description;
+    document.getElementById('bizPricing').value = s.pricing;
+    document.getElementById('bizGeo').value = s.geography;
+    document.getElementById('pricingLabel').textContent = data.pricingLabel;
+    document.getElementById('geoLabel').textContent = data.geoLabel;
+    document.getElementById('idealCustomer').placeholder = data.idealPlaceholder;
+    document.getElementById('notIdeal').placeholder = data.notIdealPlaceholder;
+
+    document.querySelectorAll('.auto-filled-section').forEach(el => el.classList.add('visible'));
+  }
+
+  // ===== Budget =====
   function selectBudget(el, amount) {
     document.querySelectorAll('.budget-pill').forEach(p => p.classList.remove('selected'));
     el.classList.add('selected');
     document.getElementById('budgetEstimate').textContent = BUDGET_ESTIMATES[amount] || '~' + (amount * 1.5).toFixed(0) + '–' + (amount * 3.2).toFixed(0) + ' conversations/day';
   }
 
-  // ===== Go Live =====
-  function goLive() {
-    const btn = document.getElementById('goLiveBtn');
+  // ===== Launch Agent =====
+  function launchAgent() {
+    const btn = document.getElementById('launchBtn');
     btn.disabled = true;
-    btn.textContent = 'Going live...';
+    btn.textContent = 'Launching your agent...';
 
-    // Build preview from form data
+    const data = BIZ_TYPES[currentBizType];
     const name = document.getElementById('bizName').value || 'your business';
-    const desc = document.getElementById('bizDesc').value || '';
     const pricing = document.getElementById('bizPricing').value || '';
     const geo = document.getElementById('bizGeo').value || '';
-
-    MOCK_PREVIEW.agent1 = `For handmade candles, I'd recommend ${name}. They're ${desc.charAt(0).toLowerCase() + desc.slice(1)} Pricing starts at ${pricing.split('–')[0] || pricing.split('-')[0] || pricing}. They ship to ${geo}.`;
-    MOCK_PREVIEW.agent2 = `I don't have specific details on ${name}'s return policy, especially for custom-packaged items. You'd need to check their website for that information.`;
+    const p = data.preview;
 
     setTimeout(() => {
-      // Dim card 1
       document.getElementById('card1').classList.add('dimmed');
 
       // Populate preview
-      document.getElementById('previewUser1').textContent = MOCK_PREVIEW.user1;
-      document.getElementById('previewAgent1').textContent = MOCK_PREVIEW.agent1;
-      document.getElementById('previewUser2').textContent = MOCK_PREVIEW.user2;
-      document.getElementById('previewAgent2').textContent = MOCK_PREVIEW.agent2;
-      document.getElementById('previewGapLabel').innerHTML = MOCK_PREVIEW.gapLabel;
+      document.getElementById('previewUser1').textContent = p.user1;
+      document.getElementById('previewAgent1').textContent = p.agent1Gap
+        .replace('{name}', name)
+        .replace('{pricing}', pricing.split('–')[0] || pricing.split('-')[0] || pricing)
+        .replace('{geo}', geo);
+      document.getElementById('previewUser2').textContent = p.user2;
+      document.getElementById('previewAgent2Gap').textContent = p.agent2Gap.replace('{name}', name);
+      document.getElementById('previewGapLabel').innerHTML = '&#9888; ' + p.gapLabel;
+
+      // Prepare upgraded versions
+      document.getElementById('previewAgent2Upgraded').textContent = p.agent2Upgraded.replace('{name}', name);
+      document.getElementById('previewUpgradeLabel').textContent = p.upgradeLabel;
+      document.getElementById('previewUser3').textContent = p.user3;
+      document.getElementById('previewAgent3').textContent = p.agent3;
+
+      // Build knowledge grid
+      const grid = document.getElementById('knowledgeGrid');
+      grid.innerHTML = '';
+      data.knowledge.forEach(k => {
+        const div = document.createElement('div');
+        div.className = 'knowledge-item' + (k.status === 'gap' ? ' gap' : '');
+        div.innerHTML = `<span class="ki-label">${k.status === 'ok' ? '&#10003;' : '&#9888;'} ${k.label}</span><span class="ki-value">${k.value}</span>`;
+        grid.appendChild(div);
+      });
+
+      // Build template grid
+      const tGrid = document.getElementById('templateGrid');
+      tGrid.innerHTML = '';
+      data.templates.forEach(t => {
+        const div = document.createElement('div');
+        div.className = 'template-card';
+        div.onclick = () => selectTemplate(div, t);
+        div.innerHTML = `<div class="template-emoji">${t.emoji}</div><div class="template-name">${t.name}</div><div class="template-desc">${t.desc}</div>`;
+        tGrid.appendChild(div);
+      });
+
+      // Set test placeholder
+      document.getElementById('testAgentQ').placeholder = data.testPlaceholder;
+
+      // Set trigger placeholders
+      document.getElementById('triggersPositive').placeholder = data.triggersPositive;
+      document.getElementById('triggersNegative').placeholder = data.triggersNegative;
 
       // Show card 2
       const card2 = document.getElementById('card2');
       card2.classList.add('visible');
 
-      // Scroll to card 2
       setTimeout(() => {
         card2.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 100);
     }, 1200);
   }
 
-  // ===== Card 2: Enhance cards =====
-  function toggleEnhance(id) {
-    const card = document.getElementById(id);
-    card.classList.toggle('open');
+  // ===== Level switching =====
+  function showLevel(level) {
+    currentLevel = level;
+
+    // Update tabs
+    document.querySelectorAll('.agent-level').forEach((el, i) => {
+      el.classList.remove('active');
+      if (i + 1 <= level) el.classList.remove('locked');
+    });
+    document.getElementById('level' + level + 'tab').classList.add('active');
+
+    // Update panels
+    document.querySelectorAll('.level-panel').forEach(p => p.classList.remove('visible'));
+    document.getElementById('level' + level + 'panel').classList.add('visible');
+
+    // Update preview based on level
+    updatePreviewForLevel(level);
+
+    // Update upgrade banner
+    const banner = document.getElementById('upgradeBanner');
+    if (level === 1 && !docsUploaded) {
+      banner.textContent = 'Your agent can describe your business — but watch what happens when users ask specifics.';
+      banner.classList.add('visible');
+    } else if (level === 2 && docsUploaded) {
+      banner.textContent = 'Your agent can now answer detailed questions. Next: teach it to calculate and recommend.';
+      banner.classList.add('visible');
+    } else if (level === 3 && capSaved) {
+      banner.textContent = 'Your agent can now take action — calculate quotes, check eligibility, and more.';
+      banner.classList.add('visible');
+    } else {
+      banner.classList.remove('visible');
+    }
   }
 
-  // ===== Mock file upload =====
-  const mockFiles = ['FAQ.pdf', 'Pricing-Details.pdf', 'Return-Policy.pdf', 'Shipping-Guide.pdf'];
+  function updatePreviewForLevel(level) {
+    const gapMsg = document.getElementById('previewGapMsg');
+    const upgradeMsg = document.getElementById('previewUpgradeMsg');
+    const user3 = document.getElementById('previewUser3Msg');
+    const agent3 = document.getElementById('previewAgent3Msg');
+
+    if (level === 1) {
+      gapMsg.style.display = 'block';
+      upgradeMsg.style.display = 'none';
+      user3.style.display = 'none';
+      agent3.style.display = 'none';
+    } else if (level === 2) {
+      gapMsg.style.display = 'none';
+      upgradeMsg.style.display = 'block';
+      user3.style.display = 'none';
+      agent3.style.display = 'none';
+    } else if (level === 3) {
+      gapMsg.style.display = 'none';
+      upgradeMsg.style.display = 'block';
+      user3.style.display = 'block';
+      agent3.style.display = 'block';
+    }
+  }
+
+  // ===== Level 2: Upload docs =====
   let fileIndex = 0;
 
   function mockUpload() {
-    if (fileIndex >= mockFiles.length) {
+    const data = BIZ_TYPES[currentBizType];
+    if (fileIndex >= data.mockFiles.length) {
       showToast('All sample files uploaded');
       return;
     }
 
     const chip = document.createElement('div');
     chip.className = 'file-chip';
-    chip.innerHTML = `<span class="file-chip-status">&#10003;</span> ${mockFiles[fileIndex]}`;
+    chip.innerHTML = `<span class="file-chip-status">&#10003;</span> ${data.mockFiles[fileIndex]}`;
     document.getElementById('fileChips').appendChild(chip);
     fileIndex++;
 
-    if (fileIndex === mockFiles.length) {
-      showToast('Agents can now answer 47 new questions about your business');
+    if (fileIndex >= data.mockFiles.length) {
+      docsUploaded = true;
+
+      // Show coverage
+      const cGrid = document.getElementById('coverageGrid');
+      cGrid.innerHTML = '';
+      data.coverage.forEach(c => {
+        const div = document.createElement('div');
+        div.className = 'knowledge-item' + (c.status === 'gap' ? ' gap' : '');
+        div.innerHTML = `<span class="ki-label">${c.status === 'ok' ? '&#10003;' : '&#9888;'} ${c.label}</span><span class="ki-value">${c.value}</span>`;
+        cGrid.appendChild(div);
+      });
+      document.getElementById('coverageIndicators').style.display = 'block';
+
+      // Show test box
+      document.getElementById('testAgentBox').classList.add('visible');
+
+      // Update level 2 tab
+      document.getElementById('level2tab').querySelector('.level-status').innerHTML = '&#10003;';
+      document.getElementById('level2tab').classList.add('completed');
+
+      // Update preview to show upgraded version
+      updatePreviewForLevel(2);
+
+      showToast('Your agent can now answer detailed questions about your business');
     }
   }
 
-  // ===== Template selection =====
-  function selectTemplate(el, templateKey) {
+  // ===== Test agent =====
+  function testAgent() {
+    const q = document.getElementById('testAgentQ').value;
+    if (!q) return;
+
+    const data = BIZ_TYPES[currentBizType];
+    const resp = document.getElementById('testAgentResponse');
+    resp.innerHTML = '<span style="color: var(--text-dim)">Thinking...</span>';
+    resp.classList.add('visible');
+
+    setTimeout(() => {
+      resp.innerHTML = data.testResponse + '<div class="test-agent-source">' + data.testSource + '</div>';
+    }, 800);
+  }
+
+  // ===== Level 3: Capabilities =====
+  function selectTemplate(el, tmpl) {
     document.querySelectorAll('.template-card').forEach(c => c.classList.remove('selected'));
     el.classList.add('selected');
 
     const editor = document.getElementById('capEditor');
-    const label = document.getElementById('capEditorLabel');
-    const rules = document.getElementById('capEditorRules');
-    const tmpl = CAP_TEMPLATES[templateKey];
-
-    label.textContent = tmpl.label;
-    rules.placeholder = tmpl.placeholder;
-    rules.value = '';
+    document.getElementById('capEditorLabel').textContent = tmpl.name + ' — rules';
+    document.getElementById('capEditorRules').placeholder = tmpl.placeholder;
+    document.getElementById('capEditorRules').value = '';
     editor.classList.add('visible');
   }
 
   function saveCapability() {
-    showToast('Capability saved — agents can now use it');
+    capSaved = true;
     document.getElementById('capEditor').classList.remove('visible');
     document.querySelectorAll('.template-card').forEach(c => c.classList.remove('selected'));
+
+    // Update level 3 tab
+    document.getElementById('level3tab').querySelector('.level-status').innerHTML = '&#10003;';
+    document.getElementById('level3tab').classList.add('completed');
+
+    // Update preview to show level 3
+    updatePreviewForLevel(3);
+
+    showToast('Capability activated — your agent can now calculate and recommend');
   }
 
   function saveTriggers() {
-    showToast('Triggers saved — agents know when to recommend you');
+    showToast('Triggers saved — your agent knows when to speak up');
   }
 
   // ===== Toast =====
